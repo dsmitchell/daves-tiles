@@ -16,6 +16,19 @@ struct Tile: Identifiable {
 	let isOpen: Bool
 }
 
+enum ImageClipShape: Shape {
+
+	case rounded
+	case rectangle
+
+	func path(in rect: CGRect) -> Path {
+		switch self {
+			case .rounded: return RoundedRectangle(cornerRadius: 8).path(in: rect)
+			case .rectangle: return Rectangle().path(in: rect)
+		}
+	}
+}
+
 struct TileView: View {
 
 	let tile: Tile
@@ -27,36 +40,35 @@ struct TileView: View {
 		let roundedBorder = !tile.isOpen && (tile.isSelected || !isMatched)
 		ZStack {
 			let roundedRectangle = RoundedRectangle(cornerRadius: roundedBorder ? 8 : 0)
-			if let image = image {
-				if roundedBorder {
-					image
-						.resizable()
-						.overlay(roundedRectangle.stroke(Color.white, lineWidth: roundedBorder ? 4 : 0))
-						.clipShape(roundedRectangle)
-						.padding(roundedBorder ? 1 : 0)
-				} else {
-					image
-						.resizable()
-				}
-			} else {
-				roundedRectangle
-					.foregroundColor(Color(hue: Double(tile.id) / 24.0, saturation: 1, brightness: 1))
-					.overlay(roundedRectangle.stroke(Color.white, lineWidth: roundedBorder ? 4 : 0))
-					.padding(roundedBorder ? 2 : 0)
-			}
-			if tile.isOpen {
-				Image(systemName: "star.fill")
-					.font(.title)
-					.foregroundColor(.white)
-					.shadow(color: .black, radius: 2)
-			} else {
-				Text("\(tile.id)")
-					.font(.title)
-					.foregroundColor(.white)
-					.shadow(color: .black, radius: 2)
-			}
+			background(for: tile, in: roundedRectangle)
+				.overlay(roundedRectangle.stroke(Color.white, lineWidth: roundedBorder ? 4 : 0))
+				.clipShape(roundedBorder ? ImageClipShape.rounded : ImageClipShape.rectangle)
+				.padding(roundedBorder ? 1 : 0)
+			label(for: tile)
+				.id(tile.id)
+				.font(.title)
+				.foregroundColor(.white)
+				.shadow(color: .black, radius: 2)
 		}
 		.scaleEffect(tile.isSelected ? 1.15 : 1.0)
+	}
+
+	@ViewBuilder
+	func background(for tile: Tile, in roundedRectangle: RoundedRectangle) -> some View {
+		if let image = image {
+			image.resizable()
+		} else {
+			roundedRectangle.foregroundColor(Color(hue: Double(tile.id) / 24.0, saturation: 1, brightness: 1))
+		}
+	}
+
+	@ViewBuilder
+	func label(for tile: Tile) -> some View {
+		if tile.isOpen {
+			Image(systemName: "star.fill")
+		} else {
+			Text("\(tile.id)")
+		}
 	}
 }
 
