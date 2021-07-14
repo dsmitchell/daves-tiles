@@ -107,7 +107,7 @@ class Game: ObservableObject {
 		return /*deltaSum > 2 &&*/ deltaSum % 2 == 1
 	}
 
-	@discardableResult func randomMove() -> (from: Int, to: Int) {
+	@discardableResult func randomMove(except indices: [Int]? = nil) -> (from: Int, to: Int) {
 		if openTile == nil {
 //			Array(0..<tiles.count) // TODO: Draw 2 unique numbers from 0..<tiles.count
 			return (0, 0)
@@ -116,7 +116,7 @@ class Game: ObservableObject {
 		var tileToMove: Int
 		repeat {
 			tileToMove = Int.random(in: 0..<tiles.count)
-		} while !validJump(nextMove: tileToMove)
+		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove)
 		let tile = tiles.remove(at: tileToMove)
 		var result: Int
 		if tileToMove < openTile {
@@ -133,7 +133,7 @@ class Game: ObservableObject {
 
 	func tileMovementGroup(startingWith tileIndex: Int) -> TileMovementGroup {
 		// TODO: This rule follows Classic Mode. When Swap Mode is supported just use the default
-		guard let openTile = openTile else {
+		guard let openTile = openTile, openTile != (tileIndex >= openTile ? tileIndex + 1 : tileIndex), tileIndex < tiles.count else {
 			return ([tileIndex], .drag)
 		}
 		switch (openGridIndex, gridIndex(for: tileIndex)) {

@@ -11,21 +11,62 @@ struct BoardView: View {
 
 	@State var boardRendering: BoardRendering
 	@State var timeToAnimate: CGFloat = 0.0
+	@State var gameState: GameState = .new {
+		didSet { print("GameState: \(gameState)") }
+	}
+
+	enum GameState {
+		case new
+		case starting
+		case playing
+		case finishing
+		case finished
+	}
 
 	init(game: Game) {
 		boardRendering = BoardRendering(game: game)
 	}
 
 	func randomMove() {
-		withAnimation(.linear(duration: 1)) {
-			boardRendering.randomMove()
-		}
+		boardRendering.randomMove()
 	}
 
 	func newGame() {
-		withAnimation(.linear(duration: 1)) {
+//		guard gameState != .starting else { return }
+		if gameState != .new {
+			gameState = .new
 			boardRendering.startNewGame()
 		}
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+			gameState = .starting
+		}
+		DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+			gameState = .playing
+		}
+	}
+
+	func tileAnimation(_ tile: Tile) -> Animation? {
+		// TODO: We want a more complex animation state (so that pop ups can animate)
+		switch gameState {
+		case .new:
+			 return nil
+		case .starting:
+			return .spring(dampingFraction: 0.5, blendDuration: 1.0)
+		default:
+			return tile.isActive ? nil : .linear(duration: 0.1)
+		}
+	}
+
+	func useTileGesture(_ tile: Tile) -> Bool {
+		guard gameState == .playing else { return false }
+		return !boardRendering.game.isFinished && (!boardRendering.tracking || tile.isTracking)
+	}
+
+	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
+		guard gameState != .new else {
+			return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
+		}
+		return tile.isActive ? position + boardRendering.positionOffset : position
 	}
 
 	var body: some View {
@@ -39,46 +80,48 @@ struct BoardView: View {
 						guard let touchedTileIndex = boardRendering.tileIndex(from: value.startLocation, with: boardGeometry) else { return }
 						let movementGroup = boardRendering.game.tileMovementGroup(startingWith: touchedTileIndex)
 						guard movementGroup.direction != .drag else { return }
-						withAnimation(.linear(duration: 0.1)) {
-							boardRendering.startTracking(movementGroup: movementGroup, from: value, with: boardGeometry)
-						}
+						boardRendering.startTracking(movementGroup: movementGroup, from: value, with: boardGeometry)
 					}
 				}
 				.onEnded { value in
-					guard boardRendering.tracking else { return }
-					withAnimation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) {
-						boardRendering.stopTracking()
+					withAnimation(.linear(duration: 0.1 * (1 - boardRendering.lastPercentChange))) {
 						timeToAnimate += 1
 					}
+					boardRendering.stopTracking()
 				}
 				ZStack {
 					ForEach(boardRendering.arrangedTiles(with: boardGeometry), id: \.tile.id) { tile, image, position, isMatched in
 						TileView(tile: tile, image: image, isMatched: isMatched)
 							.opacity(tile.isOpen && !boardRendering.game.isFinished ? 0 : 1)
-							.position(tile.isActive ? position + boardRendering.positionOffset : position)
+							.position(tilePosition(tile, with: position, in: geometry))
+//							.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
+							.animation(tileAnimation(tile))
 							.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
-							.gesture(!boardRendering.game.isFinished && (!boardRendering.tracking || tile.isTracking) ? dragGesture : nil)
+							.gesture(useTileGesture(tile) ? dragGesture : nil)
 					}
 				}
 				.onAnimationCompleted(for: timeToAnimate) {
-					withAnimation(.linear(duration: 0.1)) {
-						boardRendering.deselectTiles()
-					}
+					boardRendering.deselectTiles()
 					if boardRendering.game.isFinished {
-						print("You WON!!!!")
+						gameState = .finishing
+						SoundEffects.default.play(.gameWin)
 					}
 				}
 			}
+		}
+		.onAppear {
+			newGame()
 		}
 		.toolbar {
 			ToolbarItemGroup(placement: .navigationBarTrailing) {
 				Button(action: randomMove) {
 					Label("Random Move", systemImage: "sparkles")
 				}
-				.disabled(boardRendering.game.isFinished)
+				.disabled([.new, .starting, .finished, .finishing].contains(gameState))
 				Button(action: newGame) {
 					Label("New Game", systemImage: "restart.circle")
 				}
+				.disabled([.new, .starting].contains(gameState))
 			}
 		}
     }

@@ -20,6 +20,9 @@ struct ContentView: View {
 				.background(game.isFinished ? Color.yellow : Color.gray)
 		}
 		.navigationViewStyle(.stack)
+		.onAppear {
+			SoundEffects.default.preloadSounds()
+		}
     }
 }
 

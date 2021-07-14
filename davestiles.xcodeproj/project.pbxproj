@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		640BD057269E18C50001AAA2 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
+		640BD058269E18C50001AAA2 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
+		640BD059269E18C50001AAA2 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
+		640BD05A269E18C50001AAA2 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
+		640BD05B269E18C50001AAA2 /* GameWin1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD051269E18C50001AAA2 /* GameWin1.caf */; };
+		640BD05C269E18C50001AAA2 /* GameWin1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD051269E18C50001AAA2 /* GameWin1.caf */; };
+		640BD05D269E18C50001AAA2 /* Warning1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD052269E18C50001AAA2 /* Warning1.caf */; };
+		640BD05E269E18C50001AAA2 /* Warning1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD052269E18C50001AAA2 /* Warning1.caf */; };
+		640BD05F269E18C50001AAA2 /* Popup.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD053269E18C50001AAA2 /* Popup.caf */; };
+		640BD060269E18C50001AAA2 /* Popup.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD053269E18C50001AAA2 /* Popup.caf */; };
+		640BD061269E18C50001AAA2 /* Slide1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD054269E18C50001AAA2 /* Slide1.caf */; };
+		640BD062269E18C50001AAA2 /* Slide1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD054269E18C50001AAA2 /* Slide1.caf */; };
+		640BD063269E18C50001AAA2 /* NewGame1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD055269E18C50001AAA2 /* NewGame1.caf */; };
+		640BD064269E18C50001AAA2 /* NewGame1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD055269E18C50001AAA2 /* NewGame1.caf */; };
+		640BD065269E18C50001AAA2 /* Jump1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD056269E18C50001AAA2 /* Jump1.caf */; };
+		640BD066269E18C50001AAA2 /* Jump1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD056269E18C50001AAA2 /* Jump1.caf */; };
+		640BD068269E1B260001AAA2 /* SoundEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640BD067269E1B260001AAA2 /* SoundEffects.swift */; };
+		640BD069269E1B260001AAA2 /* SoundEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640BD067269E1B260001AAA2 /* SoundEffects.swift */; };
 		645D95BF26911BFE0028AD02 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
 		645D95C026911BFE0028AD02 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
 		645D95C226911C700028AD02 /* BoardRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardRendering.swift */; };
@@ -49,6 +67,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		640BD04F269E18C50001AAA2 /* Click.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Click.caf; sourceTree = "<group>"; };
+		640BD050269E18C50001AAA2 /* Popdown.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Popdown.caf; sourceTree = "<group>"; };
+		640BD051269E18C50001AAA2 /* GameWin1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GameWin1.caf; sourceTree = "<group>"; };
+		640BD052269E18C50001AAA2 /* Warning1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Warning1.caf; sourceTree = "<group>"; };
+		640BD053269E18C50001AAA2 /* Popup.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Popup.caf; sourceTree = "<group>"; };
+		640BD054269E18C50001AAA2 /* Slide1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Slide1.caf; sourceTree = "<group>"; };
+		640BD055269E18C50001AAA2 /* NewGame1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NewGame1.caf; sourceTree = "<group>"; };
+		640BD056269E18C50001AAA2 /* Jump1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Jump1.caf; sourceTree = "<group>"; };
+		640BD067269E1B260001AAA2 /* SoundEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffects.swift; sourceTree = "<group>"; };
 		645D95BE26911BFE0028AD02 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
 		645D95C126911C700028AD02 /* BoardRendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardRendering.swift; sourceTree = "<group>"; };
 		645D95C426951AB30028AD02 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
@@ -99,6 +126,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		640BD06A269E279D0001AAA2 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				64CE7B432678298600988DA4 /* Assets.xcassets */,
+				640BD04F269E18C50001AAA2 /* Click.caf */,
+				64CE7B3E2678298500988DA4 /* davestiles.xcdatamodeld */,
+				640BD051269E18C50001AAA2 /* GameWin1.caf */,
+				640BD056269E18C50001AAA2 /* Jump1.caf */,
+				640BD055269E18C50001AAA2 /* NewGame1.caf */,
+				640BD050269E18C50001AAA2 /* Popdown.caf */,
+				640BD053269E18C50001AAA2 /* Popup.caf */,
+				640BD054269E18C50001AAA2 /* Slide1.caf */,
+				640BD052269E18C50001AAA2 /* Warning1.caf */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		64CE7B382678298500988DA4 = {
 			isa = PBXGroup;
 			children = (
@@ -112,15 +156,15 @@
 		64CE7B3D2678298500988DA4 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				64CE7B432678298600988DA4 /* Assets.xcassets */,
 				645D95C126911C700028AD02 /* BoardRendering.swift */,
 				64C218DB268E59A400A9C38B /* BoardView.swift */,
 				64CE7B412678298500988DA4 /* ContentView.swift */,
-				64CE7B3E2678298500988DA4 /* davestiles.xcdatamodeld */,
 				64CE7B402678298500988DA4 /* davestilesApp.swift */,
 				645D95C426951AB30028AD02 /* Game.swift */,
 				64B95AC626964371003D22D1 /* GameView.swift */,
 				64CE7B422678298500988DA4 /* Persistence.swift */,
+				640BD06A269E279D0001AAA2 /* Resources */,
+				640BD067269E1B260001AAA2 /* SoundEffects.swift */,
 				645D95BE26911BFE0028AD02 /* TileView.swift */,
 			);
 			path = Shared;
@@ -279,6 +323,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				64CE7B6B2678298600988DA4 /* Assets.xcassets in Resources */,
+				640BD063269E18C50001AAA2 /* NewGame1.caf in Resources */,
+				640BD05B269E18C50001AAA2 /* GameWin1.caf in Resources */,
+				640BD05D269E18C50001AAA2 /* Warning1.caf in Resources */,
+				640BD065269E18C50001AAA2 /* Jump1.caf in Resources */,
+				640BD05F269E18C50001AAA2 /* Popup.caf in Resources */,
+				640BD061269E18C50001AAA2 /* Slide1.caf in Resources */,
+				640BD057269E18C50001AAA2 /* Click.caf in Resources */,
+				640BD059269E18C50001AAA2 /* Popdown.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,6 +339,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				64CE7B6C2678298600988DA4 /* Assets.xcassets in Resources */,
+				640BD064269E18C50001AAA2 /* NewGame1.caf in Resources */,
+				640BD05C269E18C50001AAA2 /* GameWin1.caf in Resources */,
+				640BD05E269E18C50001AAA2 /* Warning1.caf in Resources */,
+				640BD066269E18C50001AAA2 /* Jump1.caf in Resources */,
+				640BD060269E18C50001AAA2 /* Popup.caf in Resources */,
+				640BD062269E18C50001AAA2 /* Slide1.caf in Resources */,
+				640BD058269E18C50001AAA2 /* Click.caf in Resources */,
+				640BD05A269E18C50001AAA2 /* Popdown.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,6 +379,7 @@
 				64CE7B652678298600988DA4 /* davestilesApp.swift in Sources */,
 				645D95BF26911BFE0028AD02 /* TileView.swift in Sources */,
 				64CE7B672678298600988DA4 /* ContentView.swift in Sources */,
+				640BD068269E1B260001AAA2 /* SoundEffects.swift in Sources */,
 				645D95C526951AB30028AD02 /* Game.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -335,6 +396,7 @@
 				64CE7B662678298600988DA4 /* davestilesApp.swift in Sources */,
 				645D95C026911BFE0028AD02 /* TileView.swift in Sources */,
 				64CE7B682678298600988DA4 /* ContentView.swift in Sources */,
+				640BD069269E1B260001AAA2 /* SoundEffects.swift in Sources */,
 				645D95C626951AB30028AD02 /* Game.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
