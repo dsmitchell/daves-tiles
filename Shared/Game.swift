@@ -72,9 +72,8 @@ class Game: ObservableObject {
 		return (openTile / columns, openTile % columns)
 	}
 
-	func activateTiles(with indices: [Int]) {
+	func selectTiles(with indices: [Int]) {
 		for index in indices {
-			tiles[index].isActive = true
 			tiles[index].isSelected = true
 		}
 		if let last = indices.last {
@@ -152,7 +151,7 @@ class Game: ObservableObject {
 
 	func cancelMove(with movementGroup: TileMovementGroup) {
 		for index in movementGroup.indices {
-			tiles[index].isActive = false
+			tiles[index].isMoving = false
 			tiles[index].isTracking = false // We want this to happen later (or maybe now)
 		}
 	}
@@ -160,7 +159,7 @@ class Game: ObservableObject {
 	func completeMove(with movementGroup: TileMovementGroup) {
 		moves += 1
 		for index in movementGroup.indices {
-			tiles[index].isActive = false
+			tiles[index].isMoving = false
 			tiles[index].isTracking = false // We want this to happen later (or maybe now)
 		}
 		let tileIndex = movementGroup.indices.last!

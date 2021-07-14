@@ -93,6 +93,11 @@ extension BoardRendering {
 		guard case .tracking = trackingState else { return }
 		let result = movementFunction(dragGesture)
 //		print(" - tracking \(result.offset.length)")
+		if let movementGroup = movementGroup {
+			for index in movementGroup.indices {
+				game.tiles[index].isMoving = true
+			}
+		}
 		if possibleTouch, result.offset.length > 10 {
 			possibleTouch = false
 		}
@@ -195,7 +200,7 @@ extension BoardRendering {
 		// TODO: Try to find an efficient/clean way to use .move(fromOffsets:toOffset:)
 		arrangedIndices.removeAll(where: movementGroup.indices.contains)
 		arrangedIndices = arrangedIndices + movementGroup.indices
-		game.activateTiles(with: movementGroup.indices)
+		game.selectTiles(with: movementGroup.indices)
 	}
 
 	mutating func stopTracking(forceCancel: Bool = false) {

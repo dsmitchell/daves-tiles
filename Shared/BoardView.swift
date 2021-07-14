@@ -53,7 +53,7 @@ struct BoardView: View {
 		case .starting:
 			return .spring(dampingFraction: 0.5, blendDuration: 1.0)
 		default:
-			return tile.isActive ? nil : .linear(duration: 0.1)
+			return tile.isMoving ? nil : .linear(duration: 0.1)
 		}
 	}
 
@@ -66,7 +66,7 @@ struct BoardView: View {
 		guard gameState != .new else {
 			return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
 		}
-		return tile.isActive ? position + boardRendering.positionOffset : position
+		return position
 	}
 
 	var body: some View {
@@ -94,6 +94,7 @@ struct BoardView: View {
 						TileView(tile: tile, image: image, isMatched: isMatched)
 							.opacity(tile.isOpen && !boardRendering.game.isFinished ? 0 : 1)
 							.position(tilePosition(tile, with: position, in: geometry))
+							.offset(by: tile.isMoving ? boardRendering.positionOffset : .zero)
 //							.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
 							.animation(tileAnimation(tile))
 							.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
@@ -175,6 +176,10 @@ extension View {
 	/// - Returns: A modified `View` instance with the observer attached.
 	func onAnimationCompleted<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) -> ModifiedContent<Self, AnimationCompletionObserverModifier<Value>> {
 		return modifier(AnimationCompletionObserverModifier(observedValue: value, completion: completion))
+	}
+
+	func offset(by vector: CGVector) -> ModifiedContent<Self, _OffsetEffect> {
+		self.offset(x: vector.dx, y: vector.dy) as! ModifiedContent<Self, _OffsetEffect>
 	}
 }
 

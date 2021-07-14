@@ -10,7 +10,7 @@ import SwiftUI
 struct Tile: Identifiable {
 	
 	let id: Int
-	var isActive: Bool = false
+	var isMoving: Bool = false
 	var isSelected: Bool = false
 	var isTracking: Bool = false
 	let isOpen: Bool
@@ -76,7 +76,7 @@ struct TileView_Previews: PreviewProvider {
     static var previews: some View {
 		let image = Image("PuzzleImage")
 		VStack(spacing: 0) {
-			TileView(tile: Tile(id: 5, isActive: true, isSelected: false, isTracking: true, isOpen: false), image: image, isMatched: false)
+			TileView(tile: Tile(id: 5, isMoving: true, isSelected: false, isTracking: true, isOpen: false), image: image, isMatched: false)
 				.frame(width: 160, height: 160)
 			TileView(tile: Tile(id: 4, isOpen: false), image: image, isMatched: true)
 				.frame(width: 160, height: 160)
