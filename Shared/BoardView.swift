@@ -10,17 +10,15 @@ import SwiftUI
 struct BoardView: View {
 
 	@State var boardRendering: BoardRendering
-	@State var timeToAnimate: CGFloat = 0.0
-	@State var gameState: GameState = .new {
-		didSet { print("GameState: \(gameState)") }
-	}
+	@State var gameState: GameState = .new
 
 	enum GameState {
-		case new
-		case starting
-		case playing
-		case finishing
-		case finished
+		case new		// Tiles are off-screen at the bottom
+		case starting	// Tiles flying up from the bottom
+		case playing	// Normal game-play state
+		case finishing	// TODO: Begin border around the finished picture
+		case finished	// TODO: Create state change from finishing->finished
+		case closing	// Tiles fading away
 	}
 
 	init(game: Game) {
@@ -32,41 +30,61 @@ struct BoardView: View {
 	}
 
 	func newGame() {
-//		guard gameState != .starting else { return }
-		if gameState != .new {
-			gameState = .new
-			boardRendering.startNewGame()
-		}
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+		// TODO: Find a way to chain these state changes to the animation completions
+		assert(gameState != .starting)
+		let startNew = {
 			gameState = .starting
+			DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+				self.gameState = .playing
+			}
 		}
-		DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-			gameState = .playing
+		if gameState == .new {
+			startNew()
+		} else {
+			gameState = .closing
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+				boardRendering.startNewGame()
+				self.gameState = .new
+				DispatchQueue.main.async {
+					startNew()
+				}
+			}
 		}
 	}
 
 	func tileAnimation(_ tile: Tile) -> Animation? {
 		// TODO: We want a more complex animation state (so that pop ups can animate)
 		switch gameState {
-		case .new:
-			 return nil
-		case .starting:
-			return .spring(dampingFraction: 0.5, blendDuration: 1.0)
-		default:
-			return tile.isMoving ? nil : .linear(duration: 0.1)
+		case .new: return nil
+		case .starting: return .spring(dampingFraction: 0.5, blendDuration: 1.0)
+		case .closing: return .linear(duration: 0.1)
+		default: return tile.isMoving ? nil : .linear(duration: 0.1)
+		}
+	}
+
+	func tileOpacity(_ tile: Tile) -> Double {
+		switch gameState {
+		case .closing: return 0
+		default: return tile.isOpen && !boardRendering.game.isFinished ? 0 : 1
+		}
+	}
+
+	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
+		switch gameState {
+		case .starting: // TODO: This should be based on throwing each tile sequentially
+//			let percent: Double = timeToAnimate - floor(timeToAnimate)
+//			print("game starting percent(\(tile.id)): \(percent)")
+//			guard Double(tile.id) / Double(boardRendering.game.tiles.count) < percent else { return position }
+//			fallthrough
+			return position
+		case .new: return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
+		default: return position
 		}
 	}
 
 	func useTileGesture(_ tile: Tile) -> Bool {
-		guard gameState == .playing else { return false }
-		return !boardRendering.game.isFinished && (!boardRendering.tracking || tile.isTracking)
-	}
-
-	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
-		guard gameState != .new else {
-			return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
-		}
-		return position
+		guard gameState == .playing, !boardRendering.game.isFinished else { return false }
+		return !boardRendering.tracking || tile.isTracking
 	}
 
 	var body: some View {
@@ -84,132 +102,47 @@ struct BoardView: View {
 					}
 				}
 				.onEnded { value in
-					withAnimation(.linear(duration: 0.1 * (1 - boardRendering.lastPercentChange))) {
-						timeToAnimate += 1
-					}
+					// TODO: Use await to simply proceed after the time has occurred (so that this is cancellable)
 					boardRendering.stopTracking()
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (1 - boardRendering.lastPercentChange)) {
+						boardRendering.deselectTiles()
+						guard boardRendering.game.isFinished else { return }
+						gameState = .finishing
+						SoundEffects.default.play(.gameWin)
+					}
 				}
 				ZStack {
 					ForEach(boardRendering.arrangedTiles(with: boardGeometry), id: \.tile.id) { tile, image, position, isMatched in
 						TileView(tile: tile, image: image, isMatched: isMatched)
-							.opacity(tile.isOpen && !boardRendering.game.isFinished ? 0 : 1)
+							.opacity(tileOpacity(tile))
 							.position(tilePosition(tile, with: position, in: geometry))
-							.offset(by: tile.isMoving ? boardRendering.positionOffset : .zero)
+							.offset(tile.isMoving ? CGSize(width: boardRendering.positionOffset.dx, height: boardRendering.positionOffset.dy) : .zero)
 //							.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
 							.animation(tileAnimation(tile))
 							.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
 							.gesture(useTileGesture(tile) ? dragGesture : nil)
 					}
 				}
-				.onAnimationCompleted(for: timeToAnimate) {
-					boardRendering.deselectTiles()
-					if boardRendering.game.isFinished {
-						gameState = .finishing
-						SoundEffects.default.play(.gameWin)
-					}
-				}
 			}
 		}
 		.onAppear {
-			newGame()
+			DispatchQueue.main.async { newGame() }
 		}
 		.toolbar {
 			ToolbarItemGroup(placement: .navigationBarTrailing) {
 				Button(action: randomMove) {
 					Label("Random Move", systemImage: "sparkles")
 				}
-				.disabled([.new, .starting, .finished, .finishing].contains(gameState))
+				.disabled([.new, .starting, .finished, .finishing, .closing].contains(gameState))
 				Button(action: newGame) {
 					Label("New Game", systemImage: "restart.circle")
 				}
-				.disabled([.new, .starting].contains(gameState))
+				.disabled([.new, .starting, .closing].contains(gameState))
 			}
 		}
     }
 }
 
-/// An animatable modifier that is used for observing animations for a given animatable value.
-struct AnimationCompletionObserverModifier<Value>: AnimatableModifier where Value: VectorArithmetic {
-
-	/// While animating, SwiftUI changes the old input value to the new target value using this property. This value is set to the old value until the animation completes.
-	var animatableData: Value {
-		didSet {
-			notifyCompletionIfFinished()
-		}
-	}
-
-	/// The target value for which we're observing. This value is directly set once the animation starts. During animation, `animatableData` will hold the oldValue and is only updated to the target value once the animation completes.
-	private var targetValue: Value
-
-	/// The completion callback which is called once the animation completes.
-	private var completion: () -> Void
-
-	init(observedValue: Value, completion: @escaping () -> Void) {
-		self.completion = completion
-		self.animatableData = observedValue
-		targetValue = observedValue
-	}
-
-	/// Verifies whether the current animation is finished and calls the completion callback if true.
-	private func notifyCompletionIfFinished() {
-		guard animatableData == targetValue else { return }
-
-		/// Dispatching is needed to take the next runloop for the completion callback.
-		/// This prevents errors like "Modifying state during view update, this will cause undefined behavior."
-		DispatchQueue.main.async {
-			self.completion()
-		}
-	}
-
-	func body(content: Content) -> some View {
-		/// We're not really modifying the view so we can directly return the original input value.
-		return content
-	}
-}
-
-extension View {
-
-	/// Calls the completion handler whenever an animation on the given value completes.
-	/// - Parameters:
-	///   - value: The value to observe for animations.
-	///   - completion: The completion callback to call once the animation completes.
-	/// - Returns: A modified `View` instance with the observer attached.
-	func onAnimationCompleted<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) -> ModifiedContent<Self, AnimationCompletionObserverModifier<Value>> {
-		return modifier(AnimationCompletionObserverModifier(observedValue: value, completion: completion))
-	}
-
-	func offset(by vector: CGVector) -> ModifiedContent<Self, _OffsetEffect> {
-		self.offset(x: vector.dx, y: vector.dy) as! ModifiedContent<Self, _OffsetEffect>
-	}
-}
-
-fileprivate extension CGPoint {
-
-	static func + (left: CGPoint, right: CGVector) -> CGPoint {
-		return CGPoint(x: left.x + right.dx, y: left.y + right.dy)
-	}
-}
-/*
-extension CGVector: VectorArithmetic {
-
-	public mutating func scale(by rhs: Double) {
-		dx *= rhs
-		dy *= rhs
-	}
-
-	public var magnitudeSquared: Double {
-		pow(dx, 2) + pow(dy, 2)
-	}
-
-	public static func - (lhs: CGVector, rhs: CGVector) -> CGVector {
-		CGVector(dx: lhs.dx - rhs.dx, dy: lhs.dy - rhs.dy)
-	}
-
-	public static func + (lhs: CGVector, rhs: CGVector) -> CGVector {
-		CGVector(dx: lhs.dx + rhs.dx, dy: lhs.dy + rhs.dy)
-	}
-}
-*/
 struct BoardView_Previews: PreviewProvider {
 
     static var previews: some View {
