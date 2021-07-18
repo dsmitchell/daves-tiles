@@ -12,16 +12,20 @@ struct GameView: View {
 	@ObservedObject var game: Game
 
     var body: some View {
-		VStack {
+		ZStack {
+			Color.gray
+				.edgesIgnoringSafeArea([.bottom, .leading, .trailing])
 			BoardView(game: game)
-				.padding()
+				.padding([.top, .leading, .trailing])
 //				.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues
 //				.rotation3DEffect(.degrees(25), axis: (x: 0.25, y: 0.25, z: 0.25))
-//				.frame(maxWidth: 600)
-			Text("Moves: \(game.moves)")
-				.animation(nil)
 		}
 		.navigationTitle("Dave's Tiles")
+		.toolbar {
+			ToolbarItemGroup(placement: .principal) {
+				Text("Moves: \(game.moves)")
+			}
+		}
     }
 }
 

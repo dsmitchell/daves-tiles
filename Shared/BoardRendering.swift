@@ -44,28 +44,42 @@ extension BoardRendering {
 //		}
 	}
 
-	func position(for tileIndex: Int, in game: Game, with length: CGFloat) -> CGPoint {
+	func position(for tileIndex: Int, in game: Game, with length: CGFloat, rotated: Bool) -> CGPoint {
 		let gridIndex = tileIndex == game.tiles.count ? game.openGridIndex : game.gridIndex(for: tileIndex)
-		return CGPoint(x: (CGFloat(gridIndex.column) + 0.5) * length, y: (CGFloat(gridIndex.row) + 0.5) * length)
+		let column = rotated ? gridIndex.row : gridIndex.column
+		let row = rotated ? game.columns - gridIndex.column - 1 : gridIndex.row
+		return CGPoint(x: (CGFloat(column) + 0.5) * length, y: (CGFloat(row) + 0.5) * length)
 	}
 
 	func boardGeometry(from geometryProxy: GeometryProxy) -> BoardGeometry {
-		let length = min(geometryProxy.size.width / CGFloat(game.columns), geometryProxy.size.height / CGFloat(game.rows))
+		let rotated = geometryProxy.size.width > geometryProxy.size.height
+		let columns = rotated ? game.rows : game.columns
+		let rows = rotated ? game.columns : game.rows
+		let length = min(geometryProxy.size.width / CGFloat(columns), geometryProxy.size.height / CGFloat(rows))
 		let range = (0...game.tiles.count) // TODO: When a game is won, ensure that board.tiles.count includes the _open_ tile
-		return (geometryProxy.size, CGSize(width: length, height: length), range.map { position(for: $0, in: game, with: length) })
+		let boardSize = CGSize(width: length * CGFloat(columns), height: length * CGFloat(rows))
+		let offset = CGVector(dx: (geometryProxy.size.width - boardSize.width) / 2,
+							  dy: (geometryProxy.size.height - boardSize.height) / 2)
+		return (boardSize, CGSize(width: length, height: length), range.map {
+			position(for: $0, in: game, with: length, rotated: rotated) + offset
+		})
 	}
 
 	func arrangedTiles(with locations: BoardGeometry) -> [TileRenderingInfo] {
 
 		let tileInfoFor: (Int, Bool) -> TileRenderingInfo = { index, isOpen in
+			// TODO: Consider declaring the "open tile" as the position with the greated row & col value
 			let tile = isOpen ? Tile(id: game.tiles.count + 1, isOpen: true) : game.tiles[index]
 			let position = isOpen ? locations.positions[game.tiles.count] : locations.positions[index]
 			guard locations.boardSize != .zero, let image = game.imageMatching(size: locations.boardSize) else {
 				return (tile, nil, position, game.isMatched(tile: tile, index: index))
 			}
 			let tilePosition = tile.id - 1
+			let rotated = locations.boardSize.width > locations.boardSize.height
 			let gridIndex = (row: tilePosition / game.columns, column: tilePosition % game.columns)
-			let origin = CGPoint(x: CGFloat(gridIndex.column) * locations.tileSize.width, y: CGFloat(gridIndex.row) * locations.tileSize.height)
+			let column = rotated ? gridIndex.row : gridIndex.column
+			let row = rotated ? game.columns - gridIndex.column - 1 : gridIndex.row
+			let origin = CGPoint(x: CGFloat(column) * locations.tileSize.width, y: CGFloat(row) * locations.tileSize.height)
 			let frame = CGRect(origin: origin, size: locations.tileSize)
 			let cgImage = image.cropping(to: frame)
 			let swImage = Image.init(decorative: cgImage!, scale: 1)
@@ -172,7 +186,7 @@ extension BoardRendering {
 		self.movementGroup = movementGroup
 		var lastOffset: CGVector = .zero
 		var lastTranslation = dragGesture.translation
-		switch movementGroup.direction {
+		switch movementGroup.direction.rotated(locations.boardSize.width > locations.boardSize.height) {
 		case .up:
 			movementFunction = { dragGesture in
 				defer {
@@ -296,7 +310,14 @@ public extension Comparable {
 	}
 }
 
-public extension CGVector {
+extension CGPoint {
+
+	static func + (left: CGPoint, right: CGVector) -> CGPoint {
+		return CGPoint(x: left.x + right.dx, y: left.y + right.dy)
+	}
+}
+
+extension CGVector {
 
 	init(fromDragGesture gesture: DragGesture.Value) {
 		self.init(dx: gesture.translation.width, dy: gesture.translation.height)
@@ -304,5 +325,19 @@ public extension CGVector {
 
 	var length: CGFloat {
 		sqrt(pow(dx, 2) + pow(dy, 2))
+	}
+}
+
+extension Game.MoveDirection {
+
+	func rotated(_ rotated: Bool) -> Self {
+		guard rotated else { return self }
+		switch self {
+		case .up: return .left
+		case .down: return .right
+		case .left: return .down
+		case .right: return .up
+		case .drag: return .drag
+		}
 	}
 }

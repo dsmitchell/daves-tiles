@@ -72,7 +72,7 @@ struct BoardView: View {
 		case .closing: return .linear(duration: 0.1)
 		default: // Here we will create a different duration for random moves
 			guard !tile.isMoving else { return nil }
-			return .linear(duration: tile.isSelected ? 0.2 : 0.1)
+			return .linear(duration: tile.isSelected ? 0.1 : 0.1)
 		}
 	}
 
@@ -99,40 +99,38 @@ struct BoardView: View {
 	}
 
 	var body: some View {
-		ZStack {
-			GeometryReader { geometry in
-				let boardGeometry = boardRendering.boardGeometry(from: geometry)
-				let dragGesture = DragGesture(minimumDistance: 0).onChanged { value in
-					if boardRendering.tracking {
-						boardRendering.continueTracking(dragGesture: value)
-					} else {
-						guard let touchedTileIndex = boardRendering.tileIndex(from: value.startLocation, with: boardGeometry) else { return }
-						let movementGroup = boardRendering.game.tileMovementGroup(startingWith: touchedTileIndex)
-						guard movementGroup.direction != .drag else { return }
-						boardRendering.startTracking(movementGroup: movementGroup, from: value, with: boardGeometry)
-					}
+		GeometryReader { geometry in
+			let boardGeometry = boardRendering.boardGeometry(from: geometry)
+			let dragGesture = DragGesture(minimumDistance: 0).onChanged { value in
+				if boardRendering.tracking {
+					boardRendering.continueTracking(dragGesture: value)
+				} else {
+					guard let touchedTileIndex = boardRendering.tileIndex(from: value.startLocation, with: boardGeometry) else { return }
+					let movementGroup = boardRendering.game.tileMovementGroup(startingWith: touchedTileIndex)
+					guard movementGroup.direction != .drag else { return }
+					boardRendering.startTracking(movementGroup: movementGroup, from: value, with: boardGeometry)
 				}
-				.onEnded { value in
-					// TODO: Use await to simply proceed after the time has occurred (so that this is cancellable)
-					boardRendering.stopTracking()
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (1 - boardRendering.lastPercentChange)) {
-						boardRendering.deselectTiles()
-						guard boardRendering.game.isFinished else { return }
-						gameState = .finishing
-						SoundEffects.default.play(.gameWin)
-					}
+			}
+			.onEnded { value in
+				// TODO: Use await to simply proceed after the time has occurred (so that this is cancellable)
+				boardRendering.stopTracking()
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (1 - boardRendering.lastPercentChange)) {
+					boardRendering.deselectTiles()
+					guard boardRendering.game.isFinished else { return }
+					gameState = .finishing
+					SoundEffects.default.play(.gameWin)
 				}
-				ZStack {
-					ForEach(boardRendering.arrangedTiles(with: boardGeometry), id: \.tile.id) { tile, image, position, isMatched in
-						TileView(tile: tile, image: image, isMatched: isMatched)
-							.opacity(tileOpacity(tile))
-							.position(tilePosition(tile, with: position, in: geometry))
-							.offset(tile.isMoving ? CGSize(width: boardRendering.positionOffset.dx, height: boardRendering.positionOffset.dy) : .zero)
-//							.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
-							.animation(tileAnimation(tile))
-							.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
-							.gesture(useTileGesture(tile) ? dragGesture : nil)
-					}
+			}
+			ZStack {
+				ForEach(boardRendering.arrangedTiles(with: boardGeometry), id: \.tile.id) { tile, image, position, isMatched in
+					TileView(tile: tile, image: image, isMatched: isMatched)
+						.opacity(tileOpacity(tile))
+						.position(tilePosition(tile, with: position, in: geometry))
+						.offset(tile.isMoving ? CGSize(width: boardRendering.positionOffset.dx, height: boardRendering.positionOffset.dy) : .zero)
+//						.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
+						.animation(tileAnimation(tile))
+						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
+						.gesture(useTileGesture(tile) ? dragGesture : nil)
 				}
 			}
 		}

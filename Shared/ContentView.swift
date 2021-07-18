@@ -17,7 +17,6 @@ struct ContentView: View {
     var body: some View {
 		NavigationView {
 			GameView(game: game)
-				.background(Color.gray)
 		}
 		.navigationViewStyle(.stack)
 		.onAppear {

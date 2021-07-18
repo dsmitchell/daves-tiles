@@ -67,7 +67,7 @@ struct TileView: View {
 		if tile.isOpen {
 			Image(systemName: "star.fill")
 		} else {
-			Text("\(tile.id)")
+			Text("\(tile.id)") // TODO: We need a function that converts id to display number, which can be affected by rotation
 		}
 	}
 }
