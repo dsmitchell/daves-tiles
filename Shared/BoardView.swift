@@ -26,16 +26,29 @@ struct BoardView: View {
 	}
 
 	func randomMove() {
-		boardRendering.randomMove()
+		// TODO: Improve this process -- for one, we should not allow gestures to function while this is happening
+		let movedTile = boardRendering.randomMove()
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+			boardRendering.completeRandomMove(movedTile)
+		}
 	}
 
 	func newGame() {
-		// TODO: Find a way to chain these state changes to the animation completions
+		// TODO: Use await to chain state changes after a delay
 		assert(gameState != .starting)
 		let startNew = {
+			SoundEffects.default.play(.newGame)
 			gameState = .starting
-			DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-				self.gameState = .playing
+			let interval: Double = 1.0 / Double(boardRendering.game.tiles.count)
+			for index in 0..<boardRendering.game.tiles.count {
+				DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * interval) {
+					boardRendering.throwTile(at: index)
+					guard index == boardRendering.game.tiles.count - 1 else { return }
+					DispatchQueue.main.async {
+						boardRendering.stopThrowingTiles()
+						self.gameState = .playing
+					}
+				}
 			}
 		}
 		if gameState == .new {
@@ -53,12 +66,13 @@ struct BoardView: View {
 	}
 
 	func tileAnimation(_ tile: Tile) -> Animation? {
-		// TODO: We want a more complex animation state (so that pop ups can animate)
 		switch gameState {
 		case .new: return nil
-		case .starting: return .spring(dampingFraction: 0.5, blendDuration: 1.0)
+		case .starting: return .spring(dampingFraction: 0.75, blendDuration: 1.0)
 		case .closing: return .linear(duration: 0.1)
-		default: return tile.isMoving ? nil : .linear(duration: 0.1)
+		default: // Here we will create a different duration for random moves
+			guard !tile.isMoving else { return nil }
+			return .linear(duration: tile.isSelected ? 0.2 : 0.1)
 		}
 	}
 
@@ -71,12 +85,9 @@ struct BoardView: View {
 
 	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
 		switch gameState {
-		case .starting: // TODO: This should be based on throwing each tile sequentially
-//			let percent: Double = timeToAnimate - floor(timeToAnimate)
-//			print("game starting percent(\(tile.id)): \(percent)")
-//			guard Double(tile.id) / Double(boardRendering.game.tiles.count) < percent else { return position }
-//			fallthrough
-			return position
+		case .starting:
+			if tile.isMoving { return position }
+			fallthrough
 		case .new: return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
 		default: return position
 		}

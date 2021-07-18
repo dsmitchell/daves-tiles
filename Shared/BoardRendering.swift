@@ -78,6 +78,19 @@ extension BoardRendering {
 		return [tileInfoFor(openTile, true)] + arrangedIndices.map { tileInfoFor($0, false) }
 	}
 
+	mutating func throwTile(at index: Int) {
+		game.tiles[index].isMoving = true
+		guard let indexToRemove = arrangedIndices.firstIndex(of: index) else { return }
+		arrangedIndices.remove(at: indexToRemove)
+		arrangedIndices.append(index)
+	}
+
+	mutating func stopThrowingTiles() {
+		for index in 0..<game.tiles.count {
+			game.tiles[index].isMoving = false
+		}
+	}
+
 	func tileIndex(from point: CGPoint, with locations: BoardGeometry) -> Int? {
 		let frames = locations.positions.map { position -> CGRect in
 			let origin = CGPoint(x: position.x - locations.tileSize.width / 2, y: position.y - locations.tileSize.height / 2)
@@ -114,10 +127,11 @@ extension BoardRendering {
 		positionOffset = result.offset
 	}
 
-	mutating func randomMove() {
+	mutating func randomMove() -> Int {
 		let indices = movementGroup?.indices
 		stopTracking(forceCancel: true)
 		let movedTile = game.randomMove(except: indices)
+		game.tiles[movedTile.to].isSelected = true
 		guard let arrangedIndex = arrangedIndices.firstIndex(of: movedTile.from) else { fatalError("Logic error updating arrangedIndices") }
 		var newIndices = arrangedIndices
 		newIndices.remove(at: arrangedIndex)
@@ -134,18 +148,23 @@ extension BoardRendering {
 		}
 		newIndices.append(movedTile.to)
 		arrangedIndices = newIndices
+		return movedTile.to
+	}
+
+	mutating func completeRandomMove(_ movedTile: Int) {
+		game.tiles[movedTile].isSelected = false
+		arrangedIndices.swapAt(0, 1) // This should be a safe change to the indices that doesn't impact the final rendering
 	}
 
 	mutating func startNewGame() {
-		SoundEffects.default.play(.newGame)
 		game.startNewGame()
 		arrangedIndices = game.tiles.map { $0.id - 1 } // Assigning this makes the animation happen
 	}
 
 	mutating func startTracking(movementGroup: Game.TileMovementGroup, from dragGesture: DragGesture.Value, with locations: BoardGeometry) {
 //		guard case .notTracking = trackingState else { fatalError("Returning early") }
-		let touchedTileIndex = movementGroup.indices.last!
-		print("Tracking tile \(game.tiles[touchedTileIndex].id) @ \(touchedTileIndex+1)")
+//		let touchedTileIndex = movementGroup.indices.last!
+//		print("Tracking tile \(game.tiles[touchedTileIndex].id) @ \(touchedTileIndex+1)")
 		trackingState = .tracking(willMoveNext: true)
 		lastPercentChange = 0
 		positionOffset = .zero
@@ -260,6 +279,7 @@ extension BoardRendering {
 		trackingState = .notTracking
 	}
 
+	// TODO: This function should have targeted indices
 	mutating func deselectTiles() {
 		for index in 0..<game.tiles.count {
 			game.tiles[index].isSelected = false
