@@ -39,6 +39,8 @@ public class SoundEffects {
 		sounds.reserveCapacity(Effect.allCases.count)
 		for effect in Effect.allCases {
 			switch effect {
+			case .click:
+				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 4))
 			case .slide:
 				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 4))
 			default:

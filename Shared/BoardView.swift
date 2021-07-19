@@ -33,6 +33,27 @@ struct BoardView: View {
 		}
 	}
 
+	func finishGame() {
+		gameState = .finishing
+		SoundEffects.default.play(.gameWin)
+		print("Playing \(boardRendering.game.tiles.count) sounds...")
+		let totalDuration = Double(boardRendering.game.tiles.count) / 2.0
+		for index in 0..<boardRendering.game.tiles.count {
+			let delay = Double.random(in: 1.0..<totalDuration)
+			DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+				print(" - \(index).click")
+				SoundEffects.default.play(.click)
+				boardRendering.throwTile(at: index)
+				guard index == boardRendering.game.tiles.count - 1 else { return }
+			}
+		}
+		DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration + 2.0) {
+			print("Finished")
+			boardRendering.stopThrowingTiles()
+			self.gameState = .finished
+		}
+	}
+
 	func newGame() {
 		// TODO: Use await to chain state changes after a delay
 		assert(gameState != .starting)
@@ -44,7 +65,7 @@ struct BoardView: View {
 				DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * interval) {
 					boardRendering.throwTile(at: index)
 					guard index == boardRendering.game.tiles.count - 1 else { return }
-					DispatchQueue.main.async {
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
 						boardRendering.stopThrowingTiles()
 						self.gameState = .playing
 					}
@@ -74,6 +95,11 @@ struct BoardView: View {
 			guard !tile.isMoving else { return nil }
 			return .linear(duration: tile.isSelected ? 0.1 : 0.1)
 		}
+	}
+
+	func tileOffset(_ tile: Tile) -> CGSize {
+		guard gameState == .playing else { return .zero }
+		return tile.isMoving ? CGSize(width: boardRendering.positionOffset.dx, height: boardRendering.positionOffset.dy) : .zero
 	}
 
 	func tileOpacity(_ tile: Tile) -> Double {
@@ -117,20 +143,28 @@ struct BoardView: View {
 				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (1 - boardRendering.lastPercentChange)) {
 					boardRendering.deselectTiles()
 					guard boardRendering.game.isFinished else { return }
-					gameState = .finishing
-					SoundEffects.default.play(.gameWin)
+					finishGame()
 				}
 			}
 			ZStack {
 				ForEach(boardRendering.arrangedTiles(with: boardGeometry), id: \.tile.id) { tile, image, position, isMatched in
-					TileView(tile: tile, image: image, isMatched: isMatched)
-						.opacity(tileOpacity(tile))
-						.position(tilePosition(tile, with: position, in: geometry))
-						.offset(tile.isMoving ? CGSize(width: boardRendering.positionOffset.dx, height: boardRendering.positionOffset.dy) : .zero)
-//						.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
-						.animation(tileAnimation(tile))
+					TileView(tile: tile, image: image, isMatched: isMatched, showNumber: gameState.showsLabels)
 						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
+						.position(tilePosition(tile, with: position, in: geometry))
+						.offset(tileOffset(tile))
+//						.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
+						.opacity(tileOpacity(tile))
+						.animation(tileAnimation(tile))
 						.gesture(useTileGesture(tile) ? dragGesture : nil)
+				}
+//				.overlay(boardRendering.game.isFinished ? Color.yellow : nil)
+				if gameState.liftLabels {
+					ForEach(boardRendering.arrangedLabels(with: boardGeometry), id: \.tile.id) { tile, _, position in
+						TileView.styledLabel(for: tile)
+							.position(position)
+							.offset(tile.isMoving ? CGSize(width: 0, height: boardGeometry.boardSize.height * 1.25) : .zero)
+							.animation(.easeIn(duration: 1))
+					}
 				}
 			}
 		}
@@ -150,6 +184,17 @@ struct BoardView: View {
 			}
 		}
     }
+}
+
+extension BoardView.GameState {
+
+	var showsLabels: Bool {
+		![.finished, .finishing].contains(self)
+	}
+
+	var liftLabels: Bool {
+		[.finishing].contains(self)
+	}
 }
 
 struct BoardView_Previews: PreviewProvider {

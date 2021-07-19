@@ -72,8 +72,11 @@ class Game: ObservableObject {
 		}
 	}
 
-	func isMatched(tile: Tile, index: Int) -> Bool {
-		return tile.id == index + 1
+	func isMatched(tile: Tile, index: Int? = nil) -> Bool {
+		if let index = index {
+			return tile.id == index + 1
+		}
+		return tile.id - 1 == tiles.firstIndex { tile.id == $0.id }
 	}
 
 	func startNewGame() {

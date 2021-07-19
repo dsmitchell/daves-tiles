@@ -16,7 +16,9 @@ struct GameView: View {
 //			Color.gray
 //				.edgesIgnoringSafeArea([.bottom, .leading, .trailing])
 			BoardView(game: game)
-				.padding([.top, .leading, .trailing])
+//				.padding([.top, .leading, .trailing])
+				.edgesIgnoringSafeArea(.bottom)
+				.padding(2)
 //				.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues
 //				.rotation3DEffect(.degrees(25), axis: (x: 0.25, y: 0.25, z: 0.25))
 		}

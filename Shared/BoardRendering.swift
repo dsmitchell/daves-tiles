@@ -35,6 +35,7 @@ extension BoardRendering {
 
 	typealias BoardGeometry = (boardSize: CGSize, tileSize: CGSize, positions: [CGPoint])
 	typealias TileRenderingInfo = (tile: Tile, image: Image?, position: CGPoint, isMatched: Bool)
+	typealias TileLabelRenderingInfo = (tile: Tile, index: Int, position: CGPoint)
 
 	var tracking: Bool {
 		return game.tiles.contains { $0.isTracking }
@@ -65,11 +66,17 @@ extension BoardRendering {
 		})
 	}
 
-	func arrangedTiles(with locations: BoardGeometry) -> [TileRenderingInfo] {
+	func arrangedLabels(with locations: BoardGeometry) -> [TileLabelRenderingInfo] {
 		return arrangedIndices.map { index in
 			// TODO: Consider declaring the "open tile" as the position with the greated row & col value
 			let tile = game.tiles[index]
 			let position = locations.positions[index]
+			return (tile, index, position)
+		}
+	}
+
+	func arrangedTiles(with locations: BoardGeometry) -> [TileRenderingInfo] {
+		return arrangedLabels(with: locations).map { tile, index, position in
 			guard locations.boardSize != .zero, let image = game.imageMatching(size: locations.boardSize) else {
 				return (tile, nil, position, game.isMatched(tile: tile, index: index))
 			}
@@ -135,7 +142,7 @@ extension BoardRendering {
 		positionOffset = result.offset
 	}
 
-	mutating func randomMove() -> Int {
+	mutating func randomMove() -> Tile {
 		let indices = movementGroup?.indices
 		stopTracking(forceCancel: true)
 		let movedTile = game.randomMove(except: indices)
@@ -156,11 +163,12 @@ extension BoardRendering {
 		}
 		newIndices.append(movedTile.to)
 		arrangedIndices = newIndices
-		return movedTile.to
+		return game.tiles[movedTile.to]
 	}
 
-	mutating func completeRandomMove(_ movedTile: Int) {
-		game.tiles[movedTile].isSelected = false
+	mutating func completeRandomMove(_ movedTile: Tile) {
+		guard let index = game.tiles.firstIndex(where: { $0.id == movedTile.id }) else { return }
+		game.tiles[index].isSelected = false
 		arrangedIndices.swapAt(0, 1) // This should be a safe change to the indices that doesn't impact the final rendering
 	}
 
@@ -288,7 +296,7 @@ extension BoardRendering {
 	}
 }
 
-public extension Comparable {
+extension Comparable {
 
 	func bounded(by limits: ClosedRange<Self>) -> Self {
 		return min(max(self, limits.lowerBound), limits.upperBound)
