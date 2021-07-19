@@ -12,17 +12,30 @@ struct ContentView: View {
 
     @Environment(\.managedObjectContext) private var viewContext
 
-	@StateObject var game = Game(rows: 5, columns: 3)
-
     var body: some View {
 		NavigationView {
-			GameView(game: game)
+			GamePickerView()
 		}
 		.navigationViewStyle(.stack)
 		.onAppear {
 			SoundEffects.default.preloadSounds()
 		}
     }
+}
+
+struct GamePickerView: View {
+
+	@StateObject var game = Game(rows: 5, columns: 3)
+
+	var body: some View {
+//		TimelineView(.animation) { context in
+			NavigationLink(destination: GameView(game: game)) {
+				Text("Play Game")
+//				BoardView(game: game)
+			}
+//		}
+		.navigationTitle("Dave's Tiles")
+	}
 }
 
 struct ContentView_Previews: PreviewProvider {
