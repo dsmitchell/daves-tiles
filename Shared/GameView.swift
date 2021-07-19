@@ -13,8 +13,8 @@ struct GameView: View {
 
     var body: some View {
 		ZStack {
-			Color.gray
-				.edgesIgnoringSafeArea([.bottom, .leading, .trailing])
+//			Color.gray
+//				.edgesIgnoringSafeArea([.bottom, .leading, .trailing])
 			BoardView(game: game)
 				.padding([.top, .leading, .trailing])
 //				.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues

@@ -41,7 +41,7 @@ struct TileView: View {
 		ZStack {
 			let roundedRectangle = RoundedRectangle(cornerRadius: roundedBorder ? 8 : 0)
 			background(for: tile, in: roundedRectangle)
-				.overlay(roundedRectangle.stroke(Color.white, lineWidth: roundedBorder ? 4 : 0))
+				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: roundedBorder ? 4 : 0))
 				.clipShape(roundedBorder ? ImageClipShape.rounded : ImageClipShape.rectangle)
 				.padding(roundedBorder ? 1 : 0)
 			label(for: tile)
