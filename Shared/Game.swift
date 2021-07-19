@@ -24,7 +24,6 @@ class Game: ObservableObject {
 	let columns: Int
 
 	@Published var moves: Int = 0
-	@Published var openTile: Int? // TODO: Make optional to support Swap Mode
 	@Published var tiles: [Tile]
 	var image: CGImage? = UIImage(named: "PuzzleImage")?.cgImage{
 		didSet { scaledImage = nil }
@@ -34,9 +33,8 @@ class Game: ObservableObject {
 	init(rows: Int, columns: Int) {
 		self.rows = rows
 		self.columns = columns
-		let openTile = rows * columns - 1 // This is Classic Mode
-		self.openTile = openTile
-		self.tiles = (1...openTile).map { Tile(id: $0, isOpen: false) }
+		let totalTiles = rows * columns
+		self.tiles = (1..<totalTiles).map { Tile(id: $0, isOpen: false) } + [Tile(id: totalTiles, isOpen: true)] // This is Classic mode
 		startNewGame()
 	}
 
@@ -56,20 +54,13 @@ class Game: ObservableObject {
 	}
 
 	func gridIndex(for index: Int) -> (row: Int, column: Int) {
-		let openTile = openTile ?? tiles.count + 1
-		let position = index >= openTile ? index + 1 : index
-		return (position / columns, position % columns)
+		return (index / columns, index % columns)
 	}
 
 	var isFinished: Bool {
 		tiles.enumerated().allSatisfy { index, element in
 			isMatched(tile: element, index: index)
 		}
-	}
-
-	var openGridIndex: (row: Int, column: Int) {
-		let openTile = openTile ?? tiles.count + 1
-		return (openTile / columns, openTile % columns)
 	}
 
 	func selectTiles(with indices: [Int]) {
@@ -82,15 +73,12 @@ class Game: ObservableObject {
 	}
 
 	func isMatched(tile: Tile, index: Int) -> Bool {
-		let openTile = openTile ?? tiles.count + 1
-		let indexIncrement = index >= openTile ? 2 : 1
-		return tile.id == index + indexIncrement
+		return tile.id == index + 1
 	}
 
 	func startNewGame() {
-		let openTile = rows * columns - 1 // This is Classic Mode
-		self.openTile = openTile
-		self.tiles = (1...openTile).map { Tile(id: $0, isOpen: false) }
+		let totalTiles = rows * columns
+		self.tiles = (1..<totalTiles).map { Tile(id: $0, isOpen: false) } + [Tile(id: totalTiles, isOpen: true)] // This is Classic mode
 		repeat {
 			randomMove()
 		} while tiles.enumerated().contains { index, tile in
@@ -99,49 +87,39 @@ class Game: ObservableObject {
 		self.moves = 0
 	}
 
-	private func validJump(nextMove: Int) -> Bool {
+	private func validJump(nextMove: Int, openTile: Int) -> Bool {
 		guard nextMove != openTile else { return false }
 		let nextGridIndex = gridIndex(for: nextMove)
+		let openGridIndex = gridIndex(for: openTile)
 		let deltaSum = abs(openGridIndex.row - nextGridIndex.row) + abs(openGridIndex.column - nextGridIndex.column);
 		return /*deltaSum > 2 &&*/ deltaSum % 2 == 1
 	}
 
 	@discardableResult func randomMove(except indices: [Int]? = nil) -> (from: Int, to: Int) {
-		if openTile == nil {
+		guard let openTile = tiles.firstIndex(where: { $0.isOpen }) else {
 //			Array(0..<tiles.count) // TODO: Draw 2 unique numbers from 0..<tiles.count
 			return (0, 0)
 		}
-		let openTile = openTile ?? Int.max
 		var tileToMove: Int
 		repeat {
 			tileToMove = Int.random(in: 0..<tiles.count)
-		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove)
-		let tile = tiles.remove(at: tileToMove)
-		var result: Int
-		if tileToMove < openTile {
-			result = openTile-1
-			tiles.insert(tile, at: result)
-			self.openTile = tileToMove
-		} else {
-			result = openTile
-			tiles.insert(tile, at: result)
-			self.openTile = tileToMove+1
-		}
-		return (tileToMove, result)
+		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove, openTile: openTile)
+		tiles.swapAt(openTile, tileToMove)
+		return (tileToMove, openTile)
 	}
 
 	func tileMovementGroup(startingWith tileIndex: Int) -> TileMovementGroup {
 		// TODO: This rule follows Classic Mode. When Swap Mode is supported just use the default
-		guard let openTile = openTile, openTile != (tileIndex >= openTile ? tileIndex + 1 : tileIndex), tileIndex < tiles.count else {
+		guard let openTile = tiles.firstIndex(where: { $0.isOpen }), openTile != tileIndex, tileIndex < tiles.count else {
 			return ([tileIndex], .drag)
 		}
-		switch (openGridIndex, gridIndex(for: tileIndex)) {
+		switch (gridIndex(for: openTile), gridIndex(for: tileIndex)) {
 		case (let space, let tile) where space.column == tile.column && space.row < tile.row:
-			return (Array(stride(from: openTile + columns - 1, through: tileIndex, by: columns)), .up)
+			return (Array(stride(from: openTile + columns, through: tileIndex, by: columns)), .up)
 		case (let space, let tile) where space.column == tile.column && space.row > tile.row:
 			return (Array(stride(from: tileIndex, to: openTile, by: columns).reversed()), .down)
 		case (let space, let tile) where space.row == tile.row && space.column < tile.column:
-			return (Array(openTile...tileIndex), .left)
+			return (Array(openTile+1...tileIndex), .left)
 		case (let space, let tile) where space.row == tile.row && space.column > tile.column:
 			return (Array((tileIndex..<openTile).reversed()), .right)
 		default:
@@ -162,26 +140,10 @@ class Game: ObservableObject {
 			tiles[index].isMoving = false
 			tiles[index].isTracking = false // We want this to happen later (or maybe now)
 		}
-		let tileIndex = movementGroup.indices.last!
-		switch movementGroup.direction {
-		case .up:
-			for index in movementGroup.indices {
-				let tile = tiles.remove(at: index)
-				tiles.insert(tile, at: index-columns+1)
-			}
-			openTile = tileIndex+1
-		case .down:
-			for index in movementGroup.indices {
-				let tile = tiles.remove(at: index)
-				tiles.insert(tile, at: index+columns-1)
-			}
-			openTile = tileIndex
-		case .left:
-			openTile = tileIndex + 1
-		case .right:
-			openTile = tileIndex
-		default:
-			break
+		guard var openTile = tiles.firstIndex(where: { $0.isOpen }) else { return }
+		for index in movementGroup.indices {
+			tiles.swapAt(openTile, index)
+			openTile = index
 		}
 	}
 }

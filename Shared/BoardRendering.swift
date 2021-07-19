@@ -45,7 +45,7 @@ extension BoardRendering {
 	}
 
 	func position(for tileIndex: Int, in game: Game, with length: CGFloat, rotated: Bool) -> CGPoint {
-		let gridIndex = tileIndex == game.tiles.count ? game.openGridIndex : game.gridIndex(for: tileIndex)
+		let gridIndex = game.gridIndex(for: tileIndex)
 		let column = rotated ? gridIndex.row : gridIndex.column
 		let row = rotated ? game.columns - gridIndex.column - 1 : gridIndex.row
 		return CGPoint(x: (CGFloat(column) + 0.5) * length, y: (CGFloat(row) + 0.5) * length)
@@ -56,7 +56,7 @@ extension BoardRendering {
 		let columns = rotated ? game.rows : game.columns
 		let rows = rotated ? game.columns : game.rows
 		let length = min(geometryProxy.size.width / CGFloat(columns), geometryProxy.size.height / CGFloat(rows))
-		let range = (0...game.tiles.count) // TODO: When a game is won, ensure that board.tiles.count includes the _open_ tile
+		let range = (0...game.tiles.count)
 		let boardSize = CGSize(width: length * CGFloat(columns), height: length * CGFloat(rows))
 		let offset = CGVector(dx: (geometryProxy.size.width - boardSize.width) / 2,
 							  dy: (geometryProxy.size.height - boardSize.height) / 2)
@@ -66,11 +66,10 @@ extension BoardRendering {
 	}
 
 	func arrangedTiles(with locations: BoardGeometry) -> [TileRenderingInfo] {
-
-		let tileInfoFor: (Int, Bool) -> TileRenderingInfo = { index, isOpen in
+		return arrangedIndices.map { index in
 			// TODO: Consider declaring the "open tile" as the position with the greated row & col value
-			let tile = isOpen ? Tile(id: game.tiles.count + 1, isOpen: true) : game.tiles[index]
-			let position = isOpen ? locations.positions[game.tiles.count] : locations.positions[index]
+			let tile = game.tiles[index]
+			let position = locations.positions[index]
 			guard locations.boardSize != .zero, let image = game.imageMatching(size: locations.boardSize) else {
 				return (tile, nil, position, game.isMatched(tile: tile, index: index))
 			}
@@ -85,11 +84,6 @@ extension BoardRendering {
 			let swImage = Image.init(decorative: cgImage!, scale: 1)
 			return (tile, swImage, position, game.isMatched(tile: tile, index: index))
 		}
-
-		guard let openTile = game.openTile else {
-			return arrangedIndices.map { tileInfoFor($0, false) }
-		}
-		return [tileInfoFor(openTile, true)] + arrangedIndices.map { tileInfoFor($0, false) }
 	}
 
 	mutating func throwTile(at index: Int) {
