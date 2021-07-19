@@ -249,27 +249,18 @@ extension BoardRendering {
 		}
 		if willMoveNext && !forceCancel {
 			game.completeMove(with: movementGroup)
-			switch movementGroup.direction {
-			case .up:
-				var newArrangedIndices = arrangedIndices
-				for index in movementGroup.indices {
-					let nextIndex = index-game.columns+1
-					guard let arrangedIndex = newArrangedIndices.firstIndex(of: nextIndex) else { fatalError("Logic error calculating arrangedIndices") }
-					newArrangedIndices.remove(at: arrangedIndex)
-					newArrangedIndices.append(nextIndex)
+			for index in movementGroup.indices {
+				let nextIndex: Int
+				switch movementGroup.direction {
+				case .up: nextIndex = index-game.columns
+				case .down: nextIndex = index+game.columns
+				case .left: nextIndex = index-1
+				case .right: nextIndex = index+1
+				case .drag: nextIndex = index // TODO: .drag will need to know the drop destination, so that we can remove and append appropriately
 				}
-				arrangedIndices = newArrangedIndices
-			case .down:
-				var newArrangedIndices = arrangedIndices
-				for index in movementGroup.indices {
-					let nextIndex = index+game.columns-1
-					guard let arrangedIndex = newArrangedIndices.firstIndex(of: nextIndex) else { fatalError("Logic error calculating arrangedIndices") }
-					newArrangedIndices.remove(at: arrangedIndex)
-					newArrangedIndices.append(nextIndex)
-				}
-				arrangedIndices = newArrangedIndices
-			default:
-				arrangedIndices.swapAt(0, 1) // This should be a safe change to the indices that doesn't impact the final rendering
+				guard let arrangedIndex = arrangedIndices.firstIndex(of: nextIndex) else { fatalError("Logic error calculating arrangedIndices") }
+				arrangedIndices.remove(at: arrangedIndex)
+				arrangedIndices.append(nextIndex)
 			}
 		} else {
 			game.cancelMove(with: movementGroup)
