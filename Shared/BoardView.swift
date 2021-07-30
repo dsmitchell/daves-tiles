@@ -9,76 +9,120 @@ import SwiftUI
 
 struct BoardView: View {
 
-	@State var boardRendering: BoardRendering
-	@State var gameState: GameState = .new
+	let gameFadeDuration: Double = 0.1
+	let popDuration: Double = 0.1
+	let slideDuration: Double = 0.1
+	let surpriseDuration: Double = 0.5
 
-	enum GameState {
-		case new		// Tiles are off-screen at the bottom
-		case starting	// Tiles flying up from the bottom
-		case playing	// Normal game-play state
-		case finishing	// TODO: Begin border around the finished picture
-		case finished	// TODO: Create state change from finishing->finished
-		case closing	// Tiles fading away
+	@ObservedObject var game: Game
+	@Binding var gameState: GameView.GameState
+	@State var tracking = false
+	let interactive: Bool
+
+	init(game: Game, gameState: Binding<GameView.GameState>, interactive: Bool = true) {
+		self.game = game
+		self.interactive = interactive
+		_gameState = gameState
 	}
 
-	init(game: Game) {
-		boardRendering = BoardRendering(game: game)
+	func completeMove(rollback: Bool) {
+		// TODO: Use await to simply proceed after the time has occurred (so that this is cancellable)
+		guard let movementGroup = game.movementGroup else { return }
+		// Grab the currently "selected" tiles before leaving (so that we may deselect them)
+		let tilesToDeselect = movementGroup.tileIdentifiers
+		let duration: Double
+		if movementGroup.willMoveNext, !rollback {
+			duration = slideDuration * (1 - movementGroup.lastPercentChange)
+			game.applyRenderState(.released(percent: movementGroup.lastPercentChange), to: movementGroup.tileIdentifiers)
+			if movementGroup.possibleTouch {
+				SoundEffects.default.play(.slide)
+			}
+			game.moves += 1
+			// TODO: .drag will need to know the drop destination, so that we can remove and append appropriately
+			guard var openTile = game.tiles.firstIndex(where: { $0.id == game.openTileId }) else { return }
+			for index in movementGroup.indices(in: game) {
+				game.tiles.swapAt(openTile, index)
+				openTile = index
+			}
+		} else { // Undo the current move, which means the percent change also needs to be reversed
+			duration = slideDuration * movementGroup.lastPercentChange
+			game.applyRenderState(.released(percent: 1 - movementGroup.lastPercentChange), to: movementGroup.tileIdentifiers)
+		}
+		game.lingeringTileIdentifiers = movementGroup.tileIdentifiers
+		game.movementGroup = nil // TODO: Can we keep this until the block below? It will help layout
+		DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+			game.applyRenderState(.none(selected: false), to: tilesToDeselect)
+			DispatchQueue.main.asyncAfter(deadline: .now() + popDuration) {
+				game.lingeringTileIdentifiers.removeAll(where: tilesToDeselect.contains)
+			}
+			guard game.isFinished else { return }
+			finishGame()
+		}
 	}
 
 	func randomMove() {
 		// TODO: Improve this process -- for one, we should not allow gestures to function while this is happening
-		let movedTile = boardRendering.randomMove()
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-			boardRendering.completeRandomMove(movedTile)
+		let indices = game.movementGroup?.indices(in: game)
+		completeMove(rollback: true)
+		let movedTile = game.randomMove(except: indices)
+		let movedTileId = game.tiles[movedTile.to].id
+		game.tiles[movedTile.to].renderState = .thrown(selected: true)
+		DispatchQueue.main.asyncAfter(deadline: .now() + surpriseDuration) {
+			guard let index = game.tiles.firstIndex(where: { $0.id == movedTileId }) else { return }
+			game.tiles[index].renderState = .none(selected: false)
+			guard game.isFinished else { return }
+			finishGame()
 		}
 	}
 
 	func finishGame() {
-		gameState = .finishing
 		SoundEffects.default.play(.gameWin)
-		print("Playing \(boardRendering.game.tiles.count) sounds...")
-		let totalDuration = Double(boardRendering.game.tiles.count) / 2.0
-		for index in 0..<boardRendering.game.tiles.count {
+		let totalDuration = Double(game.tiles.count) / 2.0
+		for index in 0..<game.tiles.count {
 			let delay = Double.random(in: 1.0..<totalDuration)
+			game.tiles[index].renderState = .lifted(falling: false)
 			DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-				print(" - \(index).click")
 				SoundEffects.default.play(.click)
-				boardRendering.throwTile(at: index)
-				guard index == boardRendering.game.tiles.count - 1 else { return }
+				game.tiles[index].renderState = .lifted(falling: true)
+				guard index == game.tiles.count - 1 else { return }
 			}
-		}
-		DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration + 2.0) {
-			print("Finished")
-			boardRendering.stopThrowingTiles()
-			self.gameState = .finished
 		}
 	}
 
 	func newGame() {
+		newGame(firstAppearance: false)
+	}
+
+	func newGame(firstAppearance: Bool) {
 		// TODO: Use await to chain state changes after a delay
-		assert(gameState != .starting)
 		let startNew = {
 			SoundEffects.default.play(.newGame)
-			gameState = .starting
-			let interval: Double = 1.0 / Double(boardRendering.game.tiles.count)
-			for index in 0..<boardRendering.game.tiles.count {
+			let interval: Double = 1.0 / Double(game.tiles.count)
+			for index in 0..<game.tiles.count {
 				DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * interval) {
-					boardRendering.throwTile(at: index)
-					guard index == boardRendering.game.tiles.count - 1 else { return }
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-						boardRendering.stopThrowingTiles()
-						self.gameState = .playing
+					game.tiles[index].renderState = .thrown(selected: false)
+					guard index == game.tiles.count - 1 else { return }
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+						gameState = .playing
+						for index in 0..<game.tiles.count {
+							game.tiles[index].renderState = .none(selected: false)
+						}
 					}
 				}
 			}
 		}
-		if gameState == .new {
-			startNew()
-		} else {
-			gameState = .closing
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-				boardRendering.startNewGame()
-				self.gameState = .new
+		if gameState == .new, firstAppearance {
+			game.startNewGame()
+			DispatchQueue.main.async {
+				startNew()
+			}
+		} else if !firstAppearance {
+			for index in 0..<game.tiles.count {
+				game.tiles[index].renderState = .fading
+			}
+			DispatchQueue.main.asyncAfter(deadline: .now() + gameFadeDuration) {
+				gameState = .new
+				game.startNewGame()
 				DispatchQueue.main.async {
 					startNew()
 				}
@@ -86,120 +130,138 @@ struct BoardView: View {
 		}
 	}
 
-	func tileAnimation(_ tile: Tile) -> Animation? {
-		switch gameState {
-		case .new: return nil
-		case .starting: return .spring(dampingFraction: 0.75, blendDuration: 1.0)
-		case .closing: return .linear(duration: 0.1)
-		default: // Here we will create a different duration for random moves
-			guard !tile.isMoving else { return nil }
-			return .linear(duration: tile.isSelected ? 0.1 : 0.1)
+	func tileMovementAnimation(_ tile: Tile) -> Animation? {
+		guard interactive else { return nil }
+		switch tile.renderState {
+		case .none: return .linear(duration: popDuration) // This is for selection
+		case .dragged: return nil
+		case .fading: return .linear(duration: gameFadeDuration)
+		case .lifted: return nil
+		case .released(let percent): return .linear(duration: slideDuration * (1.0 - percent))
+		case .thrown(let selected): return selected ? .linear(duration: surpriseDuration) : .spring(dampingFraction: 0.75, blendDuration: 1.0)
+		case .unset: return nil
 		}
 	}
 
 	func tileOffset(_ tile: Tile) -> CGSize {
-		guard gameState == .playing else { return .zero }
-		return tile.isMoving ? CGSize(width: boardRendering.positionOffset.dx, height: boardRendering.positionOffset.dy) : .zero
+		guard tile.renderState == .dragged else { return .zero }
+		guard let movementGroup = game.movementGroup else { return .zero }
+		return CGSize(width: movementGroup.positionOffset.dx, height: movementGroup.positionOffset.dy)
 	}
 
-	func tileOpacity(_ tile: Tile) -> Double {
-		switch gameState {
-		case .closing: return 0
-		default: return tile.isOpen && !boardRendering.game.isFinished ? 0 : 1
-		}
+	func tileOpacity(_ tile: Tile, isOpen: Bool) -> Double {
+		guard interactive else { return isOpen && !tile.isLifted ? 0 : 1 }
+		guard tile.renderState == .fading || isOpen && !game.isFinished else { return 1 }
+		return 0
 	}
 
 	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
-		switch gameState {
-		case .starting:
-			if tile.isMoving { return position }
-			fallthrough
-		case .new: return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
-		default: return position
-		}
+		guard interactive, tile.renderState == .unset else { return position }
+		return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
 	}
 
 	func useTileGesture(_ tile: Tile) -> Bool {
-		guard gameState == .playing, !boardRendering.game.isFinished else { return false }
-		return !boardRendering.tracking || tile.isTracking
+		guard interactive, gameState == .playing, !game.isFinished else { return false }
+		guard game.movementGroup == nil || game.movementGroup!.isTracking(tile, in: game) else { return false }
+		// TODO: Don't allow gestures for "lingering" tile moves
+		return true
 	}
 
 	var body: some View {
 		GeometryReader { geometry in
-			let boardGeometry = boardRendering.boardGeometry(from: geometry)
+			let boardGeometry = BoardGeometry(game: game, geometryProxy: geometry)
 			let dragGesture = DragGesture(minimumDistance: 0).onChanged { value in
-				if boardRendering.tracking {
-					boardRendering.continueTracking(dragGesture: value)
-				} else {
-					guard let touchedTileIndex = boardRendering.tileIndex(from: value.startLocation, with: boardGeometry) else { return }
-					let movementGroup = boardRendering.game.tileMovementGroup(startingWith: touchedTileIndex)
-					guard movementGroup.direction != .drag else { return }
-					boardRendering.startTracking(movementGroup: movementGroup, from: value, with: boardGeometry)
+				switch (game.movementGroup, tracking) {
+				case (.none, false):
+					guard let touchedTileIndex = boardGeometry.tileIndex(from: value.startLocation) else { return }
+//					print("updating(new): \(value.translation)")
+					tracking = true
+					var movementGroup = TileMovementGroup(startingWith: touchedTileIndex, in: game)
+					guard ![.drag, .none].contains(movementGroup.direction) else { return }
+					movementGroup.applyMovementFunction(for: value, with: boardGeometry)
+					game.movementGroup = movementGroup
+					game.applyRenderState(.none(selected: true), to: movementGroup.tileIdentifiers)
+				case (.some, true):
+//					print("updating(tracking): \(value.translation)")
+					game.applyRenderState(.dragged, to: game.movementGroup!.tileIdentifiers) // TODO: Find a way to do this only once (or determine it is always necessary)
+					if game.movementGroup!.applyDragGestureCrossedMidpoint(value) {
+						SoundEffects.default.play(.slide)
+					}
+				default:
+//					print("Ignoring \(value.translation)")
+					break
 				}
 			}
 			.onEnded { value in
-				// TODO: Use await to simply proceed after the time has occurred (so that this is cancellable)
-				boardRendering.stopTracking()
-				DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * (1 - boardRendering.lastPercentChange)) {
-					boardRendering.deselectTiles()
-					guard boardRendering.game.isFinished else { return }
-					finishGame()
-				}
+//				print("onEnded: \(value.translation)")
+				tracking = false
+				completeMove(rollback: false)
 			}
 			ZStack {
-				ForEach(boardRendering.arrangedTiles(with: boardGeometry), id: \.tile.id) { tile, image, position, isMatched in
-					TileView(tile: tile, image: image, isMatched: isMatched, showNumber: gameState.showsLabels)
-						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
-						.position(tilePosition(tile, with: position, in: geometry))
-						.offset(tileOffset(tile))
-//						.animation(.linear(duration: 0.2 * (1 - boardRendering.lastPercentChange))) // This causes forever builds
-						.opacity(tileOpacity(tile))
-						.animation(tileAnimation(tile))
-						.gesture(useTileGesture(tile) ? dragGesture : nil)
-				}
-//				.overlay(boardRendering.game.isFinished ? Color.yellow : nil)
-				if gameState.liftLabels {
-					ForEach(boardRendering.arrangedLabels(with: boardGeometry), id: \.tile.id) { tile, _, position in
-						TileView.styledLabel(for: tile)
-							.position(position)
-							.offset(tile.isMoving ? CGSize(width: 0, height: boardGeometry.boardSize.height * 1.25) : .zero)
-							.animation(.easeIn(duration: 1))
+				let sortedTiles = game.tiles.sorted { leftTile, rightTile in
+					// A random throw is _always_ at the end of the sorted list (i.e. on top)
+					if case .thrown(let selected) = leftTile.renderState, selected {
+						return false
+					}
+					if case .thrown(let selected) = rightTile.renderState, selected {
+						return true
+					}
+					// Otherwise any tile with a tracking position is sorted towards the end
+					switch (game.trackingPosition(for: leftTile), game.trackingPosition(for: rightTile)) {
+					case (.none, .some):
+						return true
+					case (.some(let leftPosition), .some(let rightPosition)):
+						return leftPosition < rightPosition
+					default:
+						return false
 					}
 				}
-			}
-		}
-		.onAppear {
-			DispatchQueue.main.async { newGame() }
-		}
-		.toolbar {
-			ToolbarItemGroup(placement: .navigationBarTrailing) {
-				Button(action: randomMove) {
-					Label("Random Move", systemImage: "sparkles")
+				ForEach(sortedTiles) { tile in
+					let index = game.tiles.firstIndex(of: tile)!
+					let isMatched = game.isMatched(tile: tile, index: index)
+					let isOpen = tile.id == game.openTileId
+					TileView(tile: tile, image: boardGeometry.image(for: tile), isMatched: isMatched, isOpen: isOpen, showNumber: !tile.isLifted, text: boardGeometry.text(for: tile))
+						.id("tile.\(tile.id)")
+						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
+						.position(tilePosition(tile, with: boardGeometry.positions[index], in: geometry))
+						.offset(tileOffset(tile))
+						.opacity(tileOpacity(tile, isOpen: isOpen))
+						.animation(tileMovementAnimation(tile), value: tile.renderState)
+						.gesture(!isOpen && useTileGesture(tile) ? dragGesture : nil)
 				}
-				.disabled([.new, .starting, .finished, .finishing, .closing].contains(gameState))
-				Button(action: newGame) {
-					Label("New Game", systemImage: "restart.circle")
+				if interactive {
+					ForEach(game.tiles) { tile in
+						let index = game.tiles.firstIndex(of: tile)!
+						TileView.styledLabel(for: tile, with: boardGeometry.text(for: tile))
+							.position(boardGeometry.positions[index])
+							.offset(tile.isFalling ? CGSize(width: 0, height: boardGeometry.boardSize.height * 3) : .zero)
+							.animation(tile.isFalling ? .easeIn(duration: 1) : nil)
+							.opacity(tile.isLifted ? 1 : 0)
+					}
 				}
-				.disabled([.new, .starting, .closing].contains(gameState))
 			}
 		}
     }
 }
 
-extension BoardView.GameState {
+extension Tile {
 
-	var showsLabels: Bool {
-		![.finished, .finishing].contains(self)
+	var isFalling: Bool {
+		guard case .lifted(let falling) = renderState, falling else { return false }
+		return true
 	}
 
-	var liftLabels: Bool {
-		[.finishing].contains(self)
+	var isLifted: Bool {
+		guard case .lifted = renderState else { return false }
+		return true
 	}
 }
 
 struct BoardView_Previews: PreviewProvider {
 
+	@State static var gameState: GameView.GameState = .playing
+
     static var previews: some View {
-		BoardView(game: Game(rows: 5, columns: 3))
+		BoardView(game:Game(rows: 5, columns: 3), gameState: $gameState)
     }
 }

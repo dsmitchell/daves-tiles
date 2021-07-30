@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -27,10 +27,12 @@
 		640BD069269E1B260001AAA2 /* SoundEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640BD067269E1B260001AAA2 /* SoundEffects.swift */; };
 		645D95BF26911BFE0028AD02 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
 		645D95C026911BFE0028AD02 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
-		645D95C226911C700028AD02 /* BoardRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardRendering.swift */; };
-		645D95C326911C700028AD02 /* BoardRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardRendering.swift */; };
+		645D95C226911C700028AD02 /* BoardGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardGeometry.swift */; };
+		645D95C326911C700028AD02 /* BoardGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardGeometry.swift */; };
 		645D95C526951AB30028AD02 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
 		645D95C626951AB30028AD02 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
+		64B5205326A7313B0045A189 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
+		64B5205426A7313B0045A189 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
 		64B95AC726964371003D22D1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B95AC626964371003D22D1 /* GameView.swift */; };
 		64B95AC826964371003D22D1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B95AC626964371003D22D1 /* GameView.swift */; };
 		64C218DC268E59A400A9C38B /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C218DB268E59A400A9C38B /* BoardView.swift */; };
@@ -77,8 +79,9 @@
 		640BD056269E18C50001AAA2 /* Jump1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Jump1.caf; sourceTree = "<group>"; };
 		640BD067269E1B260001AAA2 /* SoundEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffects.swift; sourceTree = "<group>"; };
 		645D95BE26911BFE0028AD02 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
-		645D95C126911C700028AD02 /* BoardRendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardRendering.swift; sourceTree = "<group>"; };
+		645D95C126911C700028AD02 /* BoardGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardGeometry.swift; sourceTree = "<group>"; };
 		645D95C426951AB30028AD02 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		64B5205226A7313B0045A189 /* TileMovementGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileMovementGroup.swift; sourceTree = "<group>"; };
 		64B95AC626964371003D22D1 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		64C218DB268E59A400A9C38B /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		64CE7B3F2678298500988DA4 /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
@@ -156,7 +159,7 @@
 		64CE7B3D2678298500988DA4 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				645D95C126911C700028AD02 /* BoardRendering.swift */,
+				645D95C126911C700028AD02 /* BoardGeometry.swift */,
 				64C218DB268E59A400A9C38B /* BoardView.swift */,
 				64CE7B412678298500988DA4 /* ContentView.swift */,
 				64CE7B402678298500988DA4 /* davestilesApp.swift */,
@@ -165,6 +168,7 @@
 				64CE7B422678298500988DA4 /* Persistence.swift */,
 				640BD06A269E279D0001AAA2 /* Resources */,
 				640BD067269E1B260001AAA2 /* SoundEffects.swift */,
+				64B5205226A7313B0045A189 /* TileMovementGroup.swift */,
 				645D95BE26911BFE0028AD02 /* TileView.swift */,
 			);
 			path = Shared;
@@ -297,7 +301,7 @@
 				};
 			};
 			buildConfigurationList = 64CE7B3C2678298500988DA4 /* Build configuration list for PBXProject "davestiles" */;
-			compatibilityVersion = "Xcode 13.0";
+			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -371,10 +375,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64B5205326A7313B0045A189 /* TileMovementGroup.swift in Sources */,
 				64CE7B632678298600988DA4 /* davestiles.xcdatamodeld in Sources */,
 				64CE7B692678298600988DA4 /* Persistence.swift in Sources */,
 				64C218DC268E59A400A9C38B /* BoardView.swift in Sources */,
-				645D95C226911C700028AD02 /* BoardRendering.swift in Sources */,
+				645D95C226911C700028AD02 /* BoardGeometry.swift in Sources */,
 				64B95AC726964371003D22D1 /* GameView.swift in Sources */,
 				64CE7B652678298600988DA4 /* davestilesApp.swift in Sources */,
 				645D95BF26911BFE0028AD02 /* TileView.swift in Sources */,
@@ -388,10 +393,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64B5205426A7313B0045A189 /* TileMovementGroup.swift in Sources */,
 				64CE7B642678298600988DA4 /* davestiles.xcdatamodeld in Sources */,
 				64CE7B6A2678298600988DA4 /* Persistence.swift in Sources */,
 				64C218DD268E59A400A9C38B /* BoardView.swift in Sources */,
-				645D95C326911C700028AD02 /* BoardRendering.swift in Sources */,
+				645D95C326911C700028AD02 /* BoardGeometry.swift in Sources */,
 				64B95AC826964371003D22D1 /* GameView.swift in Sources */,
 				64CE7B662678298600988DA4 /* davestilesApp.swift in Sources */,
 				645D95C026911BFE0028AD02 /* TileView.swift in Sources */,
@@ -559,7 +565,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -589,7 +595,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.7;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -8,47 +8,37 @@
 import SwiftUI
 import CoreGraphics
 
-class Game: ObservableObject {
+class Game: ObservableObject, Identifiable {
 
-	typealias TileMovementGroup = (indices: [Int], direction: MoveDirection)
-
-	enum MoveDirection {
-		case up
-		case down
-		case left
-		case right
-		case drag
-	}
-
+	let id = UUID()
 	let rows: Int
 	let columns: Int
 
 	@Published var moves: Int = 0
 	@Published var tiles: [Tile]
+	
+	var movementGroup: TileMovementGroup?
+	var lingeringTileIdentifiers = [Int]()
 	var image: CGImage? = UIImage(named: "PuzzleImage")?.cgImage{
 		didSet { scaledImage = nil }
 	}
 	private var scaledImage: (size: CGSize, image: CGImage)?
+	var initialized = false
+	let openTileId: Int?
 
 	init(rows: Int, columns: Int) {
 		self.rows = rows
 		self.columns = columns
 		let totalTiles = rows * columns
-		self.tiles = (1..<totalTiles).map { Tile(id: $0, isOpen: false) } + [Tile(id: totalTiles, isOpen: true)] // This is Classic mode
-		startNewGame()
+		self.openTileId = totalTiles
+		self.tiles = (1...totalTiles).map { Tile(id: $0) }
 	}
 
 	func imageMatching(size: CGSize) -> CGImage? {
-		if let scaledImage = scaledImage, scaledImage.size == size {
-			return scaledImage.image
-		}
-		guard let image = image else {
-			return nil
-		}
-		let uiImage = UIImage(cgImage: image)
-		guard let resizedImage = uiImage.resized(toFill: size), let cgImage = resizedImage.cgImage else {
-			return nil
-		}
+		if let scaledImage = scaledImage, scaledImage.size == size { return scaledImage.image }
+		guard let image = image else { return nil }
+		let uiImage = UIImage(cgImage: image) // TODO: Get this to work with NSImage on mac as well (use CoreResolve probably)
+		guard let resizedImage = uiImage.resized(toFill: size), let cgImage = resizedImage.cgImage else { return nil }
 		scaledImage = (size, cgImage)
 		return cgImage
 	}
@@ -63,12 +53,10 @@ class Game: ObservableObject {
 		}
 	}
 
-	func selectTiles(with indices: [Int]) {
-		for index in indices {
-			tiles[index].isSelected = true
-		}
-		if let last = indices.last {
-			tiles[last].isTracking = true
+	func applyRenderState(_ renderState: Tile.RenderState, to tileIdentifiers: [Int]) {
+		for id in tileIdentifiers {
+			guard let index = tiles.firstIndex(where: { $0.id == id }) else { continue }
+			tiles[index].renderState = renderState
 		}
 	}
 
@@ -80,14 +68,21 @@ class Game: ObservableObject {
 	}
 
 	func startNewGame() {
-		let totalTiles = rows * columns
-		self.tiles = (1..<totalTiles).map { Tile(id: $0, isOpen: false) } + [Tile(id: totalTiles, isOpen: true)] // This is Classic mode
+		if initialized {
+			let totalTiles = rows * columns
+			self.tiles = (1...totalTiles).map { Tile(id: $0) }
+		}
 		repeat {
 			randomMove()
 		} while tiles.enumerated().contains { index, tile in
 			isMatched(tile: tile, index: index)
 		}
 		self.moves = 0
+		self.initialized = true
+	}
+
+	func trackingPosition(for tile: Tile) -> Int? {
+		return lingeringTileIdentifiers.firstIndex(of: tile.id) ?? movementGroup?.tileIdentifiers.firstIndex(of: tile.id)
 	}
 
 	private func validJump(nextMove: Int, openTile: Int) -> Bool {
@@ -99,7 +94,7 @@ class Game: ObservableObject {
 	}
 
 	@discardableResult func randomMove(except indices: [Int]? = nil) -> (from: Int, to: Int) {
-		guard let openTile = tiles.firstIndex(where: { $0.isOpen }) else {
+		guard let openTile = tiles.firstIndex(where: { $0.id == openTileId }) else {
 //			Array(0..<tiles.count) // TODO: Draw 2 unique numbers from 0..<tiles.count
 			return (0, 0)
 		}
@@ -109,45 +104,6 @@ class Game: ObservableObject {
 		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove, openTile: openTile)
 		tiles.swapAt(openTile, tileToMove)
 		return (tileToMove, openTile)
-	}
-
-	func tileMovementGroup(startingWith tileIndex: Int) -> TileMovementGroup {
-		// TODO: This rule follows Classic Mode. When Swap Mode is supported just use the default
-		guard let openTile = tiles.firstIndex(where: { $0.isOpen }), openTile != tileIndex, tileIndex < tiles.count else {
-			return ([tileIndex], .drag)
-		}
-		switch (gridIndex(for: openTile), gridIndex(for: tileIndex)) {
-		case (let space, let tile) where space.column == tile.column && space.row < tile.row:
-			return (Array(stride(from: openTile + columns, through: tileIndex, by: columns)), .up)
-		case (let space, let tile) where space.column == tile.column && space.row > tile.row:
-			return (Array(stride(from: tileIndex, to: openTile, by: columns).reversed()), .down)
-		case (let space, let tile) where space.row == tile.row && space.column < tile.column:
-			return (Array(openTile+1...tileIndex), .left)
-		case (let space, let tile) where space.row == tile.row && space.column > tile.column:
-			return (Array((tileIndex..<openTile).reversed()), .right)
-		default:
-			return ([tileIndex], .drag)
-		}
-	}
-
-	func cancelMove(with movementGroup: TileMovementGroup) {
-		for index in movementGroup.indices {
-			tiles[index].isMoving = false
-			tiles[index].isTracking = false // We want this to happen later (or maybe now)
-		}
-	}
-
-	func completeMove(with movementGroup: TileMovementGroup) {
-		moves += 1
-		for index in movementGroup.indices {
-			tiles[index].isMoving = false
-			tiles[index].isTracking = false // We want this to happen later (or maybe now)
-		}
-		guard var openTile = tiles.firstIndex(where: { $0.isOpen }) else { return }
-		for index in movementGroup.indices {
-			tiles.swapAt(openTile, index)
-			openTile = index
-		}
 	}
 }
 
