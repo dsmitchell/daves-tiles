@@ -9,6 +9,8 @@ import SwiftUI
 
 struct GameView: View {
 
+	static let gameFadeDuration = BoardView.standardDuration
+
 	@ObservedObject var game: Game
 	@Binding var gameState: GameState
 	@Binding var presenterVisible: Bool
@@ -33,7 +35,7 @@ struct GameView: View {
 			// This is the equivalent of viewDidAppear (because the presenter is now onDisappear)
 			print("Presenter visible: \(newValue)")
 			guard !presenterVisible else { return }
-			boardView.newGame(firstAppearance: true)
+			newGame(firstAppearance: true)
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -45,13 +47,54 @@ struct GameView: View {
 					Label("Random Move", systemImage: "sparkles")
 				}
 				.disabled([.new].contains(gameState))
-				Button(action: boardView.newGame) { // TODO: Decide whether we need a new `Game` instance
+				Button(action: newGame) { // TODO: Decide whether we need a new `Game` instance
 					Label("New Game", systemImage: "restart.circle")
 				}
 				.disabled([.new].contains(gameState))
 			}
 		}
     }
+
+	func newGame() {
+		newGame(firstAppearance: false)
+	}
+
+	func newGame(firstAppearance: Bool) {
+		// TODO: Use await to chain state changes after a delay
+		let startNew = {
+			SoundEffects.default.play(.newGame)
+			let interval: Double = 1.0 / Double(game.tiles.count)
+			for index in 0..<game.tiles.count {
+				DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * interval) {
+					game.tiles[index].renderState = .thrown(selected: false)
+					guard index == game.tiles.count - 1 else { return }
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+						gameState = .playing
+						for index in 0..<game.tiles.count {
+							game.tiles[index].renderState = .none(selected: false)
+						}
+					}
+				}
+			}
+		}
+		if gameState == .new, firstAppearance {
+			game.startNewGame()
+			DispatchQueue.main.async {
+				startNew()
+			}
+		} else if !firstAppearance {
+			for index in 0..<game.tiles.count {
+				game.tiles[index].renderState = .fading
+			}
+			DispatchQueue.main.asyncAfter(deadline: .now() + GameView.gameFadeDuration) {
+				gameState = .new
+				game.startNewGame()
+				DispatchQueue.main.async {
+					startNew()
+				}
+			}
+		}
+	}
 }
 
 struct GameView_Previews: PreviewProvider {

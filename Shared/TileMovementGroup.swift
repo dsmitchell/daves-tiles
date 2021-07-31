@@ -19,16 +19,18 @@ struct TileMovementGroup {
 		case none
 	}
 
+	var swappingIdentifier: Int?
 	let tileIdentifiers: [Int]
 	let direction: MoveDirection
-	private(set) var lastPercentChange: Double = 0.0
+	private(set) var lastPercentChange = 0.0
+	private(set) var numberOfMidpointCrossings = 0
 	private var movementFunction: (DragGesture.Value) -> (offset: CGVector, percentChange: CGFloat) = { _ in (.zero, 0) }
-	var positionOffset: CGVector = .zero
-	private(set) var possibleTouch = true
-	private(set) var willMoveNext = true
+	var positionOffset = CGVector.zero
+	private(set) var possibleTap = true
+	var willMoveNext = true
 
 	init(startingWith tileIndex: Int, in game: Game) {
-		// TODO: This rule follows Classic Mode. When Swap Mode is supported just use the default
+		swappingIdentifier = game.openTileId
 		guard let openTile = game.tiles.firstIndex(where: { $0.id == game.openTileId }), openTile != tileIndex, tileIndex < game.tiles.count else {
 			tileIdentifiers = [game.tiles[tileIndex].id]
 			direction = .drag
@@ -66,15 +68,18 @@ struct TileMovementGroup {
 
 	mutating func applyDragGestureCrossedMidpoint(_ dragGesture: DragGesture.Value) -> Bool {
 		let movement = movementFunction(dragGesture)
-		if possibleTouch, movement.offset.length > 10 {
-			possibleTouch = false
+		if possibleTap, movement.offset.length > 10 {
+			possibleTap = false
 		}
-		if possibleTouch || movement.percentChange >= 0.5 || movement.percentChange >= lastPercentChange && lastPercentChange != 0.0 {
+		if possibleTap || movement.percentChange >= 0.5 || lastPercentChange != 0.0 && movement.percentChange >= lastPercentChange {
 			willMoveNext = true
 		} else {
 			willMoveNext = false
 		}
 		let crossedMidpoint = min(movement.percentChange, lastPercentChange) < 0.5 && max(movement.percentChange, lastPercentChange) >= 0.5
+		if crossedMidpoint {
+			numberOfMidpointCrossings += 1
+		}
 		positionOffset = movement.offset
 		lastPercentChange = movement.percentChange
 		// Return whether this move crossed the midpoint

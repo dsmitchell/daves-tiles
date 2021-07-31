@@ -14,6 +14,11 @@ class Game: ObservableObject, Identifiable {
 	let rows: Int
 	let columns: Int
 
+	enum Mode {
+		case classic
+		case swap
+	}
+
 	@Published var moves: Int = 0
 	@Published var tiles: [Tile]
 	
@@ -26,11 +31,11 @@ class Game: ObservableObject, Identifiable {
 	var initialized = false
 	let openTileId: Int?
 
-	init(rows: Int, columns: Int) {
+	init(rows: Int, columns: Int, mode: Mode = .swap) {
 		self.rows = rows
 		self.columns = columns
 		let totalTiles = rows * columns
-		self.openTileId = totalTiles
+		self.openTileId = mode == .classic ? totalTiles : nil
 		self.tiles = (1...totalTiles).map { Tile(id: $0) }
 	}
 
@@ -95,8 +100,12 @@ class Game: ObservableObject, Identifiable {
 
 	@discardableResult func randomMove(except indices: [Int]? = nil) -> (from: Int, to: Int) {
 		guard let openTile = tiles.firstIndex(where: { $0.id == openTileId }) else {
-//			Array(0..<tiles.count) // TODO: Draw 2 unique numbers from 0..<tiles.count
-			return (0, 0)
+			var pair: (Int, Int)
+			repeat {
+				pair = (Int.random(in: 0..<tiles.count), Int.random(in: 0..<tiles.count))
+			} while pair.0 == pair.1
+			tiles.swapAt(pair.0, pair.1)
+			return pair
 		}
 		var tileToMove: Int
 		repeat {
