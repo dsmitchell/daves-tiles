@@ -94,13 +94,18 @@ struct BoardView: View {
 		// TODO: Improve the randomMove() in SwapMode
 		let indices = game.movementGroup?.indices(in: game)
 		completeMove(rollback: true)
-		let movedTile = game.randomMove(except: indices)
-		let movedTileId = game.tiles[movedTile.to].id
-		game.tiles[movedTile.to].renderState = .thrown(selected: true)
+		let movedTileIndices = game.randomMove(except: indices)
+		let movedTileIds = movedTileIndices.map { index in
+			game.tiles[index].id
+		}
+		for index in movedTileIndices {
+			game.tiles[index].renderState = .thrown(selected: true)
+		}
 		SoundEffects.default.play(.jump)
 		DispatchQueue.main.asyncAfter(deadline: .now() + surpriseDuration) {
-			guard let index = game.tiles.firstIndex(where: { $0.id == movedTileId }) else { return }
-			game.tiles[index].renderState = .none(selected: false)
+			movedTileIds.compactMap({ id in game.tiles.firstIndex(where: { $0.id == id }) }).forEach { index in
+				game.tiles[index].renderState = .none(selected: false)
+			}
 			guard game.isFinished else { return }
 			finishGame()
 		}
@@ -123,19 +128,16 @@ struct BoardView: View {
 	func tileMovementAnimation(_ tile: Tile) -> Animation? {
 		guard interactive else { return nil }
 		switch tile.renderState {
-		case .none: return .linear(duration: popDuration) // This is for selection
-		case .dragged: return nil
+		case .none: return .linear(duration: popDuration)
 		case .fading: return .linear(duration: GameView.gameFadeDuration)
-		case .lifted: return nil
 		case .released(let percent): return .linear(duration: slideDuration * (1.0 - percent))
 		case .thrown(let selected): return selected ? .linear(duration: surpriseDuration) : .spring(dampingFraction: 0.75, blendDuration: 1.0)
-		case .unset: return nil
+		default: return nil
 		}
 	}
 
 	func tileOffset(_ tile: Tile) -> CGSize {
-		guard tile.renderState == .dragged else { return .zero }
-		guard let movementGroup = game.movementGroup else { return .zero }
+		guard interactive, tile.renderState == .dragged, let movementGroup = game.movementGroup else { return .zero }
 		return CGSize(width: movementGroup.positionOffset.dx, height: movementGroup.positionOffset.dy)
 	}
 

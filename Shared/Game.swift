@@ -98,21 +98,28 @@ class Game: ObservableObject, Identifiable {
 		return /*deltaSum > 2 &&*/ deltaSum % 2 == 1
 	}
 
-	@discardableResult func randomMove(except indices: [Int]? = nil) -> (from: Int, to: Int) {
+	@discardableResult func randomMove(except indices: [Int]? = nil) -> [Int] {
 		guard let openTile = tiles.firstIndex(where: { $0.id == openTileId }) else {
-			var pair: (Int, Int)
+			var moves = [Int]()
 			repeat {
-				pair = (Int.random(in: 0..<tiles.count), Int.random(in: 0..<tiles.count))
-			} while pair.0 == pair.1
-			tiles.swapAt(pair.0, pair.1)
-			return pair
+				var tileToMove: Int
+				repeat {
+					tileToMove = Int.random(in: 0..<tiles.count)
+				} while (indices != nil && indices!.contains(tileToMove)) || moves.contains(tileToMove)
+				moves.append(tileToMove)
+				let lastTwo = moves.suffix(2)
+				if lastTwo.count == 2, let left = lastTwo.first, let right = lastTwo.last {
+					tiles.swapAt(left, right)
+				}
+			} while moves.count < min(columns, rows) // We expect columns to always be the smaller number
+			return moves
 		}
 		var tileToMove: Int
 		repeat {
 			tileToMove = Int.random(in: 0..<tiles.count)
 		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove, openTile: openTile)
 		tiles.swapAt(openTile, tileToMove)
-		return (tileToMove, openTile)
+		return [openTile]
 	}
 }
 
