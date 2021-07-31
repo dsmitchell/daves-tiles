@@ -29,7 +29,7 @@ struct BoardGeometry {
 		self.game = game
 		self.boardSize = boardSize
 		self.isLandscape = rotated
-		self.positions = (0...game.tiles.count).map { tileIndex in
+		self.positions = (0..<game.tiles.count).map { tileIndex in
 			let gridIndex = game.gridIndex(for: tileIndex)
 			let column = rotated ? gridIndex.row : gridIndex.column
 			let row = rotated ? game.columns - gridIndex.column - 1 : gridIndex.row

@@ -9,10 +9,12 @@ import SwiftUI
 
 struct BoardView: View {
 
-	let gameFadeDuration: Double = 0.1
-	let popDuration: Double = 0.1
-	let slideDuration: Double = 0.1
-	let surpriseDuration: Double = 0.5
+	static let standardDuration: Double = 0.1
+
+	let gameFadeDuration = standardDuration
+	let popDuration = standardDuration
+	let slideDuration = standardDuration
+	let surpriseDuration = standardDuration * 2
 
 	@ObservedObject var game: Game
 	@Binding var gameState: GameView.GameState
@@ -67,6 +69,7 @@ struct BoardView: View {
 		let movedTile = game.randomMove(except: indices)
 		let movedTileId = game.tiles[movedTile.to].id
 		game.tiles[movedTile.to].renderState = .thrown(selected: true)
+		SoundEffects.default.play(.jump)
 		DispatchQueue.main.asyncAfter(deadline: .now() + surpriseDuration) {
 			guard let index = game.tiles.firstIndex(where: { $0.id == movedTileId }) else { return }
 			game.tiles[index].renderState = .none(selected: false)
@@ -173,14 +176,9 @@ struct BoardView: View {
 			let dragGesture = DragGesture(minimumDistance: 0).onChanged { value in
 				switch (game.movementGroup, tracking) {
 				case (.none, false):
-					guard let touchedTileIndex = boardGeometry.tileIndex(from: value.startLocation) else { return }
 //					print("updating(new): \(value.translation)")
+					guard game.startDrag(value, with: boardGeometry) else { return }
 					tracking = true
-					var movementGroup = TileMovementGroup(startingWith: touchedTileIndex, in: game)
-					guard ![.drag, .none].contains(movementGroup.direction) else { return }
-					movementGroup.applyMovementFunction(for: value, with: boardGeometry)
-					game.movementGroup = movementGroup
-					game.applyRenderState(.none(selected: true), to: movementGroup.tileIdentifiers)
 				case (.some, true):
 //					print("updating(tracking): \(value.translation)")
 					game.applyRenderState(.dragged, to: game.movementGroup!.tileIdentifiers) // TODO: Find a way to do this only once (or determine it is always necessary)
@@ -188,7 +186,6 @@ struct BoardView: View {
 						SoundEffects.default.play(.slide)
 					}
 				default:
-//					print("Ignoring \(value.translation)")
 					break
 				}
 			}
@@ -244,7 +241,20 @@ struct BoardView: View {
     }
 }
 
-extension Tile {
+fileprivate extension Game {
+
+	func startDrag(_ dragGesture: DragGesture.Value, with boardGeometry: BoardGeometry) -> Bool {
+		guard let touchedTileIndex = boardGeometry.tileIndex(from: dragGesture.startLocation) else { return false }
+		var movementGroup = TileMovementGroup(startingWith: touchedTileIndex, in: self)
+		guard ![.drag, .none].contains(movementGroup.direction) else { return true }
+		movementGroup.applyMovementFunction(for: dragGesture, with: boardGeometry)
+		self.movementGroup = movementGroup
+		applyRenderState(.none(selected: true), to: movementGroup.tileIdentifiers)
+		return true
+	}
+}
+
+fileprivate extension Tile {
 
 	var isFalling: Bool {
 		guard case .lifted(let falling) = renderState, falling else { return false }
