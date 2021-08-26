@@ -257,7 +257,7 @@ struct BoardView: View {
 						TileView.styledLabel(for: tile, with: boardGeometry.text(for: tile))
 							.position(boardGeometry.positions[index])
 							.offset(tile.isFalling ? CGSize(width: 0, height: boardGeometry.boardSize.height * 3) : .zero)
-							.animation(tile.isFalling ? .easeIn(duration: 1) : nil)
+							.animation(tile.isFalling ? .easeIn(duration: 1) : nil, value: tile.isFalling)
 							.opacity(tile.isLifted ? 1 : 0)
 					}
 				}
@@ -297,6 +297,6 @@ struct BoardView_Previews: PreviewProvider {
 	@State static var gameState: GameView.GameState = .playing
 
     static var previews: some View {
-		BoardView(game:Game(rows: 5, columns: 3), gameState: $gameState)
+		BoardView(game:Game(rows: 5, columns: 3, mode: .swap), gameState: $gameState)
     }
 }

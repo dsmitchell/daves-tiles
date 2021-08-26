@@ -22,15 +22,11 @@ struct GameView: View {
 
     var body: some View {
 		let boardView = BoardView(game: game, gameState: $gameState)
-		ZStack {
-//			Color.gray
-//				.edgesIgnoringSafeArea([.bottom, .leading, .trailing])
-			boardView
-				.edgesIgnoringSafeArea(.bottom)
-				.padding(4)
-				.scaleEffect(0.99999) // This allows for great rotation behavior (and smoother animation??)
-//				.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues
-		}
+		boardView
+			.edgesIgnoringSafeArea(.bottom)
+			.padding(4)
+//			.scaleEffect(0.99999) // This allows for great rotation behavior (and smoother animation??)
+//			.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues
 		.onChange(of: presenterVisible) { newValue in
 			// This is the equivalent of viewDidAppear (because the presenter is now onDisappear)
 			print("Presenter visible: \(newValue)")
@@ -40,13 +36,13 @@ struct GameView: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItemGroup(placement: .principal) {
-				Text("Moves: \(game.moves)")
+				Text("Moves: \(game.moves)    ") // Extra spaces works around a bug
 			}
 			ToolbarItemGroup(placement: .navigationBarTrailing) {
 				Button(action: boardView.randomMove) {
 					Label("Random Move", systemImage: "sparkles")
 				}
-				.disabled([.new].contains(gameState))
+				.disabled([.new].contains(gameState) && game.isFinished)
 				Button(action: newGame) { // TODO: Decide whether we need a new `Game` instance
 					Label("New Game", systemImage: "restart.circle")
 				}
@@ -99,7 +95,7 @@ struct GameView: View {
 
 struct GameView_Previews: PreviewProvider {
 
-	static let game = Game(rows: 6, columns: 4)
+	static let game = Game(rows: 6, columns: 4, mode: .swap)
 	@State static var gameState: GameView.GameState = .new
 	@State static var presenterVisible = false
 	

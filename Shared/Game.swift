@@ -24,14 +24,14 @@ class Game: ObservableObject, Identifiable {
 	
 	var movementGroup: TileMovementGroup?
 	var lingeringTileIdentifiers = [Int]()
-	var image: CGImage? = UIImage(named: "PuzzleImage")?.cgImage{
-		didSet { scaledImage = nil }
+	var image: CGImage? = UIImage(named: "PuzzleImage")?.cgImage {
+		didSet { scaledImages.removeAll() }
 	}
-	private var scaledImage: (size: CGSize, image: CGImage)?
+	private var scaledImages = [CGSize : CGImage]()
 	var initialized = false
 	let openTileId: Int?
 
-	init(rows: Int, columns: Int, mode: Mode = .swap) {
+	init(rows: Int, columns: Int, mode: Mode) {
 		self.rows = rows
 		self.columns = columns
 		let totalTiles = rows * columns
@@ -40,11 +40,14 @@ class Game: ObservableObject, Identifiable {
 	}
 
 	func imageMatching(size: CGSize) -> CGImage? {
-		if let scaledImage = scaledImage, scaledImage.size == size { return scaledImage.image }
+		// TODO: Round the size to points so that we don't produce so many variations
+		let roundedSize = CGSize(width: size.width.rounded(), height: size.height.rounded())
+		if let scaledImage = scaledImages[roundedSize] { return scaledImage }
+		print("Resizing image to \(roundedSize) (from \(size))")
 		guard let image = image else { return nil }
 		let uiImage = UIImage(cgImage: image) // TODO: Get this to work with NSImage on mac as well (use CoreResolve probably)
-		guard let resizedImage = uiImage.resized(toFill: size), let cgImage = resizedImage.cgImage else { return nil }
-		scaledImage = (size, cgImage)
+		guard let resizedImage = uiImage.resized(toFill: roundedSize), let cgImage = resizedImage.cgImage else { return nil }
+		scaledImages[roundedSize] = cgImage
 		return cgImage
 	}
 
@@ -120,6 +123,14 @@ class Game: ObservableObject, Identifiable {
 		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove, openTile: openTile)
 		tiles.swapAt(openTile, tileToMove)
 		return [openTile]
+	}
+}
+
+extension CGSize: Hashable {
+
+	public func hash(into hasher: inout Hasher) {
+		hasher.combine(self.width)
+		hasher.combine(self.height)
 	}
 }
 
