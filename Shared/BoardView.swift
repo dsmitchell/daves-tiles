@@ -24,11 +24,16 @@ struct BoardView: View {
 	@ObservedObject var game: Game
 	@Binding var gameState: GameView.GameState
 	@State var trackingState: TrackingState?
-	let interactive: Bool
 
-	init(game: Game, gameState: Binding<GameView.GameState>, interactive: Bool = true) {
+	struct SwapInfo: Equatable {
+		let indices: [Int]
+		let enabled: Bool
+	}
+	let swaps: SwapInfo?
+
+	init(game: Game, gameState: Binding<GameView.GameState>, swaps: SwapInfo? = nil) {
 		self.game = game
-		self.interactive = interactive
+		self.swaps = swaps
 		_gameState = gameState
 	}
 
@@ -91,7 +96,7 @@ struct BoardView: View {
 
 	func randomMove() {
 		// TODO: Improve this process -- for one, we should not allow gestures to function while this is happening
-		// TODO: Improve the randomMove() in SwapMode
+		// TODO: Improve the randomMove() in SwapMode (I think this is done already)
 		let indices = game.movementGroup?.indices(in: game)
 		completeMove(rollback: true)
 		let movedTileIndices = game.randomMove(except: indices)
@@ -126,34 +131,37 @@ struct BoardView: View {
 	}
 
 	func tileMovementAnimation(_ tile: Tile) -> Animation? {
-		guard interactive else { return nil }
-		switch tile.renderState {
-		case .none: return .linear(duration: popDuration)
-		case .fading: return .linear(duration: GameView.gameFadeDuration)
-		case .released(let percent): return .linear(duration: slideDuration * (1.0 - percent))
-		case .thrown(let selected): return selected ? .linear(duration: surpriseDuration) : .spring(dampingFraction: 0.75, blendDuration: 1.0)
-		default: return nil
+		guard let swaps = swaps else {
+			switch tile.renderState {
+			case .none: return .linear(duration: popDuration)
+			case .fading: return .linear(duration: GameView.gameFadeDuration)
+			case .released(let percent): return .linear(duration: slideDuration * (1.0 - percent))
+			case .thrown(let selected): return selected ? .linear(duration: surpriseDuration) : .spring(dampingFraction: 0.75, blendDuration: 1.0)
+			default: return nil
+			}
 		}
+		guard let index = game.tiles.firstIndex(where: { $0.id == tile.id }), swaps.indices.contains(index) else { return nil }
+		return .linear(duration: surpriseDuration * 2)
 	}
 
 	func tileOffset(_ tile: Tile) -> CGSize {
-		guard interactive, tile.renderState == .dragged, let movementGroup = game.movementGroup else { return .zero }
+		guard swaps == nil, tile.renderState == .dragged, let movementGroup = game.movementGroup else { return .zero }
 		return CGSize(width: movementGroup.positionOffset.dx, height: movementGroup.positionOffset.dy)
 	}
 
 	func tileOpacity(_ tile: Tile, isOpen: Bool) -> Double {
-		guard interactive else { return isOpen && !tile.isLifted ? 0 : 1 }
+		guard swaps == nil else { return isOpen && !tile.isLifted ? 0 : 1 }
 		guard tile.renderState == .fading || isOpen && !game.isFinished else { return 1 }
 		return 0
 	}
 
 	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
-		guard interactive, tile.renderState == .unset else { return position }
+		guard swaps == nil, tile.renderState == .unset else { return position }
 		return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
 	}
 
 	func useTileGesture(_ tile: Tile) -> Bool {
-		guard interactive, gameState == .playing, !game.isFinished else { return false }
+		guard swaps == nil, gameState == .playing, !game.isFinished else { return false }
 		guard game.movementGroup == nil || game.movementGroup!.isTracking(tile, in: game) || game.movementGroup!.direction == .drag else { return false }
 		return true
 	}
@@ -221,6 +229,15 @@ struct BoardView: View {
 			}
 			ZStack {
 				let sortedTiles = game.tiles.sorted { leftTile, rightTile in
+					// First check if this is a SwapInfo tile
+					if let swaps = swaps, let leftIndex = game.tiles.firstIndex(where: { $0.id == leftTile.id }), let rightIndex = game.tiles.firstIndex(where: { $0.id == rightTile.id }) {
+						switch (swaps.indices.firstIndex(of: leftIndex), swaps.indices.firstIndex(of: rightIndex)) {
+						case (.none, .some): return true
+						case (.some(let leftPosition), .some(let rightPosition)): return leftPosition < rightPosition
+						case (.some, _): return false
+						default: return leftIndex < rightIndex
+						}
+					}
 					// A random throw is _always_ at the end of the sorted list (i.e. on top)
 					switch (leftTile.renderState, rightTile.renderState) {
 					case (.thrown(true), .thrown(true)): break // let trackingPosition decide
@@ -230,16 +247,13 @@ struct BoardView: View {
 					}
 					// Otherwise any tile with a tracking position is sorted towards the end
 					switch (game.trackingPosition(for: leftTile), game.trackingPosition(for: rightTile)) {
-					case (.none, .some):
-						return true
-					case (.some(let leftPosition), .some(let rightPosition)):
-						return leftPosition < rightPosition
-					default:
-						return false
+					case (.none, .some): return true
+					case (.some(let leftPosition), .some(let rightPosition)): return leftPosition < rightPosition
+					default: return false
 					}
 				}
 				ForEach(sortedTiles) { tile in
-					let index = game.tiles.firstIndex(of: tile)!
+					let index = index(for: tile)
 					let isMatched = game.isMatched(tile: tile, index: index)
 					let isOpen = tile.id == game.openTileId
 					TileView(tile: tile, image: boardGeometry.image(for: tile), isMatched: isMatched, isOpen: isOpen, showNumber: !tile.isLifted, text: boardGeometry.text(for: tile))
@@ -248,10 +262,11 @@ struct BoardView: View {
 						.position(tilePosition(tile, with: boardGeometry.positions[index], in: geometry))
 						.offset(tileOffset(tile))
 						.opacity(tileOpacity(tile, isOpen: isOpen))
+						.animation(tileMovementAnimation(tile), value: swaps)
 						.animation(tileMovementAnimation(tile), value: tile.renderState)
 						.gesture(!isOpen && useTileGesture(tile) ? dragGesture : nil)
 				}
-				if interactive {
+				if swaps == nil {
 					ForEach(game.tiles) { tile in
 						let index = game.tiles.firstIndex(of: tile)!
 						TileView.styledLabel(for: tile, with: boardGeometry.text(for: tile))
@@ -264,6 +279,12 @@ struct BoardView: View {
 			}
 		}
     }
+
+	func index(for tile: Tile) -> Int {
+		guard let index = game.tiles.firstIndex(of: tile) else { fatalError("Tile with no index: \(tile.id)") }
+		guard let swaps = swaps, swaps.enabled, let position = swaps.indices.firstIndex(of: index) else { return index }
+		return swaps.indices[(position + 1) % swaps.indices.count]
+ 	}
 }
 
 fileprivate extension Game {

@@ -14,6 +14,7 @@ struct GameView: View {
 	@ObservedObject var game: Game
 	@Binding var gameState: GameState
 	@Binding var presenterVisible: Bool
+	let randomJumps: Bool
 
 	enum GameState {
 		case new		// Tiles are off-screen at the bottom
@@ -100,6 +101,6 @@ struct GameView_Previews: PreviewProvider {
 	@State static var presenterVisible = false
 	
     static var previews: some View {
-		GameView(game: game, gameState: $gameState, presenterVisible: $presenterVisible)
+		GameView(game: game, gameState: $gameState, presenterVisible: $presenterVisible, randomJumps: false)
     }
 }

@@ -37,27 +37,33 @@ struct GamePickerView: View {
 		var difficulty: GameDifficulty
 	}
 
+	struct GameType: Equatable {
+		let mode: Game.Mode
+		let randomJumps: Bool
+	}
+
 	@State var gameSelections: [GameSelection] = GamePickerView.initialSelections
 	@State var pickerVisible = false
 	@State var gameSelection: GameDifficulty = .easy
 	@State var score = 0
-	@State private var mode: Game.Mode = GamePickerView.initialMode
+	@State private var gameType: GameType = GameType(mode: GamePickerView.initialGameType.mode, randomJumps: GamePickerView.initialGameType.randomJumps)
 
-	func setMode(_ mode: Game.Mode, randomJumps: Bool = false) {
-		self.mode = mode
+	func setMode(_ mode: Game.Mode, randomJumps: Bool) {
+		gameType = GameType(mode: mode, randomJumps: randomJumps)
 		for difficulty in GameDifficulty.allCases {
-			gameSelections[difficulty.tabIndex] = GamePickerView.gameSelection(for: difficulty, mode: mode)
+			gameSelections[difficulty.tabIndex] = GamePickerView.gameSelection(for: difficulty, mode: mode, randomJumps: randomJumps)
 		}
 	}
 
 	var body: some View {
 		TimelineView(.animation) { context in
 			let rotation = Double(context.date.timeIntervalSinceReferenceDate)
+			let showSwap = gameType.randomJumps && Int(floor(context.date.timeIntervalSinceReferenceDate)) % 4 < 2
 			TabView(selection: $gameSelection) {
 				ForEach($gameSelections, id: \.game.id) { gameSelection in
 					let difficulty = gameSelection.difficulty.wrappedValue
 					VStack {
-						pickerView(for: gameSelection.game.wrappedValue, state: gameSelection.state, with: rotation)
+						pickerView(for: gameSelection.game.wrappedValue, state: gameSelection.state, with: rotation, showSwap: showSwap)
 							.scaleEffect(0.7)
 						Spacer(minLength: 40)
 					}
@@ -74,23 +80,29 @@ struct GamePickerView: View {
 					Text("Dave's Tiles")
 						.font(.system(.largeTitle, design: .rounded))
 					Menu {
-						Button(action: { setMode(.swap) }) {
-							Text("Swap")
+						Button(action: { setMode(.swap, randomJumps: false) }) {
+							Text(GameType(mode:.swap, randomJumps: false).buttonText.localizedCapitalized)
 						}
-						Button(action: { setMode(.classic) }) {
-							Text("Classic")
+						Button(action: { setMode(.swap, randomJumps: true) }) {
+							Text(GameType(mode:.swap, randomJumps: true).buttonText.localizedCapitalized)
+						}
+						Button(action: { setMode(.classic, randomJumps: false) }) {
+							Text(GameType(mode:.classic, randomJumps: false).buttonText.localizedCapitalized)
+						}
+						Button(action: { setMode(.classic, randomJumps: true) }) {
+							Text(GameType(mode:.classic, randomJumps: true).buttonText.localizedCapitalized)
 						}
 					} label: {
-						Text(self.mode.buttonText(false))
+						Text(self.gameType.buttonText)
 					}
 				}
-				.animation(nil, value: self.mode)
+				.animation(nil, value: gameType)
 			}
 		}
 		.onAppear {
 			pickerVisible = true // This can occur right after successful presentation of the NavigationLink
 			if gameSelections[gameSelection.tabIndex].game.isFinished {
-				gameSelections[gameSelection.tabIndex] = GamePickerView.gameSelection(for: gameSelection, mode: mode)
+				gameSelections[gameSelection.tabIndex] = GamePickerView.gameSelection(for: gameSelection, mode: gameType.mode, randomJumps: gameType.randomJumps)
 			}
 		}
 		.onDisappear {
@@ -98,42 +110,39 @@ struct GamePickerView: View {
 		}
 	}
 
-	@ViewBuilder func pickerView(for game: Game, state: Binding<GameView.GameState>, with rotation: Double) -> some View {
-		NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible)) {
-			BoardView(game: game, gameState: state, interactive: false)
+	@ViewBuilder func pickerView(for game: Game, state: Binding<GameView.GameState>, with rotation: Double, showSwap: Bool) -> some View {
+		NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
+			let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : nil
+			BoardView(game: game, gameState: state, swaps: swaps)
 				.rotation3DEffect(.degrees(15), axis: (x: 1.01333332, y: 1, z: 0.37))
 				.rotation3DEffect(.degrees(2.6 * cos(rotation)), axis: (x: 1, y: 0, z: 0))
 				.rotation3DEffect(.degrees(4.0 * sin(rotation)), axis: (x: 0, y: 1, z: 0))
 				.rotation3DEffect(.degrees(tan(rotation / 10.0)), axis: (x: 0, y: -1, z: 0))
 		}
 	}
-}
 
-fileprivate extension Game.Mode {
-
-	func buttonText(_ randomJumps: Bool) -> String {
-		switch (self, randomJumps) {
-		case (.classic, false): return "classic"
-		case (.classic, true): return "nightmare"
-		case (.swap, false): return "swap"
-		case (.swap, true): return "surprise"
+	func swaps(for game: Game) -> [Int] {
+		if let openTileId = game.openTileId, let openTileIndex = game.tiles.firstIndex(where: { $0.id == openTileId }) {
+			return [openTileIndex, (openTileIndex + game.tiles.count / 3) % game.tiles.count]
+		}
+		let iterations = min(game.columns, game.rows)
+		return (0..<iterations).map { iteration in
+			(iteration * 2 + iteration * game.columns + game.tiles.count / iterations) % game.tiles.count
 		}
 	}
 }
 
 fileprivate extension GamePickerView {
 
-	static var initialMode: Game.Mode = .classic
+	static var initialGameType = GameType(mode: .classic, randomJumps: false)
 
 	static var initialSelections: [GameSelection] {
-		return [
-			GamePickerView.gameSelection(for: .easy, mode: initialMode),
-			GamePickerView.gameSelection(for: .medium, mode: initialMode),
-			GamePickerView.gameSelection(for: .hard, mode: initialMode)
-		]
+		return GameDifficulty.allCases.map { difficulty in
+			GamePickerView.gameSelection(for: difficulty, mode: initialGameType.mode, randomJumps: initialGameType.randomJumps)
+		}
 	}
 
-	static func gameSelection(for difficulty: GameDifficulty, mode: Game.Mode) -> GameSelection {
+	static func gameSelection(for difficulty: GameDifficulty, mode: Game.Mode, randomJumps: Bool) -> GameSelection {
 		let grid = difficulty.grid
 		let game = Game(rows: grid.rows, columns: grid.columns, mode: mode)
 		return GameSelection(game: game, state: .new, difficulty: difficulty)
@@ -171,6 +180,18 @@ fileprivate extension GamePickerView.GameDifficulty {
 		case .easy: return 0
 		case .medium: return 1
 		case .hard: return 2
+		}
+	}
+}
+
+fileprivate extension GamePickerView.GameType {
+
+	var buttonText: String {
+		switch (mode, randomJumps) {
+		case (.classic, false): return "classic"
+		case (.classic, true): return "nightmare"
+		case (.swap, false): return "swap"
+		case (.swap, true): return "surprise"
 		}
 	}
 }

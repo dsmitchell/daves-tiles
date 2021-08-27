@@ -14,7 +14,7 @@ class Game: ObservableObject, Identifiable {
 	let rows: Int
 	let columns: Int
 
-	enum Mode {
+	enum Mode: Equatable {
 		case classic
 		case swap
 	}
