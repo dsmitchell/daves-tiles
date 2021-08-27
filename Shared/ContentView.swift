@@ -101,7 +101,7 @@ struct GamePickerView: View {
 		}
 		.onAppear {
 			pickerVisible = true // This can occur right after successful presentation of the NavigationLink
-			if gameSelections[gameSelection.tabIndex].game.isFinished {
+			if gameSelections[gameSelection.tabIndex].state == .finished {
 				gameSelections[gameSelection.tabIndex] = GamePickerView.gameSelection(for: gameSelection, mode: gameType.mode, randomJumps: gameType.randomJumps)
 			}
 		}
@@ -112,7 +112,7 @@ struct GamePickerView: View {
 
 	@ViewBuilder func pickerView(for game: Game, state: Binding<GameView.GameState>, with rotation: Double, showSwap: Bool) -> some View {
 		NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
-			let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : nil
+			let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : BoardView.SwapInfo(indices: [], enabled: false)
 			BoardView(game: game, gameState: state, swaps: swaps)
 				.rotation3DEffect(.degrees(15), axis: (x: 1.01333332, y: 1, z: 0.37))
 				.rotation3DEffect(.degrees(2.6 * cos(rotation)), axis: (x: 1, y: 0, z: 0))

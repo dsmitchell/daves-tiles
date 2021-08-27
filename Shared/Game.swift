@@ -20,6 +20,7 @@ class Game: ObservableObject, Identifiable {
 	}
 
 	@Published var moves: Int = 0
+	@Published var accumulatedTime: Double = 0
 	@Published var tiles: [Tile]
 	
 	var movementGroup: TileMovementGroup?
@@ -85,6 +86,7 @@ class Game: ObservableObject, Identifiable {
 		} while tiles.enumerated().contains { index, tile in
 			isMatched(tile: tile, index: index)
 		}
+		self.accumulatedTime = 0
 		self.moves = 0
 		self.initialized = true
 	}

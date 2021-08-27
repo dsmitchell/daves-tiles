@@ -14,43 +14,78 @@ struct GameView: View {
 	@ObservedObject var game: Game
 	@Binding var gameState: GameState
 	@Binding var presenterVisible: Bool
+	@State var initialDate: Date?
 	let randomJumps: Bool
 
 	enum GameState {
 		case new		// Tiles are off-screen at the bottom
 		case playing	// Normal game-play state
+		case finished	// Game is finished
 	}
 
     var body: some View {
-		let boardView = BoardView(game: game, gameState: $gameState)
-		boardView
-			.edgesIgnoringSafeArea(.bottom)
-			.padding(4)
-//			.scaleEffect(0.99999) // This allows for great rotation behavior (and smoother animation??)
-//			.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues
-		.onChange(of: presenterVisible) { newValue in
+		boardView(gameState: $gameState).onChange(of: presenterVisible) { newValue in
 			// This is the equivalent of viewDidAppear (because the presenter is now onDisappear)
 			print("Presenter visible: \(newValue)")
-			guard !presenterVisible else { return }
+			guard !presenterVisible else {
+				if gameState == .playing, let initialDate = initialDate {
+					game.accumulatedTime += Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
+				}
+				return
+			}
 			newGame(firstAppearance: true)
+		}
+		.onChange(of: gameState) { newValue in
+			guard newValue == .finished, let initialDate = initialDate else { return }
+			let now = Date()
+			game.accumulatedTime += now.timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
+			self.initialDate = nil
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItemGroup(placement: .principal) {
-				Text("Moves: \(game.moves)    ") // Extra spaces works around a bug
+				HStack {
+					Text("Moves: \(game.moves)")
+					Text("Time: \(displayTime)       ") // Extra spaces works around a bug
+				}
 			}
 			ToolbarItemGroup(placement: .navigationBarTrailing) {
-				Button(action: boardView.randomMove) {
-					Label("Random Move", systemImage: "sparkles")
-				}
-				.disabled([.new].contains(gameState) && game.isFinished)
 				Button(action: newGame) { // TODO: Decide whether we need a new `Game` instance
-					Label("New Game", systemImage: "restart.circle")
+					Label("New Game", systemImage: "arrow.clockwise.circle")
 				}
 				.disabled([.new].contains(gameState))
 			}
 		}
     }
+
+	@ViewBuilder
+	func boardView(gameState: Binding<GameState>) -> some View {
+		let wrappedBoard = BoardView(game: game, gameState: gameState)
+			.edgesIgnoringSafeArea(.bottom)
+			.padding(4)
+//			.scaleEffect(0.99999) // This allows for great rotation behavior (and smoother animation??)
+//			.drawingGroup() // Must be after padding to avoid clipping // This is known to cause animation issues
+		if let initialDate = initialDate, gameState.wrappedValue == .playing {
+			TimelineView(.periodic(from: initialDate, by: 1.0)) { context in
+				wrappedBoard
+			}
+		} else {
+			wrappedBoard
+		}
+	}
+
+	var displayTime: String {
+		guard let initialDate = initialDate else {
+			if game.accumulatedTime > 0 {
+				let intTime = Int(game.accumulatedTime)
+				return "\(intTime / 60):\(seconds: intTime % 60)"
+			}
+			return "0:00"
+		}
+		let input = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
+		let intTime = gameState == .playing ? Int(input) : Int(game.accumulatedTime)
+		return "\(intTime / 60):\(seconds: intTime % 60)"
+	}
 
 	func newGame() {
 		newGame(firstAppearance: false)
@@ -67,6 +102,7 @@ struct GameView: View {
 					guard index == game.tiles.count - 1 else { return }
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
 						gameState = .playing
+						initialDate = Date()
 						for index in 0..<game.tiles.count {
 							game.tiles[index].renderState = .none(selected: false)
 						}
@@ -80,6 +116,7 @@ struct GameView: View {
 				startNew()
 			}
 		} else if !firstAppearance {
+			initialDate = nil
 			for index in 0..<game.tiles.count {
 				game.tiles[index].renderState = .fading
 			}
@@ -90,6 +127,21 @@ struct GameView: View {
 					startNew()
 				}
 			}
+		} else {
+			initialDate = Date()
+		}
+	}
+}
+
+fileprivate extension String.StringInterpolation {
+
+	mutating func appendInterpolation(seconds value: Int) {
+
+		let formatter = NumberFormatter()
+		formatter.positiveFormat = "00"
+		formatter.formatWidth = 2
+		if let result = formatter.string(from: value as NSNumber) {
+			appendLiteral(result)
 		}
 	}
 }

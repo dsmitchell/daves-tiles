@@ -117,6 +117,7 @@ struct BoardView: View {
 	}
 
 	func finishGame() {
+		gameState = .finished
 		SoundEffects.default.play(.gameWin)
 		let totalDuration = Double(game.tiles.count) / 2.0
 		for index in 0..<game.tiles.count {
