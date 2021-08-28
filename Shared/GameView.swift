@@ -148,6 +148,7 @@ struct GameView: View {
 			DispatchQueue.main.asyncAfter(deadline: .now() + GameView.gameFadeDuration) {
 				gameState = .new
 				game.startNewGame()
+				PuzzleImages.currentImage = PuzzleImages.randomFavorite()
 				DispatchQueue.main.async {
 					startNew()
 				}

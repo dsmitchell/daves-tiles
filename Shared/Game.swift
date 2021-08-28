@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CoreGraphics
 
 class Game: ObservableObject, Identifiable {
 
@@ -25,10 +24,6 @@ class Game: ObservableObject, Identifiable {
 	
 	var movementGroup: TileMovementGroup?
 	var lingeringTileIdentifiers = [Int]()
-	var image: CGImage? = UIImage(named: "PuzzleImage")?.cgImage {
-		didSet { scaledImages.removeAll() }
-	}
-	private var scaledImages = [CGSize : CGImage]()
 	var initialized = false
 	let openTileId: Int?
 
@@ -38,18 +33,6 @@ class Game: ObservableObject, Identifiable {
 		let totalTiles = rows * columns
 		self.openTileId = mode == .classic ? totalTiles : nil
 		self.tiles = (1...totalTiles).map { Tile(id: $0) }
-	}
-
-	func imageMatching(size: CGSize) -> CGImage? {
-		// TODO: Round the size to points so that we don't produce so many variations
-		let roundedSize = CGSize(width: size.width.rounded(), height: size.height.rounded())
-		if let scaledImage = scaledImages[roundedSize] { return scaledImage }
-		print("Resizing image to \(roundedSize) (from \(size))")
-		guard let image = image else { return nil }
-		let uiImage = UIImage(cgImage: image) // TODO: Get this to work with NSImage on mac as well (use CoreResolve probably)
-		guard let resizedImage = uiImage.resized(toFill: roundedSize), let cgImage = resizedImage.cgImage else { return nil }
-		scaledImages[roundedSize] = cgImage
-		return cgImage
 	}
 
 	func gridIndex(for index: Int) -> (row: Int, column: Int) {
@@ -140,21 +123,5 @@ fileprivate extension CGSize {
 
 	static func * (left: CGSize, right: CGFloat) -> CGSize {
 		return CGSize(width: left.width + right, height: left.height + right)
-	}
-}
-
-fileprivate extension UIImage {
-
-	func resized(toFill outputSize: CGSize) -> UIImage? {
-		let scale = self.scale * max(outputSize.width / size.width, outputSize.height / size.height)
-		let width = size.width * scale
-		let height = size.height * scale
-		let imageRect = CGRect(x: (outputSize.width - width) / 2.0, y: (outputSize.height - height) / 2.0, width: width, height: height)
-		UIGraphicsBeginImageContextWithOptions(outputSize, true, 1)
-		defer {
-			UIGraphicsEndImageContext()
-		}
-		draw(in: imageRect)
-		return UIGraphicsGetImageFromCurrentImageContext()
 	}
 }

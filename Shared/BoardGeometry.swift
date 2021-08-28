@@ -39,7 +39,7 @@ struct BoardGeometry {
 	}
 
 	func image(for tile: Tile) -> Image? {
-		guard boardSize != .zero, let image = game.imageMatching(size: boardSize) else { return nil }
+		guard boardSize != .zero, let image = PuzzleImages.imageMatching(size: boardSize) else { return nil }
 		let tilePosition = tile.id - 1
 		let gridIndex = (row: tilePosition / game.columns, column: tilePosition % game.columns)
 		let column = isLandscape ? gridIndex.row : gridIndex.column

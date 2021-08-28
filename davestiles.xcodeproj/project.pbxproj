@@ -31,6 +31,8 @@
 		645D95C326911C700028AD02 /* BoardGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardGeometry.swift */; };
 		645D95C526951AB30028AD02 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
 		645D95C626951AB30028AD02 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
+		6477012326DAE7C2007D42D1 /* PuzzleImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477012226DAE7C2007D42D1 /* PuzzleImages.swift */; };
+		6477012426DAE7C2007D42D1 /* PuzzleImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477012226DAE7C2007D42D1 /* PuzzleImages.swift */; };
 		64B5205326A7313B0045A189 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
 		64B5205426A7313B0045A189 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
 		64B95AC726964371003D22D1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B95AC626964371003D22D1 /* GameView.swift */; };
@@ -81,6 +83,7 @@
 		645D95BE26911BFE0028AD02 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
 		645D95C126911C700028AD02 /* BoardGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardGeometry.swift; sourceTree = "<group>"; };
 		645D95C426951AB30028AD02 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		6477012226DAE7C2007D42D1 /* PuzzleImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImages.swift; sourceTree = "<group>"; };
 		64B5205226A7313B0045A189 /* TileMovementGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileMovementGroup.swift; sourceTree = "<group>"; };
 		64B95AC626964371003D22D1 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		64C218DB268E59A400A9C38B /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
@@ -166,6 +169,7 @@
 				645D95C426951AB30028AD02 /* Game.swift */,
 				64B95AC626964371003D22D1 /* GameView.swift */,
 				64CE7B422678298500988DA4 /* Persistence.swift */,
+				6477012226DAE7C2007D42D1 /* PuzzleImages.swift */,
 				640BD06A269E279D0001AAA2 /* Resources */,
 				640BD067269E1B260001AAA2 /* SoundEffects.swift */,
 				64B5205226A7313B0045A189 /* TileMovementGroup.swift */,
@@ -376,6 +380,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				64B5205326A7313B0045A189 /* TileMovementGroup.swift in Sources */,
+				6477012326DAE7C2007D42D1 /* PuzzleImages.swift in Sources */,
 				64CE7B632678298600988DA4 /* davestiles.xcdatamodeld in Sources */,
 				64CE7B692678298600988DA4 /* Persistence.swift in Sources */,
 				64C218DC268E59A400A9C38B /* BoardView.swift in Sources */,
@@ -394,6 +399,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				64B5205426A7313B0045A189 /* TileMovementGroup.swift in Sources */,
+				6477012426DAE7C2007D42D1 /* PuzzleImages.swift in Sources */,
 				64CE7B642678298600988DA4 /* davestiles.xcdatamodeld in Sources */,
 				64CE7B6A2678298600988DA4 /* Persistence.swift in Sources */,
 				64C218DD268E59A400A9C38B /* BoardView.swift in Sources */,
