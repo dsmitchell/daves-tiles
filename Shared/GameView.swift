@@ -31,6 +31,7 @@ struct GameView: View {
 				if gameState == .playing, let initialDate = initialDate {
 					game.accumulatedTime += Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
 				}
+				self.initialDate = nil
 				return
 			}
 			newGame(firstAppearance: true)
@@ -60,7 +61,8 @@ struct GameView: View {
 
 	@ViewBuilder
 	func boardView(gameState: Binding<GameState>) -> some View {
-		let wrappedBoard = BoardView(game: game, gameState: gameState)
+		let board = BoardView(game: game, gameState: gameState)
+		let wrappedBoard = board
 			.edgesIgnoringSafeArea(.bottom)
 			.padding(4)
 //			.scaleEffect(0.99999) // This allows for great rotation behavior (and smoother animation??)
@@ -69,6 +71,29 @@ struct GameView: View {
 			TimelineView(.periodic(from: initialDate, by: 1.0)) { context in
 				wrappedBoard
 			}
+			.task {
+				guard randomJumps else { return }
+				defer {
+					print("Exiting random jump timer")
+				}
+				let oneSecond = UInt64(960_000_000)
+				let delayInSeconds = Double(game.openTileId == nil ? game.tiles.count - min(game.columns, game.rows) : game.tiles.count * 2)
+				// The initial delay needs to take into account the current time
+				let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
+				let initialDelay = delayInSeconds - currentGameTime.truncatingRemainder(dividingBy: delayInSeconds)
+				print("Starting random jump timer after \(initialDelay)s...")
+				await Task.sleep(UInt64(initialDelay) * oneSecond)
+				repeat {
+					for _ in 0..<3 {
+						if self.initialDate == nil || gameState.wrappedValue != .playing || Task.isCancelled { return }
+						SoundEffects.default.play(.warning)
+						await Task.sleep(oneSecond)
+					}
+					if self.initialDate == nil || gameState.wrappedValue != .playing || Task.isCancelled { return }
+					board.randomMove()
+					await Task.sleep(UInt64(delayInSeconds) * oneSecond)
+				} while self.initialDate != nil && gameState.wrappedValue == .playing && !Task.isCancelled
+		   }
 		} else {
 			wrappedBoard
 		}
@@ -82,8 +107,8 @@ struct GameView: View {
 			}
 			return "0:00"
 		}
-		let input = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
-		let intTime = gameState == .playing ? Int(input) : Int(game.accumulatedTime)
+		let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
+		let intTime = gameState == .playing ? Int(currentGameTime) : Int(game.accumulatedTime)
 		return "\(intTime / 60):\(seconds: intTime % 60)"
 	}
 

@@ -64,7 +64,6 @@ struct GamePickerView: View {
 					let difficulty = gameSelection.difficulty.wrappedValue
 					VStack {
 						pickerView(for: gameSelection.game.wrappedValue, state: gameSelection.state, with: rotation, showSwap: showSwap)
-							.scaleEffect(0.7)
 						Spacer(minLength: 40)
 					}
 					.tabItem {
@@ -119,6 +118,7 @@ struct GamePickerView: View {
 				.rotation3DEffect(.degrees(4.0 * sin(rotation)), axis: (x: 0, y: 1, z: 0))
 				.rotation3DEffect(.degrees(tan(rotation / 10.0)), axis: (x: 0, y: -1, z: 0))
 		}
+		.scaleEffect(0.7)
 	}
 
 	func swaps(for game: Game) -> [Int] {
