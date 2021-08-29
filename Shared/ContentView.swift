@@ -102,6 +102,7 @@ struct GamePickerView: View {
 			pickerVisible = true // This can occur right after successful presentation of the NavigationLink
 			if gameSelections[gameSelection.tabIndex].state == .finished {
 				gameSelections[gameSelection.tabIndex] = GamePickerView.gameSelection(for: gameSelection, mode: gameType.mode, randomJumps: gameType.randomJumps)
+				PuzzleImages.currentImage = PuzzleImages.randomFavorite()
 			}
 		}
 		.onDisappear {
