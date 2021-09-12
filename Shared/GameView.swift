@@ -10,12 +10,14 @@ import SwiftUI
 struct GameView: View {
 
 	static let gameFadeDuration = BoardView.standardDuration
+	static let oneSecond = UInt64(960_000_000)
 
 	@ObservedObject var game: Game
 	@Binding var gameState: GameState
 	@Binding var presenterVisible: Bool
-	@State var initialDate: Date?
-	@State var finishGameTask: Task<Void,Never>?
+	@State private var initialDate: Date?
+	@State private var finishGameTask: Task<Void,Never>?
+	@State private var showingWinGameDialog = false
 	let randomJumps: Bool
 
 	enum GameState {
@@ -48,11 +50,13 @@ struct GameView: View {
 				let now = Date()
 				game.accumulatedTime += now.timeIntervalSinceReferenceDate - initialDate!.timeIntervalSinceReferenceDate
 				initialDate = nil
-				finishGameTask = Task {
-					await finishGame()
-				}
+				finishGameTask = Task(operation: finishGame)
 			default: break
 			}
+		}
+		.alert("Congratulations! You won with a time of \(displayTime) in \(game.moves) moves", isPresented: $showingWinGameDialog) {
+			Button("Play again", action: newGame)
+			Button("Cancel", role: .cancel) { }
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -88,22 +92,22 @@ struct GameView: View {
 				defer {
 					print("Exiting random jump timer")
 				}
-				let oneSecond = UInt64(960_000_000)
+
 				let delayInSeconds = Double(game.openTileId == nil ? game.tiles.count - min(game.columns, game.rows) : game.tiles.count * 2)
 				// The initial delay needs to take into account the current time
 				let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
 				let initialDelay = delayInSeconds - currentGameTime.truncatingRemainder(dividingBy: delayInSeconds)
 				print("Starting random jump timer after \(initialDelay)s...")
-				await Task.sleep(UInt64(initialDelay) * oneSecond)
+				await Task.sleep(UInt64(initialDelay) * GameView.oneSecond)
 				repeat {
 					for _ in 0..<3 {
 						if self.initialDate == nil || gameState.wrappedValue != .playing || Task.isCancelled { return }
 						SoundEffects.default.play(.warning)
-						await Task.sleep(oneSecond)
+						await Task.sleep(GameView.oneSecond)
 					}
 					if self.initialDate == nil || gameState.wrappedValue != .playing || Task.isCancelled { return }
 					board.randomMove()
-					await Task.sleep(UInt64(delayInSeconds) * oneSecond)
+					await Task.sleep(UInt64(delayInSeconds) * GameView.oneSecond)
 				} while self.initialDate != nil && gameState.wrappedValue == .playing && !Task.isCancelled
 		   }
 		} else {
@@ -170,7 +174,7 @@ struct GameView: View {
 		}
 	}
 
-	func finishGame() async {
+	@Sendable func finishGame() async {
 		DispatchQueue.main.async {
 			SoundEffects.default.play(.gameWin)
 			for index in 0..<game.tiles.count {
@@ -179,11 +183,10 @@ struct GameView: View {
 		}
 		let totalDuration = Double(game.tiles.count) / 2.0
 		await withTaskGroup(of: Int.self) { group -> Void in
-			let oneSecond = UInt64(960_000_000)
 			for index in 0..<game.tiles.count {
 				group.addTask {
 					let delay = Double.random(in: 1.0..<totalDuration)
-					await Task.sleep(UInt64(delay) * oneSecond)
+					await Task.sleep(UInt64(delay) * GameView.oneSecond)
 					return index
 				}
 			}
@@ -195,6 +198,9 @@ struct GameView: View {
 				}
 			}
 		}
+		// TODO: Fix the dialog freezing the game
+//		guard !Task.isCancelled else { return }
+//		showingWinGameDialog = true
 	}
 }
 
