@@ -15,6 +15,7 @@ struct GameView: View {
 	@Binding var gameState: GameState
 	@Binding var presenterVisible: Bool
 	@State var initialDate: Date?
+	@State var finishGameTask: Task<Void,Never>?
 	let randomJumps: Bool
 
 	enum GameState {
@@ -31,16 +32,27 @@ struct GameView: View {
 				if gameState == .playing, let initialDate = initialDate {
 					game.accumulatedTime += Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
 				}
-				self.initialDate = nil
+				initialDate = nil
+				finishGameTask?.cancel()
+				finishGameTask = nil
 				return
 			}
 			newGame(firstAppearance: true)
 		}
 		.onChange(of: gameState) { newValue in
-			guard newValue == .finished, let initialDate = initialDate else { return }
-			let now = Date()
-			game.accumulatedTime += now.timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
-			self.initialDate = nil
+			switch newValue {
+			case .new where finishGameTask != nil:
+				finishGameTask!.cancel()
+				finishGameTask = nil
+			case .finished where initialDate != nil:
+				let now = Date()
+				game.accumulatedTime += now.timeIntervalSinceReferenceDate - initialDate!.timeIntervalSinceReferenceDate
+				initialDate = nil
+				finishGameTask = Task {
+					await finishGame()
+				}
+			default: break
+			}
 		}
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
@@ -155,6 +167,33 @@ struct GameView: View {
 			}
 		} else {
 			initialDate = Date()
+		}
+	}
+
+	func finishGame() async {
+		DispatchQueue.main.async {
+			SoundEffects.default.play(.gameWin)
+			for index in 0..<game.tiles.count {
+				game.tiles[index].renderState = .lifted(falling: false)
+			}
+		}
+		let totalDuration = Double(game.tiles.count) / 2.0
+		await withTaskGroup(of: Int.self) { group -> Void in
+			let oneSecond = UInt64(960_000_000)
+			for index in 0..<game.tiles.count {
+				group.addTask {
+					let delay = Double.random(in: 1.0..<totalDuration)
+					await Task.sleep(UInt64(delay) * oneSecond)
+					return index
+				}
+			}
+			for await index in group {
+				guard !Task.isCancelled else { break }
+				DispatchQueue.main.async {
+					SoundEffects.default.play(.click)
+					game.tiles[index].renderState = .lifted(falling: true)
+				}
+			}
 		}
 	}
 }

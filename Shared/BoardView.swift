@@ -84,7 +84,7 @@ struct BoardView: View {
 			DispatchQueue.main.asyncAfter(deadline: .now() + popDuration) {
 				game.lingeringTileIdentifiers.removeAll(where: tilesToDeselect.contains)
 				guard game.isFinished else { return }
-				finishGame()
+				gameState = .finished
 			}
 		}
 		if duration == 0 {
@@ -112,22 +112,7 @@ struct BoardView: View {
 				game.tiles[index].renderState = .none(selected: false)
 			}
 			guard game.isFinished else { return }
-			finishGame()
-		}
-	}
-
-	func finishGame() {
-		gameState = .finished
-		SoundEffects.default.play(.gameWin)
-		let totalDuration = Double(game.tiles.count) / 2.0
-		for index in 0..<game.tiles.count {
-			let delay = Double.random(in: 1.0..<totalDuration)
-			game.tiles[index].renderState = .lifted(falling: false)
-			DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-				SoundEffects.default.play(.click)
-				game.tiles[index].renderState = .lifted(falling: true)
-				guard index == game.tiles.count - 1 else { return }
-			}
+			gameState = .finished
 		}
 	}
 
