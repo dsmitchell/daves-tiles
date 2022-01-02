@@ -99,16 +99,16 @@ struct GameView: View {
 				let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
 				let initialDelay = delayInSeconds - currentGameTime.truncatingRemainder(dividingBy: delayInSeconds)
 				print("Starting random jump timer after \(initialDelay)s...")
-				await Task.sleep(UInt64(initialDelay) * GameView.oneSecond)
+                try? await Task.sleep(nanoseconds: UInt64(initialDelay) * GameView.oneSecond)
 				repeat {
 					for _ in 0..<3 {
 						if self.initialDate == nil || gameState.wrappedValue != .playing || Task.isCancelled { return }
 						SoundEffects.default.play(.warning)
-						await Task.sleep(GameView.oneSecond)
+                        try? await Task.sleep(nanoseconds: GameView.oneSecond)
 					}
 					if self.initialDate == nil || gameState.wrappedValue != .playing || Task.isCancelled { return }
 					board.randomMove()
-					await Task.sleep(UInt64(delayInSeconds) * GameView.oneSecond)
+                    try? await Task.sleep(nanoseconds: UInt64(delayInSeconds) * GameView.oneSecond)
 				} while self.initialDate != nil && gameState.wrappedValue == .playing && !Task.isCancelled
 		   }
 		} else {
@@ -187,7 +187,7 @@ struct GameView: View {
 			for index in 0..<game.tiles.count {
 				group.addTask {
 					let delay = Double.random(in: 1.0..<totalDuration)
-					await Task.sleep(UInt64(delay) * GameView.oneSecond)
+                    try? await Task.sleep(nanoseconds: UInt64(delay) * GameView.oneSecond)
 					return index
 				}
 			}
