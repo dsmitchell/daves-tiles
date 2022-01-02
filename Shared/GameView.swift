@@ -1,8 +1,9 @@
 //
 //  GameView.swift
-//  davestiles
+//  daves-tiles
 //
 //  Created by The App Studio LLC on 7/7/21.
+//  Copyright © 2021 The App Studio LLC.
 //
 
 import SwiftUI

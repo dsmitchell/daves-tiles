@@ -67,6 +67,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		640A9DA527820E8500095601 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		640A9DA727820EBF00095601 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		640BD04F269E18C50001AAA2 /* Click.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Click.caf; sourceTree = "<group>"; };
 		640BD050269E18C50001AAA2 /* Popdown.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Popdown.caf; sourceTree = "<group>"; };
 		640BD051269E18C50001AAA2 /* GameWin1.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GameWin1.caf; sourceTree = "<group>"; };
@@ -145,6 +147,8 @@
 		64CE7B382678298500988DA4 = {
 			isa = PBXGroup;
 			children = (
+				640A9DA727820EBF00095601 /* LICENSE */,
+				640A9DA527820E8500095601 /* README.md */,
 				64CE7B3D2678298500988DA4 /* Shared */,
 				64CE7B562678298600988DA4 /* Tests iOS */,
 				64CE7B602678298600988DA4 /* Tests macOS */,
