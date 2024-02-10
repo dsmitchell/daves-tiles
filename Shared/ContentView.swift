@@ -11,11 +11,15 @@ import CoreData
 
 struct ContentView: View {
 
+	@State private var path: [Color] = [] // Nothing on the stack by default.
+
     var body: some View {
-		NavigationView {
+		NavigationStack(path: $path) {
 			GamePickerView()
 		}
+#if !os(macOS)
 		.navigationViewStyle(StackNavigationViewStyle())
+#endif
 		.onAppear {
 			SoundEffects.default.preloadSounds()
 		}
@@ -53,16 +57,32 @@ struct GamePickerView: View {
 			gameSelections[difficulty.tabIndex] = GamePickerView.gameSelection(for: difficulty, mode: mode, randomJumps: randomJumps)
 		}
 	}
+	
+	let startRotation = Date.timeIntervalSinceReferenceDate
 
 	var body: some View {
 		TimelineView(.animation) { context in
-			let rotation = Double(context.date.timeIntervalSinceReferenceDate)
-			let showSwap = gameType.randomJumps && Int(floor(context.date.timeIntervalSinceReferenceDate)) % 4 < 2
+			let timePassed = context.date.timeIntervalSinceReferenceDate - startRotation
+			let showSwap = gameType.randomJumps && Int(floor(timePassed)) % 4 < 2
 			TabView(selection: $gameSelection) {
 				ForEach($gameSelections, id: \.game.id) { gameSelection in
 					let difficulty = gameSelection.difficulty.wrappedValue
 					VStack {
-						pickerView(for: gameSelection.game.wrappedValue, state: gameSelection.state, with: rotation, showSwap: showSwap)
+						let game = gameSelection.game.wrappedValue
+						let state = gameSelection.state
+#if os(visionOS)
+						boardView(for: game, state: state, with: timePassed, showSwap: showSwap)
+							.scaleEffect(0.8)
+						Spacer()
+						NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
+							Text("Play Game")
+						}
+#else
+						NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
+							boardView(for: game, state: state, with: timePassed, showSwap: showSwap)
+						}
+						.scaleEffect(0.7)
+#endif
 						Spacer(minLength: 40)
 					}
 					.tabItem {
@@ -73,30 +93,37 @@ struct GamePickerView: View {
 			}
 		}
 		.toolbar {
-			ToolbarItemGroup(placement: .navigationBarLeading) {
+			#if os(macOS)
+			let placement: ToolbarItemPlacement = .principal
+			#else
+			let placement: ToolbarItemPlacement = .navigationBarLeading
+			#endif
+			ToolbarItemGroup(placement: placement) {
 				HStack(alignment: .lastTextBaseline) {
 					Text("Dave's Tiles")
 						.font(.system(.largeTitle, design: .rounded))
+					#if os(visionOS)
+					Text(self.gameType.buttonText)
+					#else
 					Menu {
-						Button(action: { setMode(.swap, randomJumps: false) }) {
-							Text(GameType(mode:.swap, randomJumps: false).buttonText.localizedCapitalized)
-						}
-						Button(action: { setMode(.swap, randomJumps: true) }) {
-							Text(GameType(mode:.swap, randomJumps: true).buttonText.localizedCapitalized)
-						}
-						Button(action: { setMode(.classic, randomJumps: false) }) {
-							Text(GameType(mode:.classic, randomJumps: false).buttonText.localizedCapitalized)
-						}
-						Button(action: { setMode(.classic, randomJumps: true) }) {
-							Text(GameType(mode:.classic, randomJumps: true).buttonText.localizedCapitalized)
-						}
+						gameSelectionButtons()
 					} label: {
 						Text(self.gameType.buttonText)
 					}
+					#endif
 				}
 				.animation(nil, value: gameType)
 			}
 		}
+		#if os(visionOS)
+		.ornament(attachmentAnchor: .scene(.top)) {
+			HStack {
+				gameSelectionButtons()
+			}
+			.padding(12)
+			.glassBackgroundEffect()
+		}
+		#endif
 		.onAppear {
 			pickerVisible = true // This can occur right after successful presentation of the NavigationLink
 			if gameSelections[gameSelection.tabIndex].state == .finished {
@@ -108,17 +135,33 @@ struct GamePickerView: View {
 			pickerVisible = false
 		}
 	}
-
-	@ViewBuilder func pickerView(for game: Game, state: Binding<GameView.GameState>, with rotation: Double, showSwap: Bool) -> some View {
-		NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
-			let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : BoardView.SwapInfo(indices: [], enabled: false)
-			BoardView(game: game, gameState: state, swaps: swaps)
-				.rotation3DEffect(.degrees(15), axis: (x: 1.01333332, y: 1, z: 0.37))
-				.rotation3DEffect(.degrees(2.6 * cos(rotation)), axis: (x: 1, y: 0, z: 0))
-				.rotation3DEffect(.degrees(4.0 * sin(rotation)), axis: (x: 0, y: 1, z: 0))
-				.rotation3DEffect(.degrees(tan(rotation / 10.0)), axis: (x: 0, y: -1, z: 0))
+	
+	@ViewBuilder func gameSelectionButtons() -> some View {
+		Button(action: { setMode(.swap, randomJumps: false) }) {
+			Text(GameType(mode: .swap, randomJumps: false).buttonText.localizedCapitalized)
 		}
-		.scaleEffect(0.7)
+		Button(action: { setMode(.swap, randomJumps: true) }) {
+			Text(GameType(mode: .swap, randomJumps: true).buttonText.localizedCapitalized)
+		}
+		Button(action: { setMode(.classic, randomJumps: false) }) {
+			Text(GameType(mode: .classic, randomJumps: false).buttonText.localizedCapitalized)
+		}
+		Button(action: { setMode(.classic, randomJumps: true) }) {
+			Text(GameType(mode: .classic, randomJumps: true).buttonText.localizedCapitalized)
+		}
+	}
+
+	@ViewBuilder func boardView(for game: Game, state: Binding<GameView.GameState>, with rotation: Double, showSwap: Bool) -> some View {
+		let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : BoardView.SwapInfo(indices: [], enabled: false)
+		BoardView(game: game, gameState: state, swaps: swaps)
+			.rotation3DEffect(.degrees(2.6 * cos(rotation)), axis: (x: 1, y: 0, z: 0))
+			.rotation3DEffect(.degrees(4.0 * sin(rotation)), axis: (x: 0, y: 1, z: 0))
+			.rotation3DEffect(.degrees(tan(rotation / 10.0)), axis: (x: 0, y: -1, z: 0))
+#if os(visionOS)
+			.offset(z: 50 + 78 * (1 - cos(rotation / 5.0)))
+#else
+			.rotation3DEffect(.degrees(15), axis: (x: 1.01333332, y: 1, z: 0.37))
+#endif
 	}
 
 	func swaps(for game: Game) -> [Int] {

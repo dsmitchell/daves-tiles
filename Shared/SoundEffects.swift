@@ -32,8 +32,10 @@ public class SoundEffects {
 	var sounds = [Effect : PlayerCollection]()
 
 	public init() {
+		#if !os(macOS)
 		try! AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.ambient)
 		try! AVAudioSession.sharedInstance().setActive(true)
+		#endif
 	}
 
 	public func preloadSounds() {

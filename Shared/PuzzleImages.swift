@@ -6,7 +6,13 @@
 //  Copyright © 2021 The App Studio LLC.
 //
 
+import Foundation
+import CoreGraphics
+#if canImport(AppKit)
+import AppKit
+#elseif canImport(UIKit)
 import UIKit
+#endif
 
 class PuzzleImages {
 
@@ -23,8 +29,7 @@ class PuzzleImages {
 		if let scaledImage = scaledImages[roundedSize] { return scaledImage }
 		print("Resizing image to \(roundedSize) (from \(size))")
 		guard let image = currentImage else { return nil }
-		let uiImage = UIImage(cgImage: image) // TODO: Get this to work with NSImage on mac as well (use CoreResolve probably)
-		guard let resizedImage = uiImage.resized(toFill: roundedSize), let cgImage = resizedImage.cgImage else { return nil }
+		guard let cgImage = image.resized(toFill: roundedSize) else { return nil }
 		scaledImages[roundedSize] = cgImage
 		return cgImage
 	}
@@ -39,22 +44,37 @@ class PuzzleImages {
 		}
 		lastImageNumber = randomNumber
 		let randomImageName = "Favorite" + formatter.string(from: randomNumber as NSNumber)!
+#if canImport(AppKit)
+		return NSImage(named: randomImageName)!.cgImage(forProposedRect: nil, context: nil, hints: nil)!
+#elseif canImport(UIKit)
 		return UIImage(named: randomImageName)!.cgImage!
+#endif
 	}
 }
 
-fileprivate extension UIImage {
+fileprivate extension CGImage {
+	
+	func resized(toFill outputSize: CGSize) -> CGImage? {
 
-	func resized(toFill outputSize: CGSize) -> UIImage? {
-		let scale = self.scale * max(outputSize.width / size.width, outputSize.height / size.height)
+		guard let colorSpace = self.colorSpace else { return nil }
+
+		let outputWidth = Int(outputSize.width)
+		let outputHeight = Int(outputSize.height)
+
+		let bytesPerPixel = self.bitsPerPixel / self.bitsPerComponent
+		let destBytesPerRow = outputWidth * bytesPerPixel
+
+		guard let context = CGContext(data: nil, width: outputWidth, height: outputHeight, bitsPerComponent: self.bitsPerComponent, bytesPerRow: destBytesPerRow, space: colorSpace, bitmapInfo: self.bitmapInfo.rawValue) else { return nil }
+
+		let size = CGSize(width: self.width, height: self.height)
+		let scale = max(outputSize.width / size.width, outputSize.height / size.height)
 		let width = size.width * scale
 		let height = size.height * scale
 		let imageRect = CGRect(x: (outputSize.width - width) / 2.0, y: (outputSize.height - height) / 2.0, width: width, height: height)
-		UIGraphicsBeginImageContextWithOptions(outputSize, true, 1)
-		defer {
-			UIGraphicsEndImageContext()
-		}
-		draw(in: imageRect)
-		return UIGraphicsGetImageFromCurrentImageContext()
+
+		context.interpolationQuality = .high
+		context.draw(self, in: imageRect)
+
+		return context.makeImage()
 	}
 }

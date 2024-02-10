@@ -8,45 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		640BD057269E18C50001AAA2 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
-		640BD058269E18C50001AAA2 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
 		640BD059269E18C50001AAA2 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
-		640BD05A269E18C50001AAA2 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
 		640BD05B269E18C50001AAA2 /* GameWin1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD051269E18C50001AAA2 /* GameWin1.caf */; };
-		640BD05C269E18C50001AAA2 /* GameWin1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD051269E18C50001AAA2 /* GameWin1.caf */; };
 		640BD05D269E18C50001AAA2 /* Warning1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD052269E18C50001AAA2 /* Warning1.caf */; };
-		640BD05E269E18C50001AAA2 /* Warning1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD052269E18C50001AAA2 /* Warning1.caf */; };
 		640BD05F269E18C50001AAA2 /* Popup.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD053269E18C50001AAA2 /* Popup.caf */; };
-		640BD060269E18C50001AAA2 /* Popup.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD053269E18C50001AAA2 /* Popup.caf */; };
 		640BD061269E18C50001AAA2 /* Slide1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD054269E18C50001AAA2 /* Slide1.caf */; };
-		640BD062269E18C50001AAA2 /* Slide1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD054269E18C50001AAA2 /* Slide1.caf */; };
 		640BD063269E18C50001AAA2 /* NewGame1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD055269E18C50001AAA2 /* NewGame1.caf */; };
-		640BD064269E18C50001AAA2 /* NewGame1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD055269E18C50001AAA2 /* NewGame1.caf */; };
 		640BD065269E18C50001AAA2 /* Jump1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD056269E18C50001AAA2 /* Jump1.caf */; };
-		640BD066269E18C50001AAA2 /* Jump1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD056269E18C50001AAA2 /* Jump1.caf */; };
 		640BD068269E1B260001AAA2 /* SoundEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640BD067269E1B260001AAA2 /* SoundEffects.swift */; };
-		640BD069269E1B260001AAA2 /* SoundEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640BD067269E1B260001AAA2 /* SoundEffects.swift */; };
 		645D95BF26911BFE0028AD02 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
-		645D95C026911BFE0028AD02 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
 		645D95C226911C700028AD02 /* BoardGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardGeometry.swift */; };
-		645D95C326911C700028AD02 /* BoardGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardGeometry.swift */; };
 		645D95C526951AB30028AD02 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
-		645D95C626951AB30028AD02 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
 		6477012326DAE7C2007D42D1 /* PuzzleImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477012226DAE7C2007D42D1 /* PuzzleImages.swift */; };
-		6477012426DAE7C2007D42D1 /* PuzzleImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477012226DAE7C2007D42D1 /* PuzzleImages.swift */; };
 		64B5205326A7313B0045A189 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
-		64B5205426A7313B0045A189 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
 		64B95AC726964371003D22D1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B95AC626964371003D22D1 /* GameView.swift */; };
-		64B95AC826964371003D22D1 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B95AC626964371003D22D1 /* GameView.swift */; };
 		64C218DC268E59A400A9C38B /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C218DB268E59A400A9C38B /* BoardView.swift */; };
-		64C218DD268E59A400A9C38B /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C218DB268E59A400A9C38B /* BoardView.swift */; };
-		64CE7B582678298600988DA4 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B572678298600988DA4 /* Tests_iOS.swift */; };
-		64CE7B622678298600988DA4 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B612678298600988DA4 /* Tests_macOS.swift */; };
+		64CE7B582678298600988DA4 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B572678298600988DA4 /* Tests.swift */; };
 		64CE7B652678298600988DA4 /* davestilesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B402678298500988DA4 /* davestilesApp.swift */; };
-		64CE7B662678298600988DA4 /* davestilesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B402678298500988DA4 /* davestilesApp.swift */; };
 		64CE7B672678298600988DA4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B412678298500988DA4 /* ContentView.swift */; };
-		64CE7B682678298600988DA4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B412678298500988DA4 /* ContentView.swift */; };
 		64CE7B6B2678298600988DA4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64CE7B432678298600988DA4 /* Assets.xcassets */; };
-		64CE7B6C2678298600988DA4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64CE7B432678298600988DA4 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,13 +36,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 64CE7B472678298600988DA4;
 			remoteInfo = "davestiles (iOS)";
-		};
-		64CE7B5E2678298600988DA4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 64CE7B392678298500988DA4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 64CE7B4D2678298600988DA4;
-			remoteInfo = "davestiles (macOS)";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -89,11 +62,8 @@
 		64CE7B412678298500988DA4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		64CE7B432678298600988DA4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		64CE7B482678298600988DA4 /* Dave's Tiles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dave's Tiles.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		64CE7B4E2678298600988DA4 /* Dave's Tiles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dave's Tiles.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		64CE7B532678298600988DA4 /* Tests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		64CE7B572678298600988DA4 /* Tests_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_iOS.swift; sourceTree = "<group>"; };
-		64CE7B5D2678298600988DA4 /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		64CE7B612678298600988DA4 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
+		64CE7B532678298600988DA4 /* daves-tiles-tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "daves-tiles-tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		64CE7B572678298600988DA4 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,21 +74,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		64CE7B4B2678298600988DA4 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		64CE7B502678298600988DA4 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		64CE7B5A2678298600988DA4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -150,8 +106,7 @@
 				640A9DA727820EBF00095601 /* LICENSE */,
 				640A9DA527820E8500095601 /* README.md */,
 				64CE7B3D2678298500988DA4 /* Shared */,
-				64CE7B562678298600988DA4 /* Tests iOS */,
-				64CE7B602678298600988DA4 /* Tests macOS */,
+				64CE7B562678298600988DA4 /* Tests */,
 				64CE7B492678298600988DA4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -178,35 +133,25 @@
 			isa = PBXGroup;
 			children = (
 				64CE7B482678298600988DA4 /* Dave's Tiles.app */,
-				64CE7B4E2678298600988DA4 /* Dave's Tiles.app */,
-				64CE7B532678298600988DA4 /* Tests iOS.xctest */,
-				64CE7B5D2678298600988DA4 /* Tests macOS.xctest */,
+				64CE7B532678298600988DA4 /* daves-tiles-tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		64CE7B562678298600988DA4 /* Tests iOS */ = {
+		64CE7B562678298600988DA4 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				64CE7B572678298600988DA4 /* Tests_iOS.swift */,
+				64CE7B572678298600988DA4 /* Tests.swift */,
 			);
-			path = "Tests iOS";
-			sourceTree = "<group>";
-		};
-		64CE7B602678298600988DA4 /* Tests macOS */ = {
-			isa = PBXGroup;
-			children = (
-				64CE7B612678298600988DA4 /* Tests_macOS.swift */,
-			);
-			path = "Tests macOS";
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		64CE7B472678298600988DA4 /* daves-tiles (iOS) */ = {
+		64CE7B472678298600988DA4 /* daves-tiles */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 64CE7B6F2678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles (iOS)" */;
+			buildConfigurationList = 64CE7B6F2678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles" */;
 			buildPhases = (
 				64CE7B442678298600988DA4 /* Sources */,
 				64CE7B452678298600988DA4 /* Frameworks */,
@@ -216,31 +161,14 @@
 			);
 			dependencies = (
 			);
-			name = "daves-tiles (iOS)";
+			name = "daves-tiles";
 			productName = "davestiles (iOS)";
 			productReference = 64CE7B482678298600988DA4 /* Dave's Tiles.app */;
 			productType = "com.apple.product-type.application";
 		};
-		64CE7B4D2678298600988DA4 /* daves-tiles (macOS) */ = {
+		64CE7B522678298600988DA4 /* daves-tiles-tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 64CE7B722678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles (macOS)" */;
-			buildPhases = (
-				64CE7B4A2678298600988DA4 /* Sources */,
-				64CE7B4B2678298600988DA4 /* Frameworks */,
-				64CE7B4C2678298600988DA4 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "daves-tiles (macOS)";
-			productName = "davestiles (macOS)";
-			productReference = 64CE7B4E2678298600988DA4 /* Dave's Tiles.app */;
-			productType = "com.apple.product-type.application";
-		};
-		64CE7B522678298600988DA4 /* Tests iOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 64CE7B752678298600988DA4 /* Build configuration list for PBXNativeTarget "Tests iOS" */;
+			buildConfigurationList = 64CE7B752678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles-tests" */;
 			buildPhases = (
 				64CE7B4F2678298600988DA4 /* Sources */,
 				64CE7B502678298600988DA4 /* Frameworks */,
@@ -251,27 +179,9 @@
 			dependencies = (
 				64CE7B552678298600988DA4 /* PBXTargetDependency */,
 			);
-			name = "Tests iOS";
+			name = "daves-tiles-tests";
 			productName = "Tests iOS";
-			productReference = 64CE7B532678298600988DA4 /* Tests iOS.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
-		64CE7B5C2678298600988DA4 /* Tests macOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 64CE7B782678298600988DA4 /* Build configuration list for PBXNativeTarget "Tests macOS" */;
-			buildPhases = (
-				64CE7B592678298600988DA4 /* Sources */,
-				64CE7B5A2678298600988DA4 /* Frameworks */,
-				64CE7B5B2678298600988DA4 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				64CE7B5F2678298600988DA4 /* PBXTargetDependency */,
-			);
-			name = "Tests macOS";
-			productName = "Tests macOS";
-			productReference = 64CE7B5D2678298600988DA4 /* Tests macOS.xctest */;
+			productReference = 64CE7B532678298600988DA4 /* daves-tiles-tests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -281,22 +191,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1300;
-				LastUpgradeCheck = 1310;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
 				TargetAttributes = {
 					64CE7B472678298600988DA4 = {
-						CreatedOnToolsVersion = 13.0;
-					};
-					64CE7B4D2678298600988DA4 = {
 						CreatedOnToolsVersion = 13.0;
 					};
 					64CE7B522678298600988DA4 = {
 						CreatedOnToolsVersion = 13.0;
 						TestTargetID = 64CE7B472678298600988DA4;
-					};
-					64CE7B5C2678298600988DA4 = {
-						CreatedOnToolsVersion = 13.0;
-						TestTargetID = 64CE7B4D2678298600988DA4;
 					};
 				};
 			};
@@ -313,10 +216,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				64CE7B472678298600988DA4 /* daves-tiles (iOS) */,
-				64CE7B4D2678298600988DA4 /* daves-tiles (macOS) */,
-				64CE7B522678298600988DA4 /* Tests iOS */,
-				64CE7B5C2678298600988DA4 /* Tests macOS */,
+				64CE7B472678298600988DA4 /* daves-tiles */,
+				64CE7B522678298600988DA4 /* daves-tiles-tests */,
 			);
 		};
 /* End PBXProject section */
@@ -338,30 +239,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		64CE7B4C2678298600988DA4 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				64CE7B6C2678298600988DA4 /* Assets.xcassets in Resources */,
-				640BD064269E18C50001AAA2 /* NewGame1.caf in Resources */,
-				640BD05C269E18C50001AAA2 /* GameWin1.caf in Resources */,
-				640BD05E269E18C50001AAA2 /* Warning1.caf in Resources */,
-				640BD066269E18C50001AAA2 /* Jump1.caf in Resources */,
-				640BD060269E18C50001AAA2 /* Popup.caf in Resources */,
-				640BD062269E18C50001AAA2 /* Slide1.caf in Resources */,
-				640BD058269E18C50001AAA2 /* Click.caf in Resources */,
-				640BD05A269E18C50001AAA2 /* Popdown.caf in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		64CE7B512678298600988DA4 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		64CE7B5B2678298600988DA4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -388,36 +266,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		64CE7B4A2678298600988DA4 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				64B5205426A7313B0045A189 /* TileMovementGroup.swift in Sources */,
-				6477012426DAE7C2007D42D1 /* PuzzleImages.swift in Sources */,
-				64C218DD268E59A400A9C38B /* BoardView.swift in Sources */,
-				645D95C326911C700028AD02 /* BoardGeometry.swift in Sources */,
-				64B95AC826964371003D22D1 /* GameView.swift in Sources */,
-				64CE7B662678298600988DA4 /* davestilesApp.swift in Sources */,
-				645D95C026911BFE0028AD02 /* TileView.swift in Sources */,
-				64CE7B682678298600988DA4 /* ContentView.swift in Sources */,
-				640BD069269E1B260001AAA2 /* SoundEffects.swift in Sources */,
-				645D95C626951AB30028AD02 /* Game.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		64CE7B4F2678298600988DA4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				64CE7B582678298600988DA4 /* Tests_iOS.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		64CE7B592678298600988DA4 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				64CE7B622678298600988DA4 /* Tests_macOS.swift in Sources */,
+				64CE7B582678298600988DA4 /* Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,13 +279,8 @@
 /* Begin PBXTargetDependency section */
 		64CE7B552678298600988DA4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 64CE7B472678298600988DA4 /* daves-tiles (iOS) */;
+			target = 64CE7B472678298600988DA4 /* daves-tiles */;
 			targetProxy = 64CE7B542678298600988DA4 /* PBXContainerItemProxy */;
-		};
-		64CE7B5F2678298600988DA4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 64CE7B4D2678298600988DA4 /* daves-tiles (macOS) */;
-			targetProxy = 64CE7B5E2678298600988DA4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -445,7 +293,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -474,13 +322,14 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10001;
+				CURRENT_PROJECT_VERSION = 10002;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 45GCQB624U;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -494,14 +343,16 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 3.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
 		};
@@ -513,7 +364,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -542,13 +393,14 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10001;
+				CURRENT_PROJECT_VERSION = 10002;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 45GCQB624U;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -556,13 +408,15 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 3.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
+				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
 		};
@@ -583,8 +437,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestiles;
 				PRODUCT_NAME = "Dave's Tiles";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
 			};
 			name = Debug;
 		};
@@ -605,51 +463,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestiles;
 				PRODUCT_NAME = "Dave's Tiles";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		64CE7B732678298600988DA4 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestiles;
-				PRODUCT_NAME = "Dave's Tiles";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-			};
-			name = Debug;
-		};
-		64CE7B742678298600988DA4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_APP_SANDBOX = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestiles;
-				PRODUCT_NAME = "Dave's Tiles";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
@@ -657,24 +477,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 45GCQB624U;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.theappstudiollc.Tests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "davestiles (iOS)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = "daves-tiles";
 			};
 			name = Debug;
 		};
@@ -682,75 +499,22 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 45GCQB624U;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.theappstudiollc.Tests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "davestiles (iOS)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = "daves-tiles";
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		64CE7B792678298600988DA4 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 45GCQB624U;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 11.4;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.theappstudiollc.Tests-macOS";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "davestiles (macOS)";
-			};
-			name = Debug;
-		};
-		64CE7B7A2678298600988DA4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 45GCQB624U;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 11.4;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.theappstudiollc.Tests-macOS";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "davestiles (macOS)";
 			};
 			name = Release;
 		};
@@ -766,7 +530,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		64CE7B6F2678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles (iOS)" */ = {
+		64CE7B6F2678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				64CE7B702678298600988DA4 /* Debug */,
@@ -775,29 +539,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		64CE7B722678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles (macOS)" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				64CE7B732678298600988DA4 /* Debug */,
-				64CE7B742678298600988DA4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		64CE7B752678298600988DA4 /* Build configuration list for PBXNativeTarget "Tests iOS" */ = {
+		64CE7B752678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles-tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				64CE7B762678298600988DA4 /* Debug */,
 				64CE7B772678298600988DA4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		64CE7B782678298600988DA4 /* Build configuration list for PBXNativeTarget "Tests macOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				64CE7B792678298600988DA4 /* Debug */,
-				64CE7B7A2678298600988DA4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

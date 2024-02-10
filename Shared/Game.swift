@@ -32,7 +32,11 @@ class Game: ObservableObject, Identifiable {
 		self.rows = rows
 		self.columns = columns
 		let totalTiles = rows * columns
+#if os(iOS)
 		self.openTileId = mode == .classic ? totalTiles : nil
+#else // These platforms are more likely to be landscape-centric
+		self.openTileId = mode == .classic ? totalTiles - columns + 1 : nil
+#endif
 		self.tiles = (1...totalTiles).map { Tile(id: $0) }
 	}
 
