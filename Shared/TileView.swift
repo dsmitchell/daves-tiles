@@ -8,48 +8,14 @@
 
 import SwiftUI
 
-struct Tile: Identifiable, Equatable, Hashable {
-
-	enum RenderState: Equatable {
-		case none(selected: Bool)
-		case dragged
-		case fading(wasFalling: Bool)
-		case falling
-		case released(percent: Double)
-		case thrown
-		case unset
-	}
-	
-	let id: Int
-	var renderState: RenderState = .unset // This is for new game scenario
-
-	var isSelected: Bool {
-		switch renderState {
-		case .none(let selected): return selected
-		case .dragged: return true
-		case .released: return true
-		case .thrown: return true
-		default: return false
-		}
-	}
-
-	static func == (lhs: Self, rhs: Self) -> Bool {
-		return lhs.id == rhs.id
-	}
-
-	func hash(into hasher: inout Hasher) {
-		hasher.combine(id)
-	}
-}
-
 enum ImageClipShape: Shape {
 
-	case rounded
+	case rounded(radius: CGFloat)
 	case rectangle
 
 	func path(in rect: CGRect) -> Path {
 		switch self {
-			case .rounded: return RoundedRectangle(cornerRadius: 8).path(in: rect)
+			case .rounded(let radius): return RoundedRectangle(cornerRadius: radius).path(in: rect)
 			case .rectangle: return Rectangle().path(in: rect)
 		}
 	}
@@ -61,43 +27,43 @@ struct TileView: View {
 	let image: Image?
 	let imageBounds: CGRect = .zero
 	let isMatched: Bool
-	let isOpen: Bool
 	let showNumber: Bool
 	let text: String?
 
 	var body: some View {
-		let roundedBorder = !isOpen && (tile.isSelected || !isMatched)
+		let selected = tile.isSelected
+		let roundedBorder = selected || !isMatched
 		let roundedRadius = roundedBorder ? 8.0 : 0.0
 		ZStack {
 			let roundedRectangle = RoundedRectangle(cornerRadius: roundedRadius)
-			background(for: tile, in: roundedRectangle)
-				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: tile.isSelected ? 4 : 0))
-				.clipShape(roundedBorder ? ImageClipShape.rounded : ImageClipShape.rectangle)
+			background(for: tile.id, in: roundedRectangle)
+				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: selected ? 4 : 0))
+				.clipShape(roundedBorder ? ImageClipShape.rounded(radius: roundedRadius) : ImageClipShape.rectangle)
 				.padding(roundedBorder ? 1 : 0)
 			if showNumber {
-				TileView.styledLabel(for: tile, with: text)
+				TileView.styledLabel(with: text)
 			}
 		}
 #if os(visionOS)
 		.contentShape(.hoverEffect, .rect(cornerRadius: roundedRadius))
 #else
-		.scaleEffect(tile.isSelected ? 1.15 : 1.0)
+		.scaleEffect(selected ? 1.15 : 1.0)
 #endif
 	}
 
 	@ViewBuilder
-	func background(for tile: Tile, in roundedRectangle: RoundedRectangle) -> some View {
+	func background(for id: Int, in roundedRectangle: RoundedRectangle) -> some View {
 		if let image = image {
 			image.resizable()
 		} else {
-			roundedRectangle.foregroundColor(Color(hue: Double(tile.id) / 24.0, saturation: 1, brightness: 1))
+			roundedRectangle.foregroundColor(Color(hue: Double(id) / 24.0, saturation: 1, brightness: 1))
 		}
 	}
 
 	@ViewBuilder
-	public static func styledLabel(for tile: Tile, with text: String?) -> some View {
-		label(for: tile, with: text)
-			.id("label.\(tile.id)")
+	public static func styledLabel(with text: String?) -> some View {
+		label(with: text)
+			.id("label.\(text ?? "star")") // There will only ever be one tile with a nil text
 			.font(.title)
 			.foregroundColor(.white)
 			.padding(2)
@@ -109,7 +75,7 @@ struct TileView: View {
 	}
 
 	@ViewBuilder
-	static func label(for tile: Tile, with text: String?) -> some View {
+	static func label(with text: String?) -> some View {
 		if let text = text {
 			Text(text)
 		} else {
@@ -118,14 +84,9 @@ struct TileView: View {
 	}
 }
 
-struct TileView_Previews: PreviewProvider {
-    static var previews: some View {
-		let image = Image("PuzzleImage")
-		VStack(spacing: 0) {
-			TileView(tile: Tile(id: 5), image: image, isMatched: false, isOpen: false, showNumber: true, text: "5")
-				.frame(width: 160, height: 160)
-			TileView(tile: Tile(id: 4), image: image, isMatched: true, isOpen: false, showNumber: true, text: nil)
-				.frame(width: 160, height: 160)
-		}
-    }
+#Preview {
+	let tile = Tile(id: 5, renderState: .none)
+	
+	return TileView(tile: tile, image: nil, isMatched: false, showNumber: true, text: "5")
+		.frame(width: 160, height: 160)
 }
