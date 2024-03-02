@@ -122,7 +122,6 @@ struct BoardView: View {
 		guard swaps == nil else { return nil }
 		switch tile.renderState {
 		case .none: return gameState == .new ? .spring(dampingFraction: 0.75, blendDuration: 1.0) : nil
-		case .fading: return .linear(duration: GameView.gameFadeDuration)
 		case .released(let percent) where percent < 1.0: return .linear(duration: slideDuration * (1.0 - percent))
 		case .thrown: return .linear(duration: surpriseDuration)
 		case .transitioning: return .linear(duration: popDuration)
@@ -164,7 +163,7 @@ struct BoardView: View {
 			return 0
 		}
 #endif
-		guard tile.isFading || isOpen && gameState != .finished else { return 1 }
+		guard isOpen && gameState != .finished else { return 1 }
 		return 0
 	}
 
@@ -267,7 +266,7 @@ struct BoardView: View {
 					let index = index(for: tile)
 					let isMatched = game.isMatched(tile: tile, index: index)
 					let isOpen = tile.id == game.openTileId
-					TileView(tile: tile, image: boardGeometry.image(for: tile), isMatched: isMatched, showNumber: gameState != .finished, text: boardGeometry.text(for: tile))
+					TileView(tile: tile, image: boardGeometry.image(for: tile), isMatched: isMatched, showNumber: ![.finished, .fading].contains(gameState), text: boardGeometry.text(for: tile))
 #if os(visionOS)
 						.hoverEffect(isEnabled: useTileGesture(tile))
 #endif
@@ -325,14 +324,8 @@ fileprivate extension Tile {
 	var isFalling: Bool {
 		switch renderState {
 		case .unset, .falling: return true // Unset ensures detatched numbers are not prematurely drawn on the playing field
-		case .fading(let wasFalling): return wasFalling
 		default: return false
 		}
-	}
-
-	var isFading: Bool {
-		guard case .fading = renderState else { return false }
-		return true
 	}
 }
 

@@ -13,7 +13,6 @@ struct Tile: Identifiable, Equatable, Hashable {
 	enum RenderState: Equatable {
 		case none
 		case dragged
-		case fading(wasFalling: Bool)
 		case falling
 		case released(percent: Double)
 		case thrown
