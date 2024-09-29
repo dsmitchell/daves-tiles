@@ -46,6 +46,8 @@ public class SoundEffects {
 				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 4))
 			case .slide:
 				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 4))
+			case .warning:
+				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 2))
 			default:
 				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName))
 			}

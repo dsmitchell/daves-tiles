@@ -15,6 +15,13 @@ struct BoardGeometry {
 	public let isLandscape: Bool
 	public let positions: [CGPoint]
 	public let tileSize: CGSize
+	
+	private static var numberFormatter: NumberFormatter = {
+		let formatter = NumberFormatter()
+		formatter.locale = .current
+		formatter.numberStyle = .none
+		return formatter
+	}()
 
 	init(game: Game, geometryProxy: GeometryProxy) {
 
@@ -52,10 +59,15 @@ struct BoardGeometry {
 	}
 
 	func text(for tile: Tile) -> String? {
+		guard let identifier = number(for: tile) else { return nil }
+		return BoardGeometry.numberFormatter.string(from: identifier)
+	}
+	
+	private func number(for tile: Tile) -> NSNumber? {
 		guard tile.id != game.openTileId else { return nil }
-		guard isLandscape else { return "\(tile.id)" }
+		guard isLandscape else { return NSNumber(integerLiteral: tile.id) }
 		let gridIndex = game.gridIndex(for: tile.id - 1)
-		return "\(game.rows * (game.columns - gridIndex.column - 1) + gridIndex.row + 1)"
+		return NSNumber(integerLiteral: game.rows * (game.columns - gridIndex.column - 1) + gridIndex.row + 1)
 	}
 
 	func tileIndex(from point: CGPoint) -> Int? {

@@ -20,7 +20,11 @@ struct TileMovementGroup {
 		case none
 	}
 
-	var swappingIdentifier: Int?
+	enum TrackingState {
+		case initial
+		case restarted
+	}
+
 	let tileIdentifiers: [Int]
 	let direction: MoveDirection
 	private(set) var lastPercentChange = 0.0
@@ -28,10 +32,10 @@ struct TileMovementGroup {
 	private var movementFunction: (DragGesture.Value) -> (offset: CGVector, percentChange: CGFloat) = { _ in (.zero, 0) }
 	var positionOffset = CGVector.zero
 	private(set) var possibleTap = true
-	var willMoveNext = true
+	private(set) var willMoveNext = true
+	var trackingState: TrackingState? = .initial
 
 	init(startingWith tileIndex: Int, in game: Game) {
-		swappingIdentifier = game.openTileId
 		guard let openTile = game.tiles.firstIndex(where: { $0.id == game.openTileId }), openTile != tileIndex, tileIndex < game.tiles.count else {
 			tileIdentifiers = [game.tiles[tileIndex].id]
 			direction = .drag
@@ -69,9 +73,14 @@ struct TileMovementGroup {
 
 	mutating func applyDragGestureCrossedMidpoint(_ dragGesture: DragGesture.Value) -> Bool {
 		let movement = movementFunction(dragGesture)
+		defer {
+			positionOffset = movement.offset
+			lastPercentChange = movement.percentChange
+		}
 		if possibleTap, movement.offset.length > 10 {
 			possibleTap = false
 		}
+		guard direction != .drag else { return false }
 		if possibleTap || movement.percentChange >= 0.5 || lastPercentChange != 0.0 && movement.percentChange >= lastPercentChange {
 			willMoveNext = true
 		} else {
@@ -81,8 +90,6 @@ struct TileMovementGroup {
 		if crossedMidpoint {
 			numberOfMidpointCrossings += 1
 		}
-		positionOffset = movement.offset
-		lastPercentChange = movement.percentChange
 		// Return whether this move crossed the midpoint
 		return crossedMidpoint
 	}
@@ -132,7 +139,10 @@ struct TileMovementGroup {
 				return (lastOffset, percentChange)
 			}
 		case .drag:
-			movementFunction = { dragGesture in (CGVector(fromDragGesture: dragGesture), 0) }
+			movementFunction = { dragGesture in
+				let vector = CGVector(fromDragGesture: dragGesture)
+				return (vector, min(1.0, vector.length / boardGeometry.tileSize.width))
+			}
 		case .none:
 			movementFunction = { _ in (.zero, 0) }
 		}

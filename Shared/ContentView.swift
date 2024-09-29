@@ -7,32 +7,8 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
-
-	@State private var path: [Color] = [] // Nothing on the stack by default.
-
-    var body: some View {
-		NavigationStack(path: $path) {
-			GamePickerView()
-		}
-#if !os(macOS)
-		.navigationViewStyle(StackNavigationViewStyle())
-#endif
-		.onAppear {
-			SoundEffects.default.preloadSounds()
-		}
-    }
-}
-
-struct GamePickerView: View {
-
-	enum GameDifficulty: Hashable, CaseIterable {
-		case easy
-		case medium
-		case hard
-	}
 
 	struct GameSelection {
 		var game: Game
@@ -40,30 +16,25 @@ struct GamePickerView: View {
 		var difficulty: GameDifficulty
 	}
 
-	struct GameType: Equatable {
-		let mode: Game.Mode
-		let randomJumps: Bool
-	}
-
-	@State var gameSelections: [GameSelection] = GamePickerView.initialSelections
+	@State var gameSelections: [GameSelection] = ContentView.initialSelections
 	@State var pickerVisible = false
 	@State var gameSelection: GameDifficulty = .easy
 	@State var score = 0
-	@State private var gameType: GameType = GameType(mode: GamePickerView.initialGameType.mode, randomJumps: GamePickerView.initialGameType.randomJumps)
+	@State var gameType: GameType = .initial
+	@State private var path: [Color] = [] // Nothing on the stack by default.
 
 	func setMode(_ mode: Game.Mode, randomJumps: Bool) {
 		gameType = GameType(mode: mode, randomJumps: randomJumps)
 		for difficulty in GameDifficulty.allCases {
-			gameSelections[difficulty.tabIndex] = GamePickerView.gameSelection(for: difficulty, mode: mode, randomJumps: randomJumps)
+			gameSelections[difficulty.tabIndex] = ContentView.gameSelection(for: difficulty, mode: mode, randomJumps: randomJumps)
 		}
 	}
 	
 	let startRotation = Date.timeIntervalSinceReferenceDate
 
-	var body: some View {
-		TimelineView(.animation) { context in
-			let timePassed = context.date.timeIntervalSinceReferenceDate - startRotation
-			let showSwap = gameType.randomJumps && Int(floor(timePassed)) % 4 < 2
+    var body: some View {
+
+		NavigationStack(path: $path) {
 			TabView(selection: $gameSelection) {
 				ForEach($gameSelections, id: \.game.id) { gameSelection in
 					let difficulty = gameSelection.difficulty.wrappedValue
@@ -71,97 +42,110 @@ struct GamePickerView: View {
 						let game = gameSelection.game.wrappedValue
 						let state = gameSelection.state
 #if os(visionOS)
-						boardView(for: game, state: state, with: timePassed, showSwap: showSwap)
+						boardView(for: game, state: state)
 							.scaleEffect(0.8)
 						Spacer()
 						NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
-							Text("Play Game")
+							Text("Play Game", comment: "Start or continue a game from the main screen")
 						}
 #else
 						NavigationLink(destination: GameView(game: game, gameState: state, presenterVisible: $pickerVisible, randomJumps: gameType.randomJumps)) {
-							boardView(for: game, state: state, with: timePassed, showSwap: showSwap)
+							boardView(for: game, state: state)
 						}
 						.scaleEffect(0.7)
 #endif
 						Spacer(minLength: 40)
 					}
 					.tabItem {
-						Label(difficulty.displayValue, systemImage: difficulty.imageResourceName)
+						Label(difficulty.displayValue, systemImage: difficulty.tabImageResourceName)
 					}
 					.tag(difficulty)
 				}
 			}
-		}
-		.toolbar {
-			#if os(macOS)
-			let placement: ToolbarItemPlacement = .principal
-			#else
-			let placement: ToolbarItemPlacement = .navigationBarLeading
-			#endif
-			ToolbarItemGroup(placement: placement) {
-				HStack(alignment: .lastTextBaseline) {
-					Text("Dave's Tiles")
-						.font(.system(.largeTitle, design: .rounded))
-					#if os(visionOS)
-					Text(self.gameType.buttonText)
-					#else
-					Menu {
-						gameSelectionButtons()
-					} label: {
-						Text(self.gameType.buttonText)
-					}
-					#endif
+#if os(visionOS)
+			.ornament(attachmentAnchor: .scene(.top)) {
+				HStack {
+					gameSelectionButtons()
 				}
-				.animation(nil, value: gameType)
+				.padding(12)
+				.glassBackgroundEffect()
+			}
+#endif
+			.toolbar {
+#if os(macOS)
+				let placement: ToolbarItemPlacement = .principal
+#else
+				let placement: ToolbarItemPlacement = .navigationBarLeading
+#endif
+				ToolbarItemGroup(placement: placement) {
+					HStack(alignment: .lastTextBaseline) {
+						Text("Dave's Tiles", comment: "The title of the application")
+							.font(.system(.largeTitle, design: .rounded))
+							.allowsTightening(true)
+							.minimumScaleFactor(0.5)
+#if os(visionOS)
+						Text(self.gameType.localizedText)
+#else
+						Menu {
+							gameSelectionButtons()
+						} label: {
+							Text(self.gameType.localizedText)
+						}
+#endif
+					}
+					.animation(nil, value: gameType)
+				}
+			}
+			.onAppear {
+				pickerVisible = true // This can occur right after successful presentation of the NavigationLink
+				if gameSelections[gameSelection.tabIndex].state == .finished {
+					gameSelections[gameSelection.tabIndex] = ContentView.gameSelection(for: gameSelection, mode: gameType.mode, randomJumps: gameType.randomJumps)
+					PuzzleImages.currentImage = PuzzleImages.randomFavorite()
+				}
+			}
+			.onDisappear {
+				pickerVisible = false
 			}
 		}
-		#if os(visionOS)
-		.ornament(attachmentAnchor: .scene(.top)) {
-			HStack {
-				gameSelectionButtons()
-			}
-			.padding(12)
-			.glassBackgroundEffect()
-		}
-		#endif
+#if !os(macOS)
+		.navigationViewStyle(StackNavigationViewStyle())
+#endif
 		.onAppear {
-			pickerVisible = true // This can occur right after successful presentation of the NavigationLink
-			if gameSelections[gameSelection.tabIndex].state == .finished {
-				gameSelections[gameSelection.tabIndex] = GamePickerView.gameSelection(for: gameSelection, mode: gameType.mode, randomJumps: gameType.randomJumps)
-				PuzzleImages.currentImage = PuzzleImages.randomFavorite()
-			}
+			SoundEffects.default.preloadSounds()
 		}
-		.onDisappear {
-			pickerVisible = false
-		}
-	}
+}
 	
 	@ViewBuilder func gameSelectionButtons() -> some View {
 		Button(action: { setMode(.swap, randomJumps: false) }) {
-			Text(GameType(mode: .swap, randomJumps: false).buttonText.localizedCapitalized)
+			Text(GameType(mode: .swap, randomJumps: false).localizedText.localizedCapitalized)
 		}
 		Button(action: { setMode(.swap, randomJumps: true) }) {
-			Text(GameType(mode: .swap, randomJumps: true).buttonText.localizedCapitalized)
+			Text(GameType(mode: .swap, randomJumps: true).localizedText.localizedCapitalized)
 		}
 		Button(action: { setMode(.classic, randomJumps: false) }) {
-			Text(GameType(mode: .classic, randomJumps: false).buttonText.localizedCapitalized)
+			Text(GameType(mode: .classic, randomJumps: false).localizedText.localizedCapitalized)
 		}
 		Button(action: { setMode(.classic, randomJumps: true) }) {
-			Text(GameType(mode: .classic, randomJumps: true).buttonText.localizedCapitalized)
+			Text(GameType(mode: .classic, randomJumps: true).localizedText.localizedCapitalized)
 		}
 	}
 
-	@ViewBuilder func boardView(for game: Game, state: Binding<GameView.GameState>, with rotation: Double, showSwap: Bool) -> some View {
-		let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : BoardView.SwapInfo(indices: [], enabled: false)
-		BoardView(game: game, gameState: state, swaps: swaps)
-			.rotation3DEffect(.degrees(2.6 * cos(rotation)), axis: (x: 1, y: 0, z: 0))
-			.rotation3DEffect(.degrees(4.0 * sin(rotation)), axis: (x: 0, y: 1, z: 0))
-			.rotation3DEffect(.degrees(tan(rotation / 10.0)), axis: (x: 0, y: -1, z: 0))
+	@ViewBuilder func boardView(for game: Game, state: Binding<GameView.GameState>) -> some View {
+		TimelineView(.animation) { context in
+			let rotation = context.date.timeIntervalSinceReferenceDate - startRotation
+			let showSwap = gameType.randomJumps && Int(floor(rotation)) % 4 < 2
+			let swaps = gameType.randomJumps ? BoardView.SwapInfo(indices: swaps(for: game), enabled: showSwap) : BoardView.SwapInfo(indices: [], enabled: false)
+			
+			BoardView(game: game, gameState: state, swaps: swaps)
+				.rotation3DEffect(.degrees(2.6 * cos(rotation)), axis: (x: 1, y: 0, z: 0))
+				.rotation3DEffect(.degrees(4.0 * sin(rotation)), axis: (x: 0, y: 1, z: 0))
+				.rotation3DEffect(.degrees(tan(rotation / 10.0)), axis: (x: 0, y: -1, z: 0))
 #if os(visionOS)
-			.offset(z: 50 + 78 * (1 - cos(rotation / 5.0)))
+				.offset(z: 50 + 78 * (1 - cos(rotation / 5.0)))
 #else
-			.rotation3DEffect(.degrees(15), axis: (x: 1.01333332, y: 1, z: 0.37))
+				.rotation3DEffect(.degrees(15), axis: (x: 1.01333332, y: 1, z: 0.37))
 #endif
+		}
 	}
 
 	func swaps(for game: Game) -> [Int] {
@@ -175,13 +159,11 @@ struct GamePickerView: View {
 	}
 }
 
-fileprivate extension GamePickerView {
-
-	static var initialGameType = GameType(mode: .classic, randomJumps: false)
+fileprivate extension ContentView {
 
 	static var initialSelections: [GameSelection] {
 		return GameDifficulty.allCases.map { difficulty in
-			GamePickerView.gameSelection(for: difficulty, mode: initialGameType.mode, randomJumps: initialGameType.randomJumps)
+			ContentView.gameSelection(for: difficulty, mode: GameType.initial.mode, randomJumps: GameType.initial.randomJumps)
 		}
 	}
 
@@ -192,25 +174,9 @@ fileprivate extension GamePickerView {
 	}
 }
 
-fileprivate extension GamePickerView.GameDifficulty {
+fileprivate extension GameDifficulty {
 
-	var displayValue: String {
-		switch self {
-		case .easy: return "Easy"
-		case .medium: return "Medium"
-		case .hard: return "Hard"
-		}
-	}
-
-	var grid: (rows: Int, columns: Int) {
-		switch self {
-		case .easy: return (rows: 5, columns: 3)
-		case .medium: return (rows: 7, columns: 4)
-		case .hard: return (rows: 8, columns: 5)
-		}
-	}
-
-	var imageResourceName: String {
+	var tabImageResourceName: String {
 		switch self {
 		case .easy: return "square.grid.2x2.fill"
 		case .medium: return "square.grid.3x3.fill"
@@ -227,21 +193,6 @@ fileprivate extension GamePickerView.GameDifficulty {
 	}
 }
 
-fileprivate extension GamePickerView.GameType {
-
-	var buttonText: String {
-		switch (mode, randomJumps) {
-		case (.classic, false): return "classic"
-		case (.classic, true): return "nightmare"
-		case (.swap, false): return "swap"
-		case (.swap, true): return "surprise"
-		}
-	}
-}
-
-struct ContentView_Previews: PreviewProvider {
-
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+	ContentView()
 }
