@@ -13,8 +13,8 @@ struct GameView: View {
 	static let gameFadeDuration = BoardView.standardDuration * 4
 	static let oneSecond = UInt64(1_000_000_000)
 
-	@ObservedObject var game: Game
-	@Binding var gameState: GameState
+	var game: Game
+	
 	@Binding var presenterVisible: Bool
 	@State private var initialDate: Date? {
 		didSet { stopTimer = false }
@@ -28,74 +28,73 @@ struct GameView: View {
 	let cancel = String(localized: "Cancel", comment: "Dismisses the congratulations without starting a new game")
 	let restart = String(localized: "New Game", comment: "Allows the player to cancel the current game and start a new game")
 
-	enum GameState {
-		case new		// Tiles are off-screen at the bottom
-		case playing	// Normal game-play state
-		case finished	// Game is finished
-		case fading
-	}
-
 	var body: some View {
 
 		let congrats = String(localized: "Congratulations! You won with a time of \(displayTime) in \(game.moves) moves", comment: "The congratulatory phrase when the player has won")
 
-		let board = withChangeObservers(boardView(gameState: $gameState))
-#if !os(visionOS)
-			.ignoresSafeArea(.container, edges: .bottom)
+		VStack {
+			boardView()
+				.modify { view in
+					if #available(iOS 17, macOS 14, *) {
+						view
+							.onChange(of: presenterVisible, presenterVisibleChanged)
+							.onChange(of: game.state, gameStateChanged)
+					} else {
+						view // The old values do not matter -- just pass in fake values
+							.onChange(of: presenterVisible) { presenterVisibleChanged(false, $0) }
+							.onChange(of: game.state) { gameStateChanged(.finished, $0) }
+					}
+				}
+#if os(visionOS)
+				.scenePadding()
+				.padding3D(.back, 16)
+#else
+				.ignoresSafeArea(.container, edges: .bottom)
+				.padding(4)
 #endif
-			.padding(4)
-			.alert(congrats, isPresented: $showingWinGameDialog) {
-				Button(playAgain, action: newGame)
-				Button(cancel, role: .cancel) { }
-			}
+				.alert(congrats, isPresented: $showingWinGameDialog) {
+					Button(playAgain, action: newGame)
+					Button(cancel, role: .cancel) { }
+				}
 #if !os(macOS)
-			.navigationBarTitleDisplayMode(.inline)
+				.navigationBarTitleDisplayMode(.inline)
 #endif
-			.toolbar {
-				ToolbarItemGroup(placement: .principal) {
-					if let initialDate = initialDate, gameState == .playing {
-						TimelineView(.periodic(from: initialDate, by: 1.0)) { context in
+				.toolbar {
+					ToolbarItemGroup(placement: .principal) {
+						if let initialDate = initialDate, game.state == .playing {
+							TimelineView(.periodic(from: initialDate, by: 1.0)) { context in
+								Text("Moves: \(game.moves) Time: \(displayTime)", comment: "The elapsed time and number of moves currently made")
+									.allowsTightening(true)
+									.minimumScaleFactor(0.5)
+							}
+						} else {
 							Text("Moves: \(game.moves) Time: \(displayTime)", comment: "The elapsed time and number of moves currently made")
 								.allowsTightening(true)
 								.minimumScaleFactor(0.5)
 						}
-					} else {
-						Text("Moves: \(game.moves) Time: \(displayTime)", comment: "The elapsed time and number of moves currently made")
-							.allowsTightening(true)
-							.minimumScaleFactor(0.5)
 					}
-				}
 #if os(macOS)
-				let placement: ToolbarItemPlacement = .secondaryAction
+					let placement: ToolbarItemPlacement = .secondaryAction
 #else
-				let placement: ToolbarItemPlacement = .navigationBarTrailing
+					let placement: ToolbarItemPlacement = .navigationBarTrailing
 #endif
-				ToolbarItemGroup(placement: placement) {
-					Button(action: newGame) {
-						Label(restart, systemImage: "arrow.clockwise.circle")
+					ToolbarItemGroup(placement: placement) {
+						Button(action: newGame) {
+							Label(restart, systemImage: "arrow.clockwise.circle")
+						}
+						.disabled([.new].contains(game.state))
 					}
-					.disabled([.new].contains(gameState))
 				}
-			}
-
-		VStack {
-#if os(visionOS)
-			board
-				.offset(z: 16)
-			Spacer(minLength: 20)
-#else
-			board
-#endif
 		}
-		.opacity(boardOpacity(gameState))
-		.animation(boardAnimation(gameState), value: gameState)
+		.opacity(boardOpacity(game.state))
+		.animation(boardAnimation(game.state), value: game.state)
 	}
 	
 	func presenterVisibleChanged(_: Bool, _ newValue: Bool) {
 		// This is the equivalent of viewDidAppear (because the presenter is now onDisappear)
 		print("Presenter visible: \(newValue)")
 		guard !presenterVisible else {
-			if gameState == .playing, let initialDate = initialDate {
+			if game.state == .playing, let initialDate = initialDate {
 				game.accumulatedTime += Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
 			}
 			initialDate = nil
@@ -106,7 +105,7 @@ struct GameView: View {
 		Task { await newGame(firstAppearance: true) }
 	}
 	
-	func gameStateChanged(_: GameState, _ newValue: GameState) {
+	func gameStateChanged(_: Game.State, _ newValue: Game.State) {
 		switch newValue {
 		case .new where finishGameTask != nil:
 			finishGameTask!.cancel()
@@ -115,28 +114,15 @@ struct GameView: View {
 			let now = Date()
 			game.accumulatedTime += now.timeIntervalSinceReferenceDate - initialDate!.timeIntervalSinceReferenceDate
 			initialDate = nil
-			finishGameTask = Task(operation: finishGame)
+			finishGameTask = Task { await finishGame() }
 		default: break
 		}
 	}
-	
-	@ViewBuilder func withChangeObservers(_ view: some View) -> some View {
-		if #available(iOS 17, macOS 14, *) {
-			view
-				.onChange(of: presenterVisible, presenterVisibleChanged)
-				.onChange(of: gameState, gameStateChanged)
-		} else {
-			view // The old values do not matter -- just pass in fake values
-				.onChange(of: presenterVisible) { presenterVisibleChanged(false, $0) }
-				.onChange(of: gameState) { gameStateChanged(.finished, $0) }
-		}
-	}
 
-	@ViewBuilder func boardView(gameState: Binding<GameState>) -> some View {
-		let board = BoardView(game: game, gameState: gameState)
-		if let initialDate = initialDate, gameState.wrappedValue == .playing {
-			board.task {
-				guard randomJumps else { return }
+	@ViewBuilder func boardView() -> some View {
+		let board = BoardView(game: game, swaps: nil)
+		if randomJumps, let initialDate = initialDate, game.state == .playing {
+			board.task { @MainActor in
 				defer {
 					print("Exiting random jump timer")
 				}
@@ -147,11 +133,11 @@ struct GameView: View {
 				let initialDelay = delayInSeconds - currentGameTime.truncatingRemainder(dividingBy: delayInSeconds)
 				print("Starting random jump timer after \(initialDelay)s...")
                 try? await Task.sleep(nanoseconds: UInt64(initialDelay) * GameView.oneSecond)
-				while !stopTimer && gameState.wrappedValue == .playing && !Task.isCancelled {
+				while !stopTimer && self.game.state == .playing && !Task.isCancelled {
 					for _ in 0..<3 {
 						SoundEffects.default.play(.warning)
 						try? await Task.sleep(nanoseconds: GameView.oneSecond)
-						if stopTimer || gameState.wrappedValue != .playing || Task.isCancelled { return }
+						if stopTimer || self.game.state != .playing || Task.isCancelled { return }
 					}
 					Task { await board.randomMove() }
 					try? await Task.sleep(nanoseconds: UInt64(delayInSeconds) * GameView.oneSecond)
@@ -162,11 +148,11 @@ struct GameView: View {
 		}
 	}
 
-	func boardAnimation(_ gameState: GameState) -> Animation? {
+	func boardAnimation(_ gameState: Game.State) -> Animation? {
 		return gameState == .fading ? .linear(duration: GameView.gameFadeDuration) : nil
 	}
 	
-	func boardOpacity(_ gameState: GameState) -> Double {
+	func boardOpacity(_ gameState: Game.State) -> Double {
 		return gameState == .fading ? 0 : 1
 	}
 
@@ -179,7 +165,7 @@ struct GameView: View {
 			return "0:00"
 		}
 		let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
-		let intTime = gameState == .playing ? Int(currentGameTime) : Int(game.accumulatedTime)
+		let intTime = game.state == .playing ? Int(currentGameTime) : Int(game.accumulatedTime)
 		return "\(intTime / 60):\(seconds: intTime % 60)"
 	}
 
@@ -188,7 +174,7 @@ struct GameView: View {
 		Task { await newGame(firstAppearance: false) }
 	}
 	
-	func animateTileEntry() async {
+	@MainActor func animateTileEntry() async {
 		SoundEffects.default.play(.newGame)
 #if os(visionOS)
 		let interval = 3.0 * Double(GameView.oneSecond) / Double(game.tiles.count)
@@ -202,19 +188,18 @@ struct GameView: View {
 			game.tiles[index].renderState = .none
 		}
 		try? await Task.sleep(nanoseconds: GameView.oneSecond)
-		gameState = .playing
+		game.state = .playing
 		initialDate = Date()
 	}
 
-	func newGame(firstAppearance: Bool) async {
-		if gameState == .new, firstAppearance {
+	@MainActor func newGame(firstAppearance: Bool) async {
+		if game.state == .new, firstAppearance {
 			game.startNewGame()
 			await animateTileEntry()
 		} else if !firstAppearance {
 			stopTimer = true
-			gameState = .fading
+			game.state = .fading
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
-			gameState = .new
 			game.startNewGame()
 			PuzzleImages.currentImage = PuzzleImages.randomFavorite()
 			// A second wait seems to correct an issue animating new tiles after a completed game
@@ -225,7 +210,7 @@ struct GameView: View {
 		}
 	}
 
-	@Sendable func finishGame() async {
+	@MainActor func finishGame() async {
 		SoundEffects.default.play(.gameWin)
 		try? await Task.sleep(nanoseconds: GameView.oneSecond)
 		let animationOrder = (0..<game.tiles.count).shuffled()
@@ -257,10 +242,16 @@ fileprivate extension String.StringInterpolation {
 	}
 }
 
-#Preview {
-	let game = Game(rows: 6, columns: 4, mode: .swap)
-	@State var gameState: GameView.GameState = .finished
-	@State var presenterVisible = false
+fileprivate extension View {
+	
+	func modify<T: View>(@ViewBuilder _ modifier: (Self) -> T) -> some View {
+		return modifier(self)
+	}
+}
 
-	return GameView(game: game, gameState: $gameState, presenterVisible: $presenterVisible, randomJumps: false)
+#Preview {
+	@Previewable @State var presenterVisible = false
+	let game = Game(rows: 6, columns: 4, mode: .swap)
+
+	return GameView(game: game, presenterVisible: $presenterVisible, randomJumps: false)
 }

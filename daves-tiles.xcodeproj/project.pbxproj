@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		2627DC372B79BE930079EF5B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2627DC362B79BE930079EF5B /* Localizable.xcstrings */; };
+		26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3B2BB2390400AFC2FB /* GameSelection.swift */; };
+		26347B3E2BB239A600AFC2FB /* TilesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3D2BB239A600AFC2FB /* TilesGame.swift */; };
 		2687F23C2B793984005440C1 /* Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23B2B793984005440C1 /* Tile.swift */; };
 		2687F23E2B79425B005440C1 /* GameType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23D2B79425B005440C1 /* GameType.swift */; };
 		2687F2402B7942FD005440C1 /* GameDifficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23F2B7942FD005440C1 /* GameDifficulty.swift */; };
+		26C85ACA2BAFA04500AC9691 /* GamePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26C85AC92BAFA04500AC9691 /* GamePicker.swift */; };
 		26EF2DC52B80233B000D90AC /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26EF2DC42B80233B000D90AC /* InfoPlist.xcstrings */; };
 		640BD057269E18C50001AAA2 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
 		640BD059269E18C50001AAA2 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
@@ -46,9 +49,12 @@
 
 /* Begin PBXFileReference section */
 		2627DC362B79BE930079EF5B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		26347B3B2BB2390400AFC2FB /* GameSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelection.swift; sourceTree = "<group>"; };
+		26347B3D2BB239A600AFC2FB /* TilesGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesGame.swift; sourceTree = "<group>"; };
 		2687F23B2B793984005440C1 /* Tile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tile.swift; sourceTree = "<group>"; };
 		2687F23D2B79425B005440C1 /* GameType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameType.swift; sourceTree = "<group>"; };
 		2687F23F2B7942FD005440C1 /* GameDifficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDifficulty.swift; sourceTree = "<group>"; };
+		26C85AC92BAFA04500AC9691 /* GamePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePicker.swift; sourceTree = "<group>"; };
 		26EF2DC42B80233B000D90AC /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		640A9DA527820E8500095601 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		640A9DA727820EBF00095601 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -132,6 +138,8 @@
 				64CE7B402678298500988DA4 /* davestilesApp.swift */,
 				645D95C426951AB30028AD02 /* Game.swift */,
 				2687F23F2B7942FD005440C1 /* GameDifficulty.swift */,
+				26C85AC92BAFA04500AC9691 /* GamePicker.swift */,
+				26347B3B2BB2390400AFC2FB /* GameSelection.swift */,
 				2687F23D2B79425B005440C1 /* GameType.swift */,
 				64B95AC626964371003D22D1 /* GameView.swift */,
 				6477012226DAE7C2007D42D1 /* PuzzleImages.swift */,
@@ -139,6 +147,7 @@
 				640BD067269E1B260001AAA2 /* SoundEffects.swift */,
 				2687F23B2B793984005440C1 /* Tile.swift */,
 				64B5205226A7313B0045A189 /* TileMovementGroup.swift */,
+				26347B3D2BB239A600AFC2FB /* TilesGame.swift */,
 				645D95BE26911BFE0028AD02 /* TileView.swift */,
 			);
 			path = Shared;
@@ -207,7 +216,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 1520;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					64CE7B472678298600988DA4 = {
 						CreatedOnToolsVersion = 13.0;
@@ -278,14 +287,17 @@
 				6477012326DAE7C2007D42D1 /* PuzzleImages.swift in Sources */,
 				64C218DC268E59A400A9C38B /* BoardView.swift in Sources */,
 				645D95C226911C700028AD02 /* BoardGeometry.swift in Sources */,
+				26347B3E2BB239A600AFC2FB /* TilesGame.swift in Sources */,
 				64B95AC726964371003D22D1 /* GameView.swift in Sources */,
 				2687F23E2B79425B005440C1 /* GameType.swift in Sources */,
 				64CE7B652678298600988DA4 /* davestilesApp.swift in Sources */,
+				26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */,
 				645D95BF26911BFE0028AD02 /* TileView.swift in Sources */,
 				64CE7B672678298600988DA4 /* ContentView.swift in Sources */,
 				640BD068269E1B260001AAA2 /* SoundEffects.swift in Sources */,
 				2687F23C2B793984005440C1 /* Tile.swift in Sources */,
 				645D95C526951AB30028AD02 /* Game.swift in Sources */,
+				26C85ACA2BAFA04500AC9691 /* GamePicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,6 +326,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
@@ -352,6 +365,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -366,16 +380,16 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 3.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				XROS_DEPLOYMENT_TARGET = 1.0;
+				SWIFT_VERSION = 6.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Debug;
 		};
@@ -385,6 +399,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
@@ -423,6 +438,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -431,15 +447,15 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 3.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
-				XROS_DEPLOYMENT_TARGET = 1.0;
+				SWIFT_VERSION = 6.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Release;
 		};
@@ -501,7 +517,6 @@
 		64CE7B762678298600988DA4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -523,7 +538,6 @@
 		64CE7B772678298600988DA4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -8,10 +8,10 @@
 
 import SwiftUI
 
-enum GameDifficulty: Hashable, CaseIterable {
-   case easy
-   case medium
-   case hard
+enum GameDifficulty: CaseIterable {
+	case easy
+	case medium
+	case hard
 }
 
 extension GameDifficulty {
@@ -29,6 +29,14 @@ extension GameDifficulty {
 		case .easy: return (rows: 5, columns: 3)
 		case .medium: return (rows: 7, columns: 4)
 		case .hard: return (rows: 8, columns: 5)
+		}
+	}
+
+	var tabIndex: Int {
+		switch self {
+		case .easy: return 0
+		case .medium: return 1
+		case .hard: return 2
 		}
 	}
 }

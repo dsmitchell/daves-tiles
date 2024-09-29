@@ -16,17 +16,21 @@ struct BoardGeometry {
 	public let positions: [CGPoint]
 	public let tileSize: CGSize
 	
-	private static var numberFormatter: NumberFormatter = {
+	private static let numberFormatter: NumberFormatter = {
 		let formatter = NumberFormatter()
 		formatter.locale = .current
 		formatter.numberStyle = .none
 		return formatter
 	}()
 
-	init(game: Game, geometryProxy: GeometryProxy) {
+	@MainActor init(game: Game, geometryProxy: GeometryProxy) {
 
 		// Calculate geometry
+#if os(visionOS)
+		let rotated = PuzzleImages.imageIsLandscape ?? (geometryProxy.size.width > geometryProxy.size.height)
+#else
 		let rotated = geometryProxy.size.width > geometryProxy.size.height
+#endif
 		let columns = rotated ? game.rows : game.columns
 		let rows = rotated ? game.columns : game.rows
 		let length = min(geometryProxy.size.width / CGFloat(columns), geometryProxy.size.height / CGFloat(rows))
@@ -45,28 +49,29 @@ struct BoardGeometry {
 		}
 		self.tileSize = CGSize(width: length, height: length)
 	}
-
-	func image(for tile: Tile) -> Image? {
-		guard boardSize != .zero, let image = PuzzleImages.imageMatching(size: boardSize) else { return nil }
-		let tilePosition = tile.id - 1
-		let gridIndex = (row: tilePosition / game.columns, column: tilePosition % game.columns)
+	
+	func frame(for id: Int) -> CGRect {
+		let gridIndex = (row: (id - 1) / game.columns, column: (id - 1) % game.columns)
 		let column = isLandscape ? gridIndex.row : gridIndex.column
 		let row = isLandscape ? game.columns - gridIndex.column - 1 : gridIndex.row
 		let origin = CGPoint(x: CGFloat(column) * tileSize.width, y: CGFloat(row) * tileSize.height)
-		let frame = CGRect(origin: origin, size: tileSize)
-		guard let cgImage = image.cropping(to: frame) else { return nil }
-		return Image(decorative: cgImage, scale: 1)
+		return CGRect(origin: origin, size: tileSize)
 	}
 
-	func text(for tile: Tile) -> String? {
-		guard let identifier = number(for: tile) else { return nil }
+	@MainActor func image(for id: Int) -> Image? {
+		guard boardSize != .zero else { return nil }
+		return PuzzleImages.imageMatching(size: boardSize, in: frame(for: id))
+	}
+
+	func text(for id: Int) -> String? {
+		guard let identifier = number(for: id) else { return nil }
 		return BoardGeometry.numberFormatter.string(from: identifier)
 	}
 	
-	private func number(for tile: Tile) -> NSNumber? {
-		guard tile.id != game.openTileId else { return nil }
-		guard isLandscape else { return NSNumber(integerLiteral: tile.id) }
-		let gridIndex = game.gridIndex(for: tile.id - 1)
+	private func number(for id: Int) -> NSNumber? {
+		guard id != game.openTileId else { return nil }
+		guard isLandscape else { return NSNumber(integerLiteral: id) }
+		let gridIndex = game.gridIndex(for: id - 1)
 		return NSNumber(integerLiteral: game.rows * (game.columns - gridIndex.column - 1) + gridIndex.row + 1)
 	}
 

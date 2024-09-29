@@ -15,7 +15,7 @@ struct GameType: Equatable {
 
 extension GameType {
 
-	static var initial = GameType(mode: .classic, randomJumps: false)
+	static let initial = GameType(mode: .classic, randomJumps: false)
 
 	var localizedText: String {
 		switch (mode, randomJumps) {

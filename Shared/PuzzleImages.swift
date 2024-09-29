@@ -8,22 +8,41 @@
 
 import Foundation
 import CoreGraphics
+import SwiftUI
 #if canImport(AppKit)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
 #endif
 
-class PuzzleImages {
+@MainActor class PuzzleImages {
 
 	static var currentImage: CGImage? = randomFavorite() {
-		didSet { scaledImages.removeAll() }
+		didSet {
+			tileImages.removeAll()
+			scaledImages.removeAll()
+		}
 	}
 
 	private static var lastImageNumber = -1
 	private static var scaledImages = [CGSize : CGImage]()
+	private static var tileImages = [CGRect : Image]()
+	
+	static var imageIsLandscape: Bool? {
+		guard let image = currentImage else { return nil }
+		return image.height < image.width
+	}
+	
+	static func imageMatching(size: CGSize, in frame: CGRect) -> Image? {
+		if let cached = tileImages[frame] { return cached }
+		guard let image = imageMatching(size: size) else { return nil }
+		guard let cgImage = image.cropping(to: frame) else { return nil }
+		let cached = Image(decorative: cgImage, scale: 1)
+		tileImages[frame] = cached
+		return cached
+	}
 
-	static func imageMatching(size: CGSize) -> CGImage? {
+	private static func imageMatching(size: CGSize) -> CGImage? {
 		// TODO: Round the size to points so that we don't produce so many variations
 		let roundedSize = CGSize(width: size.width.rounded(), height: size.height.rounded())
 		if let scaledImage = scaledImages[roundedSize] { return scaledImage }
@@ -76,5 +95,29 @@ fileprivate extension CGImage {
 		context.draw(self, in: imageRect)
 
 		return context.makeImage()
+	}
+}
+
+extension CGPoint: @retroactive Hashable {
+
+	public func hash(into hasher: inout Hasher) {
+		hasher.combine(self.x)
+		hasher.combine(self.y)
+	}
+}
+
+extension CGRect: @retroactive Hashable {
+
+	public func hash(into hasher: inout Hasher) {
+		hasher.combine(self.origin)
+		hasher.combine(self.size)
+	}
+}
+
+extension CGSize: @retroactive Hashable {
+
+	public func hash(into hasher: inout Hasher) {
+		hasher.combine(self.width)
+		hasher.combine(self.height)
 	}
 }

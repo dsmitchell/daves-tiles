@@ -7,11 +7,11 @@
 //
 
 import Foundation
-import AVFoundation
+@preconcurrency import AVFoundation
 
 public class SoundEffects {
 
-	static let `default` = SoundEffects()
+	@MainActor static let `default` = SoundEffects()
 
 	public enum Effect: CaseIterable {
 		case click

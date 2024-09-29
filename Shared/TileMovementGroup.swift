@@ -55,8 +55,9 @@ struct TileMovementGroup {
 			tileIdentifiers = (tileIndex..<openTile).reversed().map { game.tiles[$0].id }
 			direction = .right
 		default:
-			tileIdentifiers = []
+			tileIdentifiers = [game.tiles[tileIndex].id]
 			direction = .none
+			willMoveNext = false
 		}
 	}
 

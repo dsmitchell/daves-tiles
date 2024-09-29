@@ -23,31 +23,30 @@ enum ImageClipShape: Shape {
 
 struct TileView: View {
 
-	let tile: Tile
+	let id: Int
 	let image: Image?
-	let imageBounds: CGRect = .zero
+	let isSelected: Bool
 	let isMatched: Bool
 	let showNumber: Bool
 	let text: String?
 
 	var body: some View {
-		let selected = tile.isSelected
-		let roundedBorder = selected || !isMatched
+		let roundedBorder = isSelected || !isMatched
 		let roundedRadius = roundedBorder ? 8.0 : 0.0
 		ZStack {
 			let roundedRectangle = RoundedRectangle(cornerRadius: roundedRadius)
-			background(for: tile.id, in: roundedRectangle)
-				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: selected ? 4 : 0))
+			background(for: id, in: roundedRectangle)
+				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: isSelected ? 4 : 0))
 				.clipShape(roundedBorder ? ImageClipShape.rounded(radius: roundedRadius) : ImageClipShape.rectangle)
 				.padding(roundedBorder ? 1 : 0)
 			if showNumber {
-				TileView.styledLabel(with: text)
+				TileView.styledLabel(with: text, for: id)
 			}
 		}
 #if os(visionOS)
 		.contentShape(.hoverEffect, .rect(cornerRadius: roundedRadius))
 #else
-		.scaleEffect(selected ? 1.15 : 1.0)
+		.scaleEffect(isSelected ? 1.15 : 1)
 #endif
 	}
 
@@ -61,14 +60,14 @@ struct TileView: View {
 	}
 
 	@ViewBuilder
-	public static func styledLabel(with text: String?) -> some View {
+	public static func styledLabel(with text: String?, for id: Int) -> some View {
 		label(with: text)
-			.id("label.\(text ?? "star")") // There will only ever be one tile with a nil text
 			.font(.title)
 			.foregroundColor(.white)
 			.padding(2)
 			.shadow(color: .black, radius: 2)
 			.drawingGroup()
+			.id("Label.\(id)")
 #if os(visionOS)
 			.offset(z: 6.0)
 #endif
@@ -85,8 +84,5 @@ struct TileView: View {
 }
 
 #Preview {
-	let tile = Tile(id: 5, renderState: .none)
-	
-	return TileView(tile: tile, image: nil, isMatched: false, showNumber: true, text: "5")
-		.frame(width: 160, height: 160)
+	return TileView(id: 5, image: Image("Favorite07"), isSelected: false, isMatched: false, showNumber: true, text: "5")
 }

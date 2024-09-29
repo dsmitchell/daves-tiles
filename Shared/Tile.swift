@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct Tile: Identifiable, Equatable, Hashable {
+struct Tile: Identifiable {
 
 	enum RenderState: Equatable {
 		case none
@@ -33,12 +33,16 @@ struct Tile: Identifiable, Equatable, Hashable {
 		default: return false
 		}
 	}
+}
+
+extension Tile: Hashable {
 
 	static func == (lhs: Self, rhs: Self) -> Bool {
-		return lhs.id == rhs.id
+		// .renderState is needed in order to ensure redraws occur
+		return lhs.id == rhs.id && lhs.renderState == rhs.renderState
 	}
 
 	func hash(into hasher: inout Hasher) {
-		hasher.combine(id)
+		hasher.combine(id) // .renderState is not needed for Hashable
 	}
 }

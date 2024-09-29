@@ -8,40 +8,50 @@
 
 import SwiftUI
 
-class Game: ObservableObject, Identifiable {
+fileprivate struct GameTemplate: TilesGame {
+	let rows: Int
+	let columns: Int
+	var tiles: [Tile]
+	let openTileId: Int?
+}
+
+@Observable class Game: Identifiable, TilesGame {
 
 	let id = UUID()
 	let rows: Int
 	let columns: Int
+	let openTileId: Int?
 
 	enum Mode: Equatable {
 		case classic
 		case swap
 	}
 
-	@Published var moves: Int = 0
-	@Published var accumulatedTime: Double = 0
-	@Published var tiles: [Tile]
-	
-	var movementGroup: TileMovementGroup?
-	var lingeringTileIdentifiers = [Int]()
-	var initialized = false
-	let openTileId: Int?
+	enum State {
+		case new		// Tiles are off-screen at the bottom
+		case playing	// Normal game-play state
+		case finished	// Game is finished
+		case fading
+	}
 
-	init(rows: Int, columns: Int, mode: Mode) {
+	var moves: Int = 0
+	var accumulatedTime: Double = 0
+	var tiles: [Tile]
+	var state: State
+
+	@MainActor init(rows: Int, columns: Int, mode: Mode) {
 		self.rows = rows
 		self.columns = columns
 		let totalTiles = rows * columns
 #if os(iOS)
 		self.openTileId = mode == .classic ? totalTiles : nil
-#else // These platforms are more likely to be landscape-centric
+#elseif os(macOS) // These platforms are more likely to be landscape-centric
 		self.openTileId = mode == .classic ? totalTiles - columns + 1 : nil
+#else
+		self.openTileId = mode == .classic ? PuzzleImages.imageIsLandscape ?? false ? totalTiles - columns + 1 : totalTiles : nil
 #endif
 		self.tiles = (1...totalTiles).map { Tile(id: $0) }
-	}
-
-	func gridIndex(for index: Int) -> (row: Int, column: Int) {
-		return (index / columns, index % columns)
+		self.state = .new
 	}
 
 	var isFinished: Bool {
@@ -57,76 +67,20 @@ class Game: ObservableObject, Identifiable {
 		}
 	}
 
-	func isMatched(tile: Tile, index: Int? = nil) -> Bool {
-		if let index = index {
-			return tile.id == index + 1
-		}
-		return tile.id - 1 == tiles.firstIndex { tile.id == $0.id }
+	func isMatched(tile: Tile, index: Int) -> Bool {
+		return tile.id == index + 1
 	}
 
 	func startNewGame() {
-		if initialized {
-			let totalTiles = rows * columns
-			self.tiles = (1...totalTiles).map { Tile(id: $0) }
-		}
+		self.state = .new
+		var template = GameTemplate(rows: rows, columns: columns, tiles: (1...rows * columns).map { Tile(id: $0) }, openTileId: openTileId)
 		repeat {
-			randomMove()
-		} while tiles.enumerated().contains { index, tile in
+			template.randomMove()
+		} while template.tiles.enumerated().contains { index, tile in
 			isMatched(tile: tile, index: index)
 		}
 		self.accumulatedTime = 0
 		self.moves = 0
-		self.initialized = true
-	}
-
-	func trackingPosition(for tile: Tile) -> Int? {
-		return lingeringTileIdentifiers.firstIndex(of: tile.id) ?? movementGroup?.tileIdentifiers.firstIndex(of: tile.id)
-	}
-
-	private func validJump(nextMove: Int, openTile: Int) -> Bool {
-		guard nextMove != openTile else { return false }
-		let nextGridIndex = gridIndex(for: nextMove)
-		let openGridIndex = gridIndex(for: openTile)
-		let deltaSum = abs(openGridIndex.row - nextGridIndex.row) + abs(openGridIndex.column - nextGridIndex.column);
-		return /*deltaSum > 2 &&*/ deltaSum % 2 == 1
-	}
-
-	@discardableResult func randomMove(except indices: [Int]? = nil) -> [Int] {
-		guard let openTile = tiles.firstIndex(where: { $0.id == openTileId }) else {
-			var moves = [Int]()
-			repeat {
-				var tileToMove: Int
-				repeat {
-					tileToMove = Int.random(in: 0..<tiles.count)
-				} while (indices != nil && indices!.contains(tileToMove)) || moves.contains(tileToMove)
-				moves.append(tileToMove)
-				let lastTwo = moves.suffix(2)
-				if lastTwo.count == 2, let left = lastTwo.first, let right = lastTwo.last {
-					tiles.swapAt(left, right)
-				}
-			} while moves.count < min(columns, rows) // We expect columns to always be the smaller number
-			return moves
-		}
-		var tileToMove: Int
-		repeat {
-			tileToMove = Int.random(in: 0..<tiles.count)
-		} while (indices != nil && indices!.contains(tileToMove)) || !validJump(nextMove: tileToMove, openTile: openTile)
-		tiles.swapAt(openTile, tileToMove)
-		return [openTile]
-	}
-}
-
-extension CGSize: Hashable {
-
-	public func hash(into hasher: inout Hasher) {
-		hasher.combine(self.width)
-		hasher.combine(self.height)
-	}
-}
-
-fileprivate extension CGSize {
-
-	static func * (left: CGSize, right: CGFloat) -> CGSize {
-		return CGSize(width: left.width + right, height: left.height + right)
+		self.tiles = template.tiles
 	}
 }
