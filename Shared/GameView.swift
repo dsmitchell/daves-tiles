@@ -10,11 +10,7 @@ import SwiftUI
 
 struct GameView: View {
 
-#if os(visionOS)
 	static let gameFadeDuration = BoardView.standardDuration * 4
-#else
-	static let gameFadeDuration = BoardView.standardDuration
-#endif
 	static let oneSecond = UInt64(1_000_000_000)
 
 	@ObservedObject var game: Game
@@ -36,6 +32,7 @@ struct GameView: View {
 		case new		// Tiles are off-screen at the bottom
 		case playing	// Normal game-play state
 		case finished	// Game is finished
+		case fading
 	}
 
 	var body: some View {
@@ -81,15 +78,17 @@ struct GameView: View {
 				}
 			}
 
-#if os(visionOS)
 		VStack {
+#if os(visionOS)
 			board
 				.offset(z: 16)
 			Spacer(minLength: 20)
-		}
 #else
-		board
+			board
 #endif
+		}
+		.opacity(boardOpacity(gameState))
+		.animation(boardAnimation(gameState), value: gameState)
 	}
 	
 	func presenterVisibleChanged(_: Bool, _ newValue: Bool) {
@@ -163,6 +162,14 @@ struct GameView: View {
 		}
 	}
 
+	func boardAnimation(_ gameState: GameState) -> Animation? {
+		return gameState == .fading ? .linear(duration: GameView.gameFadeDuration) : nil
+	}
+	
+	func boardOpacity(_ gameState: GameState) -> Double {
+		return gameState == .fading ? 0 : 1
+	}
+
 	var displayTime: String {
 		guard let initialDate = initialDate else {
 			if game.accumulatedTime > 0 {
@@ -205,13 +212,13 @@ struct GameView: View {
 			await animateTileEntry()
 		} else if !firstAppearance {
 			stopTimer = true
-			for index in 0..<game.tiles.count {
-				game.tiles[index].renderState = .fading(wasFalling: gameState == .finished)
-			}
+			gameState = .fading
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
 			gameState = .new
 			game.startNewGame()
 			PuzzleImages.currentImage = PuzzleImages.randomFavorite()
+			// A second wait seems to correct an issue animating new tiles after a completed game
+			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
 			await animateTileEntry()
 		} else {
 			initialDate = Date()

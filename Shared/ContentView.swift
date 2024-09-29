@@ -93,7 +93,6 @@ struct ContentView: View {
 						}
 #endif
 					}
-					.animation(nil, value: gameType)
 				}
 			}
 			.onAppear {
