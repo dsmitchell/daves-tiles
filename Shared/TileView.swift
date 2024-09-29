@@ -13,10 +13,10 @@ struct Tile: Identifiable, Equatable, Hashable {
 	enum RenderState: Equatable {
 		case none(selected: Bool)
 		case dragged
-		case fading
-		case lifted(falling: Bool)
+		case fading(wasFalling: Bool)
+		case falling
 		case released(percent: Double)
-		case thrown(selected: Bool)
+		case thrown
 		case unset
 	}
 	
@@ -28,7 +28,7 @@ struct Tile: Identifiable, Equatable, Hashable {
 		case .none(let selected): return selected
 		case .dragged: return true
 		case .released: return true
-		case .thrown(let selected): return selected
+		case .thrown: return true
 		default: return false
 		}
 	}
@@ -67,8 +67,9 @@ struct TileView: View {
 
 	var body: some View {
 		let roundedBorder = !isOpen && (tile.isSelected || !isMatched)
+		let roundedRadius = roundedBorder ? 8.0 : 0.0
 		ZStack {
-			let roundedRectangle = RoundedRectangle(cornerRadius: roundedBorder ? 8 : 0)
+			let roundedRectangle = RoundedRectangle(cornerRadius: roundedRadius)
 			background(for: tile, in: roundedRectangle)
 				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: tile.isSelected ? 4 : 0))
 				.clipShape(roundedBorder ? ImageClipShape.rounded : ImageClipShape.rectangle)
@@ -77,7 +78,11 @@ struct TileView: View {
 				TileView.styledLabel(for: tile, with: text)
 			}
 		}
+#if os(visionOS)
+		.contentShape(.hoverEffect, .rect(cornerRadius: roundedRadius))
+#else
 		.scaleEffect(tile.isSelected ? 1.15 : 1.0)
+#endif
 	}
 
 	@ViewBuilder
@@ -95,7 +100,12 @@ struct TileView: View {
 			.id("label.\(tile.id)")
 			.font(.title)
 			.foregroundColor(.white)
+			.padding(2)
 			.shadow(color: .black, radius: 2)
+			.drawingGroup()
+#if os(visionOS)
+			.offset(z: 6.0)
+#endif
 	}
 
 	@ViewBuilder

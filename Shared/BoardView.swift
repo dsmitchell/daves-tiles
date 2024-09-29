@@ -49,7 +49,7 @@ struct BoardView: View {
 			}
 			duration = surpriseDuration
 			game.moves += 1
-			game.applyRenderState(.thrown(selected: true), to: [swappingIdentifier] + movementGroup.tileIdentifiers)
+			game.applyRenderState(.thrown, to: [swappingIdentifier] + movementGroup.tileIdentifiers)
 			guard var swapIndex = game.tiles.firstIndex(where: { $0.id == swappingIdentifier }) else { return }
 			for index in movementGroup.indices(in: game) {
 				game.tiles.swapAt(swapIndex, index)
@@ -105,7 +105,7 @@ struct BoardView: View {
 			game.tiles[index].id
 		}
 		for index in movedTileIndices {
-			game.tiles[index].renderState = .thrown(selected: true)
+			game.tiles[index].renderState = .thrown
 		}
 		SoundEffects.default.play(.jump)
 		DispatchQueue.main.asyncAfter(deadline: .now() + surpriseDuration) {
@@ -120,35 +120,61 @@ struct BoardView: View {
 	func tileMovementAnimation(_ tile: Tile) -> Animation? {
 		guard let swaps = swaps else {
 			switch tile.renderState {
-			case .none: return .linear(duration: popDuration)
+			case .none: return gameState == .new ? .spring(dampingFraction: 0.75, blendDuration: 1.0) : .linear(duration: popDuration)
 			case .fading: return .linear(duration: GameView.gameFadeDuration)
 			case .released(let percent): return .linear(duration: slideDuration * (1.0 - percent))
-			case .thrown(let selected): return selected ? .linear(duration: surpriseDuration) : .spring(dampingFraction: 0.75, blendDuration: 1.0)
+			case .thrown: return .linear(duration: surpriseDuration)
 			default: return nil
 			}
 		}
 		guard let index = game.tiles.firstIndex(where: { $0.id == tile.id }), swaps.indices.contains(index) else { return nil }
 		return .linear(duration: surpriseDuration * 2)
 	}
+	
+	func tileFallingAnimation(_ tile: Tile) -> Animation? {
+		guard tile.isFalling else { return nil }
+		#if os(visionOS)
+		return .easeOut(duration: 0.5)
+		#else
+		return .easeIn(duration: 1)
+		#endif
+	}
 
 	func tileOffset(_ tile: Tile) -> CGSize {
 		guard swaps == nil, tile.renderState == .dragged, let movementGroup = game.movementGroup else { return .zero }
 		return CGSize(width: movementGroup.positionOffset.dx, height: movementGroup.positionOffset.dy)
 	}
+	
+	func tileOffsetZ(_ tile: Tile) -> Double {
+		guard let swaps = swaps else {
+			guard tile.renderState == .unset else {
+				return tile.isSelected ? 8 : 0
+			}
+			return 640
+		}
+		if swaps.enabled, let index = game.tiles.firstIndex(where: { $0.id == tile.id }), swaps.indices.contains(index) {
+			return 8
+		}
+		return tile.isSelected ? 8 : 0
+	}
 
 	func tileOpacity(_ tile: Tile, isOpen: Bool) -> Double {
-		guard swaps == nil else { return isOpen && !tile.isLifted ? 0 : 1 }
-		guard tile.renderState == .fading || isOpen && !game.isFinished else { return 1 }
+		guard swaps == nil else { return isOpen ? 0 : 1 }
+		guard tile.isFading || isOpen && gameState != .finished else { return 1 }
 		return 0
 	}
 
 	func tilePosition(_ tile: Tile, with position: CGPoint, in geometry: GeometryProxy) -> CGPoint {
 		guard swaps == nil, tile.renderState == .unset else { return position }
+#if os(visionOS)
+		return CGPoint(x: tile.id % 2 == 0 ? 0 : geometry.size.width, y: geometry.size.height / 2)
+#else
 		return CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 1.25)
+#endif
 	}
 
 	func useTileGesture(_ tile: Tile) -> Bool {
-		guard swaps == nil, gameState == .playing, !game.isFinished else { return false }
+		guard swaps == nil, gameState == .playing else { return false }
 		guard game.movementGroup == nil || game.movementGroup!.isTracking(tile, in: game) || game.movementGroup!.direction == .drag else { return false }
 		return true
 	}
@@ -227,9 +253,9 @@ struct BoardView: View {
 					}
 					// A random throw is _always_ at the end of the sorted list (i.e. on top)
 					switch (leftTile.renderState, rightTile.renderState) {
-					case (.thrown(true), .thrown(true)): break // let trackingPosition decide
-					case (.thrown(true), _): return false
-					case (_, .thrown(true)): return true
+					case (.thrown, .thrown): break // let trackingPosition decide
+					case (.thrown, _): return false
+					case (_, .thrown): return true
 					default: break // let trackingPosition decide
 					}
 					// Otherwise any tile with a tracking position is sorted towards the end
@@ -243,24 +269,33 @@ struct BoardView: View {
 					let index = index(for: tile)
 					let isMatched = game.isMatched(tile: tile, index: index)
 					let isOpen = tile.id == game.openTileId
-					TileView(tile: tile, image: boardGeometry.image(for: tile), isMatched: isMatched, isOpen: isOpen, showNumber: !tile.isLifted, text: boardGeometry.text(for: tile))
+					TileView(tile: tile, image: boardGeometry.image(for: tile), isMatched: isMatched, isOpen: isOpen, showNumber: gameState != .finished, text: boardGeometry.text(for: tile))
+#if os(visionOS)
+						.hoverEffect(isEnabled: useTileGesture(tile))
+#endif
 						.id("tile.\(tile.id)")
 						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
 						.position(tilePosition(tile, with: boardGeometry.positions[index], in: geometry))
 						.offset(tileOffset(tile))
+#if os(visionOS)
+						.offset(z: tileOffsetZ(tile))
+#endif
 						.opacity(tileOpacity(tile, isOpen: isOpen))
 						.animation(tileMovementAnimation(tile), value: swaps)
 						.animation(tileMovementAnimation(tile), value: tile.renderState)
 						.gesture(!isOpen && useTileGesture(tile) ? dragGesture : nil)
 				}
-				if swaps == nil {
+				if swaps == nil, gameState == .finished {
 					ForEach(game.tiles) { tile in
-						let index = game.tiles.firstIndex(of: tile)!
 						TileView.styledLabel(for: tile, with: boardGeometry.text(for: tile))
-							.position(boardGeometry.positions[index])
+							.position(boardGeometry.positions[tile.id-1])
+#if os(visionOS)
+							.offset(z: tile.isFalling ? 384 : 0)
+#else
 							.offset(tile.isFalling ? CGSize(width: 0, height: boardGeometry.boardSize.height * 3) : .zero)
-							.animation(tile.isFalling ? .easeIn(duration: 1) : nil, value: tile.isFalling)
-							.opacity(tile.isLifted ? 1 : 0)
+#endif
+							.opacity(tile.isFalling ? 0 : 1) // Fade out while falling
+							.animation(tileFallingAnimation(tile), value: tile.isFalling)
 					}
 				}
 			}
@@ -290,12 +325,15 @@ fileprivate extension Game {
 fileprivate extension Tile {
 
 	var isFalling: Bool {
-		guard case .lifted(let falling) = renderState, falling else { return false }
-		return true
+		switch renderState {
+		case .unset, .falling: return true // Unset ensures detatched numbers are not prematurely drawn on the playing field
+		case .fading(let wasFalling): return wasFalling
+		default: return false
+		}
 	}
 
-	var isLifted: Bool {
-		guard case .lifted = renderState else { return false }
+	var isFading: Bool {
+		guard case .fading = renderState else { return false }
 		return true
 	}
 }
