@@ -53,7 +53,7 @@ import UIKit
 		return cgImage
 	}
 
-	static func randomFavorite() -> CGImage {
+	static func randomImageName() -> String {
 		let formatter = NumberFormatter()
 		formatter.positiveFormat = "00"
 		formatter.formatWidth = 2
@@ -62,7 +62,11 @@ import UIKit
 			randomNumber = (01...14).randomElement()!
 		}
 		lastImageNumber = randomNumber
-		let randomImageName = "Favorite" + formatter.string(from: randomNumber as NSNumber)!
+		return "Favorite" + formatter.string(from: randomNumber as NSNumber)!
+	}
+
+	static func randomFavorite() -> CGImage {
+		let randomImageName = randomImageName()
 #if canImport(AppKit)
 		return NSImage(named: randomImageName)!.cgImage(forProposedRect: nil, context: nil, hints: nil)!
 #elseif canImport(UIKit)

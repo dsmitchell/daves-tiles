@@ -22,14 +22,14 @@ struct GamePicker: View {
 				VStack {
 #if os(visionOS)
 					boardView(for: gameSelection.game)
-						.scaleEffect(0.6)
+						.scaleEffect(0.66)
 					NavigationLink(value: gameSelection) {
 						Text("Play Game", comment: "Start or continue a game from the main screen")
 					}
 #else
 					NavigationLink(value: gameSelection) {
 						boardView(for: gameSelection.game)
-							.scaleEffect(0.7)
+							.scaleEffect(0.66)
 					}
 					Spacer(minLength: 40)
 #endif
