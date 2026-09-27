@@ -4,6 +4,12 @@
     "CFBundleDisplayName" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Daves Schiebepuzzle"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12,20 +18,44 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Azulejos"
+            "state" : "machine_translated",
+            "value" : "Fichas de Dave"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuiles"
+            "state" : "machine_translated",
+            "value" : "Taquin de Dave"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Tessere di Dave"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "デイブのスライドパズル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "데이브의 슬라이딩 퍼즐"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Плитки"
+            "state" : "machine_translated",
+            "value" : "Плитки Дейва"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "戴夫的滑块拼图"
           }
         }
       }
@@ -33,6 +63,12 @@
     "CFBundleName" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Daves Schiebepuzzle"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41,24 +77,48 @@
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Azulejos"
+            "state" : "machine_translated",
+            "value" : "Fichas de Dave"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuiles"
+            "state" : "machine_translated",
+            "value" : "Taquin de Dave"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Tessere di Dave"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "デイブのスライドパズル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "데이브의 슬라이딩 퍼즐"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Плитки"
+            "state" : "machine_translated",
+            "value" : "Плитки Дейва"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "戴夫的滑块拼图"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version" : "1.3"
 }

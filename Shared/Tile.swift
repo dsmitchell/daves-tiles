@@ -25,12 +25,12 @@ struct Tile: Identifiable {
 
 	var isSelected: Bool {
 		switch renderState {
-		case .none: return false
-		case .dragged: return true
-		case .released: return true
-		case .thrown: return false
-		case .transitioning(let selected): return selected
-		default: return false
+			case .none: return false
+			case .dragged: return true
+			case .released: return true
+			case .thrown: return false
+			case .transitioning(let selected): return selected
+			default: return false
 		}
 	}
 }

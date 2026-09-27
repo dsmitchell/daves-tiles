@@ -20,7 +20,8 @@ fileprivate struct GameTemplate: TilesGame {
 	let id = UUID()
 	let rows: Int
 	let columns: Int
-	let openTileId: Int?
+	private(set) var openTileId: Int?
+	let mode: Mode
 
 	enum Mode: Equatable {
 		case classic
@@ -39,19 +40,35 @@ fileprivate struct GameTemplate: TilesGame {
 	var tiles: [Tile]
 	var state: State
 
-	@MainActor init(rows: Int, columns: Int, mode: Mode) {
+	@MainActor init(rows: Int, columns: Int, mode: Mode, imageIsLandscape: Bool) {
 		self.rows = rows
 		self.columns = columns
+		self.mode = mode
 		let totalTiles = rows * columns
-#if os(iOS)
-		self.openTileId = mode == .classic ? totalTiles : nil
-#elseif os(macOS) // These platforms are more likely to be landscape-centric
-		self.openTileId = mode == .classic ? totalTiles - columns + 1 : nil
-#else
-		self.openTileId = mode == .classic ? PuzzleImages.imageIsLandscape ?? false ? totalTiles - columns + 1 : totalTiles : nil
-#endif
+		self.openTileId = Self.openTileIdentifier(
+			totalTiles: totalTiles,
+			columns: columns,
+			mode: mode,
+			imageIsLandscape: imageIsLandscape
+		)
 		self.tiles = (1...totalTiles).map { Tile(id: $0) }
 		self.state = .new
+	}
+
+	private static func openTileIdentifier(
+		totalTiles: Int,
+		columns: Int,
+		mode: Mode,
+		imageIsLandscape: Bool
+	) -> Int? {
+		guard mode == .classic else { return nil }
+#if os(iOS)
+		return totalTiles
+#elseif os(macOS) // These platforms are more likely to be landscape-centric
+		return totalTiles - columns + 1
+#else
+		return imageIsLandscape ? totalTiles - columns + 1 : totalTiles
+#endif
 	}
 
 	var isFinished: Bool {
@@ -71,8 +88,14 @@ fileprivate struct GameTemplate: TilesGame {
 		return tile.id == index + 1
 	}
 
-	func startNewGame() {
+	func startNewGame(imageIsLandscape: Bool) {
 		self.state = .new
+		self.openTileId = Self.openTileIdentifier(
+			totalTiles: rows * columns,
+			columns: columns,
+			mode: mode,
+			imageIsLandscape: imageIsLandscape
+		)
 		var template = GameTemplate(rows: rows, columns: columns, tiles: (1...rows * columns).map { Tile(id: $0) }, openTileId: openTileId)
 		repeat {
 			template.randomMove()

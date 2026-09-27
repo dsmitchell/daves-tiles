@@ -9,49 +9,32 @@
 import Foundation
 import CoreGraphics
 import SwiftUI
-#if canImport(AppKit)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
+
+struct PuzzleImage: Equatable {
+
+	let image: Image
+	let isLandscape: Bool
+
+	@MainActor init(image: Image) {
+		self.image = image
+		let renderer = ImageRenderer(content: image)
+		var size = CGSize.zero
+
+		renderer.render { renderedSize, _ in
+			size = renderedSize
+		}
+		self.isLandscape = size.width > size.height
+	}
+}
+
+extension EnvironmentValues {
+
+	@Entry var puzzleImage: PuzzleImage?
+}
 
 @MainActor class PuzzleImages {
 
-	static var currentImage: CGImage? = randomFavorite() {
-		didSet {
-			tileImages.removeAll()
-			scaledImages.removeAll()
-		}
-	}
-
 	private static var lastImageNumber = -1
-	private static var scaledImages = [CGSize : CGImage]()
-	private static var tileImages = [CGRect : Image]()
-	
-	static var imageIsLandscape: Bool? {
-		guard let image = currentImage else { return nil }
-		return image.height < image.width
-	}
-	
-	static func imageMatching(size: CGSize, in frame: CGRect) -> Image? {
-		if let cached = tileImages[frame] { return cached }
-		guard let image = imageMatching(size: size) else { return nil }
-		guard let cgImage = image.cropping(to: frame) else { return nil }
-		let cached = Image(decorative: cgImage, scale: 1)
-		tileImages[frame] = cached
-		return cached
-	}
-
-	private static func imageMatching(size: CGSize) -> CGImage? {
-		// TODO: Round the size to points so that we don't produce so many variations
-		let roundedSize = CGSize(width: size.width.rounded(), height: size.height.rounded())
-		if let scaledImage = scaledImages[roundedSize] { return scaledImage }
-		print("Resizing image to \(roundedSize) (from \(size))")
-		guard let image = currentImage else { return nil }
-		guard let cgImage = image.resized(toFill: roundedSize) else { return nil }
-		scaledImages[roundedSize] = cgImage
-		return cgImage
-	}
 
 	static func randomImageName() -> String {
 		let formatter = NumberFormatter()
@@ -65,63 +48,7 @@ import UIKit
 		return "Favorite" + formatter.string(from: randomNumber as NSNumber)!
 	}
 
-	static func randomFavorite() -> CGImage {
-		let randomImageName = randomImageName()
-#if canImport(AppKit)
-		return NSImage(named: randomImageName)!.cgImage(forProposedRect: nil, context: nil, hints: nil)!
-#elseif canImport(UIKit)
-		return UIImage(named: randomImageName)!.cgImage!
-#endif
-	}
-}
-
-fileprivate extension CGImage {
-	
-	func resized(toFill outputSize: CGSize) -> CGImage? {
-
-		guard let colorSpace = self.colorSpace else { return nil }
-
-		let outputWidth = Int(outputSize.width)
-		let outputHeight = Int(outputSize.height)
-
-		let bytesPerPixel = self.bitsPerPixel / self.bitsPerComponent
-		let destBytesPerRow = outputWidth * bytesPerPixel
-
-		guard let context = CGContext(data: nil, width: outputWidth, height: outputHeight, bitsPerComponent: self.bitsPerComponent, bytesPerRow: destBytesPerRow, space: colorSpace, bitmapInfo: self.bitmapInfo.rawValue) else { return nil }
-
-		let size = CGSize(width: self.width, height: self.height)
-		let scale = max(outputSize.width / size.width, outputSize.height / size.height)
-		let width = size.width * scale
-		let height = size.height * scale
-		let imageRect = CGRect(x: (outputSize.width - width) / 2.0, y: (outputSize.height - height) / 2.0, width: width, height: height)
-
-		context.interpolationQuality = .high
-		context.draw(self, in: imageRect)
-
-		return context.makeImage()
-	}
-}
-
-extension CGPoint: @retroactive Hashable {
-
-	public func hash(into hasher: inout Hasher) {
-		hasher.combine(self.x)
-		hasher.combine(self.y)
-	}
-}
-
-extension CGRect: @retroactive Hashable {
-
-	public func hash(into hasher: inout Hasher) {
-		hasher.combine(self.origin)
-		hasher.combine(self.size)
-	}
-}
-
-extension CGSize: @retroactive Hashable {
-
-	public func hash(into hasher: inout Hasher) {
-		hasher.combine(self.width)
-		hasher.combine(self.height)
+	static func randomFavorite() -> PuzzleImage {
+		PuzzleImage(image: Image(randomImageName()))
 	}
 }

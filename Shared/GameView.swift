@@ -14,8 +14,9 @@ struct GameView: View {
 	static let oneSecond = UInt64(1_000_000_000)
 
 	var game: Game
-	
+		
 	@Binding var presenterVisible: Bool
+	@Binding var puzzleImage: PuzzleImage
 	@State private var initialDate: Date? {
 		didSet { stopTimer = false }
 	}
@@ -61,13 +62,7 @@ struct GameView: View {
 #endif
 				.toolbar {
 					ToolbarItemGroup(placement: .principal) {
-						if let initialDate = initialDate, game.state == .playing {
-							TimelineView(.periodic(from: initialDate, by: 1.0)) { context in
-								Text("Moves: \(game.moves) Time: \(displayTime)", comment: "The elapsed time and number of moves currently made")
-									.allowsTightening(true)
-									.minimumScaleFactor(0.5)
-							}
-						} else {
+						TimelineView(.periodic(from: initialDate ?? .distantFuture, by: 1.0)) { context in
 							Text("Moves: \(game.moves) Time: \(displayTime)", comment: "The elapsed time and number of moves currently made")
 								.allowsTightening(true)
 								.minimumScaleFactor(0.5)
@@ -119,32 +114,29 @@ struct GameView: View {
 		}
 	}
 
-	@ViewBuilder func boardView() -> some View {
+	func boardView() -> some View {
 		let board = BoardView(game: game, swaps: nil)
-		if randomJumps, let initialDate = initialDate, game.state == .playing {
-			board.task { @MainActor in
-				defer {
-					print("Exiting random jump timer")
-				}
-
-				let delayInSeconds = Double(game.openTileId == nil ? game.tiles.count - min(game.columns, game.rows) : game.tiles.count * 2)
-				// The initial delay needs to take into account the current time
-				let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
-				let initialDelay = delayInSeconds - currentGameTime.truncatingRemainder(dividingBy: delayInSeconds)
-				print("Starting random jump timer after \(initialDelay)s...")
-                try? await Task.sleep(nanoseconds: UInt64(initialDelay) * GameView.oneSecond)
-				while !stopTimer && self.game.state == .playing && !Task.isCancelled {
-					for _ in 0..<3 {
-						SoundEffects.default.play(.warning)
-						try? await Task.sleep(nanoseconds: GameView.oneSecond)
-						if stopTimer || self.game.state != .playing || Task.isCancelled { return }
-					}
-					Task { await board.randomMove() }
-					try? await Task.sleep(nanoseconds: UInt64(delayInSeconds) * GameView.oneSecond)
-				}
+		return board.task(id: initialDate) { @MainActor in
+			guard randomJumps, let initialDate, game.state == .playing else { return }
+			defer {
+				print("Exiting random jump timer")
 			}
-		} else {
-			board
+
+			let delayInSeconds = Double(game.openTileId == nil ? game.tiles.count - min(game.columns, game.rows) : game.tiles.count * 2)
+			// The initial delay needs to take into account the current time
+			let currentGameTime = game.accumulatedTime + Date().timeIntervalSinceReferenceDate - initialDate.timeIntervalSinceReferenceDate
+			let initialDelay = delayInSeconds - currentGameTime.truncatingRemainder(dividingBy: delayInSeconds)
+			print("Starting random jump timer after \(initialDelay)s...")
+			try? await Task.sleep(nanoseconds: UInt64(initialDelay) * GameView.oneSecond)
+			while !stopTimer && self.game.state == .playing && !Task.isCancelled {
+				for _ in 0..<3 {
+					SoundEffects.default.play(.warning)
+					try? await Task.sleep(nanoseconds: GameView.oneSecond)
+					if stopTimer || self.game.state != .playing || Task.isCancelled { return }
+				}
+				Task { await board.randomMove() }
+				try? await Task.sleep(nanoseconds: UInt64(delayInSeconds) * GameView.oneSecond)
+			}
 		}
 	}
 
@@ -194,14 +186,14 @@ struct GameView: View {
 
 	@MainActor func newGame(firstAppearance: Bool) async {
 		if game.state == .new, firstAppearance {
-			game.startNewGame()
+			game.startNewGame(imageIsLandscape: puzzleImage.isLandscape)
 			await animateTileEntry()
 		} else if !firstAppearance {
 			stopTimer = true
 			game.state = .fading
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
-			game.startNewGame()
-			PuzzleImages.currentImage = PuzzleImages.randomFavorite()
+			puzzleImage = PuzzleImages.randomFavorite()
+			game.startNewGame(imageIsLandscape: puzzleImage.isLandscape)
 			// A second wait seems to correct an issue animating new tiles after a completed game
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
 			await animateTileEntry()
@@ -251,7 +243,13 @@ fileprivate extension View {
 
 #Preview {
 	@Previewable @State var presenterVisible = false
-	let game = Game(rows: 6, columns: 4, mode: .swap)
+	@Previewable @State var puzzleImage = PuzzleImages.randomFavorite()
+	let game = Game(rows: 6, columns: 4, mode: .swap, imageIsLandscape: puzzleImage.isLandscape)
 
-	return GameView(game: game, presenterVisible: $presenterVisible, randomJumps: false)
+	return GameView(
+		game: game,
+		presenterVisible: $presenterVisible,
+		puzzleImage: $puzzleImage,
+		randomJumps: false
+	)
 }

@@ -9,8 +9,8 @@
 import SwiftUI
 
 struct GameType: Equatable {
-   let mode: Game.Mode
-   let randomJumps: Bool
+	let mode: Game.Mode
+	let randomJumps: Bool
 }
 
 extension GameType {

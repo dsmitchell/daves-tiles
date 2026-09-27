@@ -34,7 +34,16 @@ public class SoundEffects {
 	public init() {
 		#if !os(macOS)
 		try! AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.ambient)
-		try! AVAudioSession.sharedInstance().setActive(true)
+		let audioSession = AVAudioSession.sharedInstance()
+		if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, visionOS 27.0, *) {
+			audioSession.activate { _, error in
+				assert(error == nil, "Failed to activate the audio session: \(error!)")
+			}
+		} else {
+			DispatchQueue.global(qos: .userInitiated).async {
+				try! audioSession.setActive(true)
+			}
+		}
 		#endif
 	}
 
@@ -60,7 +69,9 @@ public class SoundEffects {
 		}
 		return (0..<count).map { _ in
 			let player = try! AVAudioPlayer(contentsOf: soundFileURL)
-			player.prepareToPlay()
+			DispatchQueue.global(qos: .userInitiated).async {
+				player.prepareToPlay()
+			}
 			return player
 		}
 	}

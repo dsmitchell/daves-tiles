@@ -4,6 +4,12 @@
     "Cancel" : {
       "comment" : "Dismisses the congratulations without starting a new game",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Abbrechen"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16,10 +22,34 @@
             "value" : "Annuler"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Annulla"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "キャンセル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "취소"
+          }
+        },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отмена"
+            "state" : "machine_translated",
+            "value" : "Отменить"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "取消"
           }
         }
       }
@@ -27,6 +57,12 @@
     "classic" : {
       "comment" : "The name of classic mode",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "klassisch"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35,14 +71,38 @@
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "classiques"
+            "state" : "machine_translated",
+            "value" : "classique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "classica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "クラシック"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "클래식"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "классический"
+            "state" : "machine_translated",
+            "value" : "классика"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "经典"
           }
         }
       }
@@ -50,46 +110,268 @@
     "Congratulations! You won with a time of %@ in %lld moves" : {
       "comment" : "The congratulatory phrase when the player has won",
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Glückwunsch! Du hast das Spiel in %@ mit %lld Zug gewonnen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Glückwunsch! Du hast das Spiel in %@ mit %lld Zügen gewonnen."
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Glückwunsch! Du hast das Spiel in %@ mit %lld Zügen gewonnen."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Congratulations! You won with a time of %@ in %lld move"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Congratulations! You won with a time of %@ in %lld moves"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Congratulations! You won with a time of %@ in %lld moves"
+                }
+              }
+            }
+          }
+        },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¡Felicidades! Ganaste con un tiempo de %@ en %lld jugadas"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "¡Felicidades! Has ganado en %@ con %lld jugada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "¡Felicidades! Has ganado en %@ con %lld jugadas"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "¡Felicidades! Has ganado en %@ con %lld jugadas"
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Félicitations! Durée: %@ Coups: %lld"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Félicitations ! Vous avez gagné en %@ et %lld coup."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Félicitations ! Vous avez gagné en %@ et %lld coups."
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Félicitations ! Vous avez gagné en %@ et %lld coups."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Congratulazioni! Hai vinto in %@ con %lld mossa."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Congratulazioni! Hai vinto in %@ con %lld mosse."
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Congratulazioni! Hai vinto in %@ con %lld mosse."
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "おめでとうございます! タイム%@、%lld手でクリアしました。"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "おめでとうございます! タイム%@、%lld手でクリアしました。"
+                }
+              }
+            }
+          }
+        },
+        "ko" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "축하합니다! %@ 만에 %lld번의 이동으로 성공했습니다."
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "축하합니다! %@ 만에 %lld번의 이동으로 성공했습니다."
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поздравляем! Время: %@ Ходов: %lld"
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Поздравляем! Вы выиграли за %@, сделав %lld хода"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Поздравляем! Вы выиграли за %@, сделав %lld ходов"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Поздравляем! Вы выиграли за %@, сделав %lld ход"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Поздравляем! Вы выиграли за %@, сделав %lld хода"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Поздравляем! Вы выиграли за %@, сделав %lld ходов"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "恭喜！你以 %@ 的用时和 %lld 步赢得了游戏。"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "恭喜！你以 %@ 的用时和 %lld 步赢得了游戏。"
+                }
+              }
+            }
           }
         }
       }
     },
     "Dave's Tiles" : {
-      "comment" : "The title of the application",
+      "comment" : "The title of the application, which is a tile game based on the 18th century puzzle",
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Daves Schiebepuzzle"
+          }
+        },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Azulejos de Dave"
+            "state" : "machine_translated",
+            "value" : "Fichas de Dave"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuiles Puzzle de Dave"
+            "state" : "machine_translated",
+            "value" : "Taquin de Dave"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Tessere di Dave"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "デイブのスライドパズル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "데이브의 슬라이딩 퍼즐"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Плитки Дэйва"
+            "state" : "machine_translated",
+            "value" : "Плитки Дейва"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "戴夫的滑块拼图"
           }
         }
       }
@@ -97,6 +379,12 @@
     "Easy" : {
       "comment" : "The Easy game board",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Leicht"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -109,10 +397,34 @@
             "value" : "Facile"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Facile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "かんたん"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "쉬움"
+          }
+        },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Легкий"
+            "state" : "machine_translated",
+            "value" : "Легко"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "简单"
           }
         }
       }
@@ -120,6 +432,12 @@
     "Hard" : {
       "comment" : "The Hard game board",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Schwer"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -132,10 +450,34 @@
             "value" : "Difficile"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Difficile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "むずかしい"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "어려움"
+          }
+        },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сложный"
+            "state" : "machine_translated",
+            "value" : "Сложно"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "困难"
           }
         }
       }
@@ -143,6 +485,12 @@
     "Medium" : {
       "comment" : "The Medium game board",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Mittel"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -155,10 +503,34 @@
             "value" : "Moyen"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Media"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ふつう"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "보통"
+          }
+        },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Средний"
+            "state" : "machine_translated",
+            "value" : "Средне"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "中等"
           }
         }
       }
@@ -166,22 +538,214 @@
     "Moves: %lld Time: %@" : {
       "comment" : "The elapsed time and number of moves currently made",
       "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Zug: %lld  Zeit: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Züge: %lld  Zeit: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Züge: %lld  Zeit: %@"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Move: %lld Time: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Moves: %lld Time: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Moves: %lld Time: %@"
+                }
+              }
+            }
+          }
+        },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jugadas: %1$lld Tiempo: %2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Jugada: %lld Tiempo: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Jugadas: %lld Tiempo: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Jugadas: %lld Tiempo: %@"
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coups: %lld Durée: %@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Coup : %lld  Durée : %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Coups : %lld  Durée : %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Coups : %lld  Durée : %@"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Mossa: %lld  Tempo: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Mosse: %lld  Tempo: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Mosse: %lld  Tempo: %@"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "手数: %lld  タイム: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "手数: %lld  タイム: %@"
+                }
+              }
+            }
+          }
+        },
+        "ko" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "이동: %lld  시간: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "이동: %lld  시간: %@"
+                }
+              }
+            }
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ходов: %lld Время: %@"
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Ходы: %lld  Время: %@"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Ходы: %lld  Время: %@"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Ходы: %lld  Время: %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Ходы: %lld  Время: %@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "Ходы: %lld  Время: %@"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "步数：%lld  时间：%@"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "machine_translated",
+                  "value" : "步数：%lld  时间：%@"
+                }
+              }
+            }
           }
         }
       }
@@ -189,22 +753,52 @@
     "New Game" : {
       "comment" : "Allows the player to cancel the current game and start a new game",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Neues Spiel"
+          }
+        },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo Juego"
+            "state" : "machine_translated",
+            "value" : "Nueva partida"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nouveau jeu"
+            "state" : "machine_translated",
+            "value" : "Nouvelle partie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Nuova partita"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "新しいゲーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "새 게임"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Новая Игра"
+            "state" : "machine_translated",
+            "value" : "Начать новую игру"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "新游戏"
           }
         }
       }
@@ -212,6 +806,12 @@
     "nightmare" : {
       "comment" : "The name of nightmare mode",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Albtraum"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -224,10 +824,34 @@
             "value" : "cauchemar"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "incubo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ナイトメア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "악몽"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "кошмар"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "噩梦"
           }
         }
       }
@@ -235,45 +859,52 @@
     "Play again" : {
       "comment" : "Prompts the player to play again after winning",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Erneut spielen"
+          }
+        },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Juega otra vez"
+            "state" : "machine_translated",
+            "value" : "Volver a jugar"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jouez nouveau"
+            "state" : "machine_translated",
+            "value" : "Rejouer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Gioca di nuovo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "もう一度プレイ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "다시 플레이"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Снова"
-          }
-        }
-      }
-    },
-    "Play Game" : {
-      "comment" : "Start or continue a game from the main screen",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Juegas"
+            "state" : "machine_translated",
+            "value" : "Сыграть ещё раз"
           }
         },
-        "fr" : {
+        "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jouez"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Играть"
+            "state" : "machine_translated",
+            "value" : "再玩一次"
           }
         }
       }
@@ -281,6 +912,12 @@
     "surprise" : {
       "comment" : "The name of surprise mode",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Überraschung"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -293,10 +930,34 @@
             "value" : "surprise"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "sorpresa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "サプライズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "깜짝"
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "сюрприз"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "惊喜"
           }
         }
       }
@@ -304,6 +965,12 @@
     "swap" : {
       "comment" : "The name of swap mode",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Tausch"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
@@ -312,8 +979,26 @@
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "echange"
+            "state" : "machine_translated",
+            "value" : "échange"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "scambio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "入れ替え"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "교환"
           }
         },
         "ru" : {
@@ -321,9 +1006,69 @@
             "state" : "translated",
             "value" : "обмен"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "交换"
+          }
+        }
+      }
+    },
+    "Toggle difficulty" : {
+      "comment" : "A button that toggles the difficulty of a game.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Schwierigkeitsgrad ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cambiar la dificultad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Changer la difficulté"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Cambia difficoltà"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "難易度を変更"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "난이도 변경"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Изменить сложность"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "切换难度"
+          }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version" : "1.3"
 }

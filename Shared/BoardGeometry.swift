@@ -23,14 +23,10 @@ struct BoardGeometry {
 		return formatter
 	}()
 
-	@MainActor init(game: Game, geometryProxy: GeometryProxy) {
+	@MainActor init(game: Game, geometryProxy: GeometryProxy, interfaceIsLandscape: Bool?) {
 
 		// Calculate geometry
-#if os(visionOS)
-		let rotated = PuzzleImages.imageIsLandscape ?? (geometryProxy.size.width > geometryProxy.size.height)
-#else
-		let rotated = geometryProxy.size.width > geometryProxy.size.height
-#endif
+		let rotated = interfaceIsLandscape ?? (geometryProxy.size.width > geometryProxy.size.height)
 		let columns = rotated ? game.rows : game.columns
 		let rows = rotated ? game.columns : game.rows
 		let length = min(geometryProxy.size.width / CGFloat(columns), geometryProxy.size.height / CGFloat(rows))
@@ -56,11 +52,6 @@ struct BoardGeometry {
 		let row = isLandscape ? game.columns - gridIndex.column - 1 : gridIndex.row
 		let origin = CGPoint(x: CGFloat(column) * tileSize.width, y: CGFloat(row) * tileSize.height)
 		return CGRect(origin: origin, size: tileSize)
-	}
-
-	@MainActor func image(for id: Int) -> Image? {
-		guard boardSize != .zero else { return nil }
-		return PuzzleImages.imageMatching(size: boardSize, in: frame(for: id))
 	}
 
 	func text(for id: Int) -> String? {

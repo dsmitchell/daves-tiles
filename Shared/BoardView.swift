@@ -12,6 +12,8 @@ struct BoardView: View {
 
 	static let standardDuration: Double = 0.1
 
+	@Environment(\.puzzleImage) private var puzzleImage
+
 	let popDuration = standardDuration
 	let slideDuration = standardDuration
 	let surpriseDuration = standardDuration * 2
@@ -30,6 +32,13 @@ struct BoardView: View {
 		let enabled: Bool
 	}
 	let swaps: SwapInfo?
+	let interfaceIsLandscape: Bool?
+
+	init(game: Game, swaps: SwapInfo?, interfaceIsLandscape: Bool? = nil) {
+		_game = State(initialValue: game)
+		self.swaps = swaps
+		self.interfaceIsLandscape = interfaceIsLandscape
+	}
 
 	func completeMove(behavior: CompleteMoveBehavior) {
 		guard let movementGroup = movementGroup else { return }
@@ -185,7 +194,12 @@ struct BoardView: View {
 
 	var body: some View {
 		GeometryReader { geometry in
-			let boardGeometry = BoardGeometry(game: game, geometryProxy: geometry)
+#if os(iOS)
+			let resolvedIsLandscape = interfaceIsLandscape
+#else
+			let resolvedIsLandscape = puzzleImage?.isLandscape
+#endif
+			let boardGeometry = BoardGeometry(game: game, geometryProxy: geometry, interfaceIsLandscape: resolvedIsLandscape)
 			let dragGesture = DragGesture(minimumDistance: 0).onChanged { value in
 				switch movementGroup {
 				case .none where value.velocity == .zero:
@@ -249,16 +263,16 @@ struct BoardView: View {
 					}
 					// A random throw is _always_ at the end of the sorted list (i.e. on top)
 					switch (leftTile.renderState, rightTile.renderState) {
-					case (.thrown, .thrown): break // let trackingPosition decide
-					case (.thrown, _): return false
-					case (_, .thrown): return true
-					default: break // let trackingPosition decide
+						case (.thrown, .thrown): break // let trackingPosition decide
+						case (.thrown, _): return false
+						case (_, .thrown): return true
+						default: break // let trackingPosition decide
 					}
 					// Otherwise any tile with a tracking position is sorted towards the end
 					switch (trackingPosition(for: leftTile), trackingPosition(for: rightTile)) {
-					case (.none, .some): return true
-					case (.some(let leftPosition), .some(let rightPosition)): return leftPosition < rightPosition
-					default: return false
+						case (.none, .some): return true
+						case (.some(let leftPosition), .some(let rightPosition)): return leftPosition < rightPosition
+						default: return false
 					}
 				}
 				ForEach(sortedTiles) { tile in
@@ -266,8 +280,8 @@ struct BoardView: View {
 					let isMatched = game.isMatched(tile: tile, index: index)
 					let isOpen = tile.id == game.openTileId
 					let showNumber = ![.finished, .fading].contains(game.state)
-					let image = boardGeometry.image(for: tile.id)
-					TileView(id: tile.id, image: image, isSelected: tile.isSelected, isMatched: isMatched, showNumber: showNumber, text: boardGeometry.text(for: tile.id))
+					let frame = boardGeometry.frame(for: tile.id)
+					TileView(id: tile.id, isSelected: tile.isSelected, isMatched: isMatched, showNumber: showNumber, text: boardGeometry.text(for: tile.id), containerSize: boardGeometry.boardSize, tileRect: frame)
 						.id("tile.\(tile.id)")
 						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
 						.position(tilePosition(tile, with: boardGeometry.positions[index], in: geometry))
@@ -283,7 +297,7 @@ struct BoardView: View {
 				}
 				if swaps == nil, game.state == .finished {
 					ForEach(game.tiles) { tile in
-						TileView.styledLabel(with: boardGeometry.text(for: tile.id), for: tile.id)
+						TileView.styledLabel(with: boardGeometry.text(for: tile.id), for: tile.id, tileSize: boardGeometry.tileSize)
 							.position(boardGeometry.positions[tile.id-1])
 #if os(visionOS)
 							.offset(z: tile.isFalling ? 384 : 0)
@@ -296,13 +310,13 @@ struct BoardView: View {
 				}
 			}
 		}
-    }
+	}
 
 	func index(for tile: Tile) -> Int {
 		guard let index = game.tiles.firstIndex(of: tile) else { fatalError("Tile with no index: \(tile.id)") }
 		guard let swaps = swaps, swaps.enabled, let position = swaps.indices.firstIndex(of: index) else { return index }
 		return swaps.indices[(position + 1) % swaps.indices.count]
- 	}
+	}
 }
 
 fileprivate extension Game {
@@ -329,5 +343,5 @@ fileprivate extension Tile {
 }
 
 #Preview {
-	return BoardView(game:Game(rows: 5, columns: 3, mode: .swap), swaps: nil)
+	return BoardView(game: Game(rows: 5, columns: 3, mode: .swap, imageIsLandscape: false), swaps: nil)
 }

@@ -12,7 +12,7 @@ import SwiftUI
 	
 	@State private var path: [GameSelection] = [] // Nothing on the stack by default.
 
-    var body: some Scene {
+	var body: some Scene {
 		WindowGroup {
 			NavigationStack(path: $path) {
 				ContentView()
@@ -24,10 +24,10 @@ import SwiftUI
 			.onAppear {
 				SoundEffects.default.preloadSounds()
 			}
-        }
+		}
 #if os(visionOS)
 		.windowStyle(.plain)
 		.defaultSize(Size3D(width: 0.5, height: 0.5, depth: 0.25), in: .meters)
 #endif
-    }
+	}
 }

@@ -23,12 +23,15 @@ enum ImageClipShape: Shape {
 
 struct TileView: View {
 
+	@Environment(\.puzzleImage) private var puzzleImage
+
 	let id: Int
-	let image: Image?
 	let isSelected: Bool
 	let isMatched: Bool
 	let showNumber: Bool
 	let text: String?
+	let containerSize: CGSize
+	let tileRect: CGRect
 
 	var body: some View {
 		let roundedBorder = isSelected || !isMatched
@@ -36,33 +39,43 @@ struct TileView: View {
 		ZStack {
 			let roundedRectangle = RoundedRectangle(cornerRadius: roundedRadius)
 			background(for: id, in: roundedRectangle)
-				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: isSelected ? 4 : 0))
-				.clipShape(roundedBorder ? ImageClipShape.rounded(radius: roundedRadius) : ImageClipShape.rectangle)
-				.padding(roundedBorder ? 1 : 0)
+				.mask(
+					RoundedRectangle(cornerRadius: roundedRadius)
+						.inset(by: roundedBorder ? 1 : 0)
+				)
+			.overlay(roundedRectangle.stroke(Color.primary, lineWidth: isSelected ? 4 : 0))
+			.clipShape(roundedBorder ? ImageClipShape.rounded(radius: roundedRadius) : ImageClipShape.rectangle)
 			if showNumber {
-				TileView.styledLabel(with: text, for: id)
+				TileView.styledLabel(with: text, for: id, tileSize: tileRect.size)
 			}
 		}
 #if os(visionOS)
 		.contentShape(.hoverEffect, .rect(cornerRadius: roundedRadius))
 #else
+		.contentShape(.rect(cornerRadius: roundedRadius))
 		.scaleEffect(isSelected ? 1.15 : 1)
 #endif
 	}
 
 	@ViewBuilder
 	func background(for id: Int, in roundedRectangle: RoundedRectangle) -> some View {
-		if let image = image {
-			image.resizable()
+		if let image = puzzleImage?.image {
+			image
+				.resizable()
+				.scaledToFill()
+				.frame(width: containerSize.width.rounded(), height: containerSize.height.rounded())
+				.clipped()
+				.offset(x: -tileRect.minX, y: -tileRect.minY)
+				.frame(width: tileRect.width, height: tileRect.height, alignment: .topLeading)
 		} else {
 			roundedRectangle.foregroundColor(Color(hue: Double(id) / 24.0, saturation: 1, brightness: 1))
 		}
 	}
 
 	@ViewBuilder
-	public static func styledLabel(with text: String?, for id: Int) -> some View {
+	public static func styledLabel(with text: String?, for id: Int, tileSize: CGSize) -> some View {
 		label(with: text)
-			.font(.title)
+			.font(.system(size: max(8, min(tileSize.width, tileSize.height) * 0.32)))
 			.foregroundColor(.white)
 			.padding(2)
 			.shadow(color: .black, radius: 2)
@@ -84,5 +97,7 @@ struct TileView: View {
 }
 
 #Preview {
-	return TileView(id: 5, image: Image("Favorite07"), isSelected: false, isMatched: false, showNumber: true, text: "5")
+	return TileView(id: 5, isSelected: false, isMatched: false, showNumber: true, text: "5",
+					containerSize: CGSize(width: 480, height: 600), tileRect: CGRect(x: 0, y: 0, width: 160, height: 160))
+		.environment(\.puzzleImage, PuzzleImage(image: Image("Favorite07")))
 }
