@@ -20,8 +20,8 @@ fileprivate struct GameTemplate: TilesGame {
 	let id = UUID()
 	let rows: Int
 	let columns: Int
-	private(set) var openTileId: Int?
 	let mode: Mode
+	private(set) var openTileId: Int?
 
 	enum Mode: Equatable {
 		case classic
@@ -64,8 +64,8 @@ fileprivate struct GameTemplate: TilesGame {
 		guard mode == .classic else { return nil }
 #if os(iOS)
 		return totalTiles
-#elseif os(macOS) // These platforms are more likely to be landscape-centric
-		return totalTiles - columns + 1
+//#elseif os(macOS) // These platforms are more likely to be landscape-centric
+//		return totalTiles - columns + 1
 #else
 		return imageIsLandscape ? totalTiles - columns + 1 : totalTiles
 #endif
@@ -90,12 +90,7 @@ fileprivate struct GameTemplate: TilesGame {
 
 	func startNewGame(imageIsLandscape: Bool) {
 		self.state = .new
-		self.openTileId = Self.openTileIdentifier(
-			totalTiles: rows * columns,
-			columns: columns,
-			mode: mode,
-			imageIsLandscape: imageIsLandscape
-		)
+		self.openTileId = Self.openTileIdentifier(totalTiles: rows * columns, columns: columns, mode: mode, imageIsLandscape: imageIsLandscape)
 		var template = GameTemplate(rows: rows, columns: columns, tiles: (1...rows * columns).map { Tile(id: $0) }, openTileId: openTileId)
 		repeat {
 			template.randomMove()

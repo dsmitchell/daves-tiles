@@ -6,49 +6,89 @@
 //  Copyright © 2021 The App Studio LLC.
 //
 
-import Foundation
-import CoreGraphics
 import SwiftUI
 
-struct PuzzleImage: Equatable {
+@MainActor enum PuzzleImageLibrary {
 
-	let image: Image
-	let isLandscape: Bool
+    private enum Source: Equatable {
+        case bundled(Int)
+        case user(URL)
+    }
 
-	@MainActor init(image: Image) {
-		self.image = image
-		let renderer = ImageRenderer(content: image)
-		var size = CGSize.zero
+    private static var lastSource: Source?
 
-		renderer.render { renderedSize, _ in
-			size = renderedSize
-		}
-		self.isLandscape = size.width > size.height
-	}
-}
+    static func initialFavorite() -> PuzzleImage {
+        lastSource = .bundled(0)
+        return bundledImage(0)
+    }
 
-extension EnvironmentValues {
+    static func randomFavorite() -> PuzzleImage {
+        let sources = (0...12).map(Source.bundled)
+            + PuzzleImageStore.imageDirectories.map(Source.user)
+        var source = sources.randomElement() ?? .bundled(1)
+        if sources.count > 1 {
+            while source == lastSource {
+                source = sources.randomElement()!
+            }
+        }
+        lastSource = source
 
-	@Entry var puzzleImage: PuzzleImage?
-}
+        switch source {
+        case .bundled(let number):
+            return bundledImage(number)
+        case .user(let directory):
+            return (try? PuzzleImageStore.puzzleImage(in: directory))
+                ?? bundledImage(1)
+        }
+    }
 
-@MainActor class PuzzleImages {
+    static func addUserMedia(_ imported: ImportedPuzzleMedia) async throws -> PuzzleImage {
+        let image = try await PuzzleImageStore.add(imported)
+        if let directory = PuzzleImageStore.imageDirectories.first(where: {
+            $0.lastPathComponent == image.id
+        }) {
+            lastSource = .user(directory)
+        }
+        return image
+    }
 
-	private static var lastImageNumber = -1
+    private static func bundledImage(_ number: Int) -> PuzzleImage {
+        if number == 0 {
+            return bundledLivePhoto() ?? bundledImage(1)
+        }
+        let name = String(format: "Favorite%02d", number)
+        let image = Image(name)
+        let size = renderedSize(of: image)
+        return PuzzleImage(
+            id: name,
+            content: .still(image),
+            isLandscape: size.width > size.height
+        )
+    }
 
-	static func randomImageName() -> String {
-		let formatter = NumberFormatter()
-		formatter.positiveFormat = "00"
-		formatter.formatWidth = 2
-		var randomNumber = (01...14).randomElement()!
-		while randomNumber == lastImageNumber {
-			randomNumber = (01...14).randomElement()!
-		}
-		lastImageNumber = randomNumber
-		return "Favorite" + formatter.string(from: randomNumber as NSNumber)!
-	}
+    private static func bundledLivePhoto() -> PuzzleImage? {
+        guard let imageURL = Bundle.main.url(forResource: "Favorite00", withExtension: "heic"),
+              let movieURL = Bundle.main.url(forResource: "Favorite00", withExtension: "mov"),
+              let decoded = PuzzleImageStore.decodedImage(in: imageURL) else {
+            return nil
+        }
+        return PuzzleImage(
+            id: "Favorite00",
+            content: .livePhoto(
+                resources: PuzzleImage.LivePhotoResources(
+                    stillImageURL: imageURL,
+                    movieURL: movieURL
+                ),
+                stillFrame: decoded.stillFrame
+            ),
+            isLandscape: decoded.isLandscape
+        )
+    }
 
-	static func randomFavorite() -> PuzzleImage {
-		PuzzleImage(image: Image(randomImageName()))
-	}
+    private static func renderedSize(of image: Image) -> CGSize {
+        let renderer = ImageRenderer(content: image)
+        var size = CGSize.zero
+        renderer.render { renderedSize, _ in size = renderedSize }
+        return size
+    }
 }

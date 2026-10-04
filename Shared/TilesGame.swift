@@ -23,6 +23,9 @@ extension TilesGame {
 		let nextGridIndex = gridIndex(for: nextMove)
 		let openGridIndex = gridIndex(for: openTile)
 		let deltaSum = abs(openGridIndex.row - nextGridIndex.row) + abs(openGridIndex.column - nextGridIndex.column);
+		// IMPORTANT: An odd checkerboard distance is what lets an arbitrary jump
+		// of the open tile preserve the sliding puzzle's solvability parity. Do not
+		// replace this with an unrestricted random swap.
 		return /*deltaSum > 2 &&*/ deltaSum % 2 == 1
 	}
 

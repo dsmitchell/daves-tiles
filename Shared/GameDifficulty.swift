@@ -15,12 +15,20 @@ enum GameDifficulty: CaseIterable {
 }
 
 extension GameDifficulty {
-	
+
 	var displayValue: String {
 		switch self {
 		case .easy: return String(localized: "Easy", comment: "The Easy game board")
 		case .medium: return String(localized: "Medium", comment: "The Medium game board")
 		case .hard: return String(localized: "Hard", comment: "The Hard game board")
+		}
+	}
+	
+	var systemImage: String {
+		switch self {
+		case .easy: return "square.grid.2x2.fill"
+		case .medium: return "square.grid.3x3.fill"
+		case .hard: return "square.grid.4x3.fill"
 		}
 	}
 	

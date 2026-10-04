@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
 
-	private static let initialPuzzleImage = PuzzleImages.randomFavorite()
+	private static let initialPuzzleImage = PuzzleImageLibrary.initialFavorite()
 
 	@State var gameSelections: [GameSelection]
 	@State var pickerVisible = false
@@ -23,13 +23,19 @@ struct ContentView: View {
 			imageIsLandscape: ContentView.initialPuzzleImage.isLandscape
 		)
 		_gameSelections = State(initialValue: selections)
-		_selectedGameId = State(initialValue: selections[GameDifficulty.medium.tabIndex].game.id)
+		_selectedGameId = State(initialValue: selections[GameDifficulty.easy.tabIndex].game.id)
 	}
 
 	var body: some View {
 
 		VStack {
-			GamePicker(selectedGameId: $selectedGameId, gameSelections: gameSelections, gameType: gameType) {
+			GamePicker(
+				selectedGameId: $selectedGameId,
+				gameSelections: gameSelections,
+				gameType: gameType,
+				onPuzzleImageAdded: selectPuzzleImage,
+				onSelectRandomPuzzleImage: selectRandomPuzzleImage
+			) {
 				gamePickerHeader(titleFont: .title.bold())
 			}
 			.environment(\.puzzleImage, puzzleImage)
@@ -64,14 +70,14 @@ struct ContentView: View {
 			if selectedGameId == nil {
 				selectedGameId = gameSelections[GameDifficulty.medium.tabIndex].game.id
 			} else if let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId }), gameSelections[gameIndex].game.state == .finished {
-					puzzleImage = PuzzleImages.randomFavorite()
-					for difficulty in GameDifficulty.allCases {
-						gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
-							for: difficulty,
-							mode: gameType.mode,
-							imageIsLandscape: puzzleImage.isLandscape
-						)
-					}
+				puzzleImage = PuzzleImageLibrary.randomFavorite()
+				for difficulty in GameDifficulty.allCases {
+					gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
+						for: difficulty,
+						mode: gameType.mode,
+						imageIsLandscape: puzzleImage.isLandscape
+					)
+				}
 				selectedGameId = gameSelections[gameIndex].game.id
 			}
 		}
@@ -113,6 +119,19 @@ struct ContentView: View {
 		Button(action: { setMode(.classic, randomJumps: true) }) {
 			Text(GameType(mode: .classic, randomJumps: true).localizedText.localizedCapitalized)
 		}
+	}
+
+	func selectRandomPuzzleImage() {
+		selectPuzzleImage(PuzzleImageLibrary.randomFavorite())
+	}
+
+	func selectPuzzleImage(_ image: PuzzleImage) {
+		puzzleImage = image
+		let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId }) ?? GameDifficulty.medium.tabIndex
+		for difficulty in GameDifficulty.allCases {
+			gameSelections[difficulty.tabIndex] = ContentView.gameSelection(for: difficulty, mode: gameType.mode, imageIsLandscape: image.isLandscape)
+		}
+		selectedGameId = gameSelections[gameIndex].game.id
 	}
 
 	func setMode(_ mode: Game.Mode, randomJumps: Bool) {

@@ -10,11 +10,20 @@
 		2627DC372B79BE930079EF5B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2627DC362B79BE930079EF5B /* Localizable.xcstrings */; };
 		26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3B2BB2390400AFC2FB /* GameSelection.swift */; };
 		26347B3E2BB239A600AFC2FB /* TilesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3D2BB239A600AFC2FB /* TilesGame.swift */; };
+		268178D1306B61FE003C8AB1 /* PuzzleTilePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */; };
+		268178D3306B6242003C8AB1 /* PuzzleImageBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268178D2306B6242003C8AB1 /* PuzzleImageBoard.swift */; };
 		2687F23C2B793984005440C1 /* Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23B2B793984005440C1 /* Tile.swift */; };
 		2687F23E2B79425B005440C1 /* GameType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23D2B79425B005440C1 /* GameType.swift */; };
 		2687F2402B7942FD005440C1 /* GameDifficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23F2B7942FD005440C1 /* GameDifficulty.swift */; };
 		26C85ACA2BAFA04500AC9691 /* GamePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26C85AC92BAFA04500AC9691 /* GamePicker.swift */; };
 		26EF2DC52B80233B000D90AC /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26EF2DC42B80233B000D90AC /* InfoPlist.xcstrings */; };
+		26FEB9F530697E7B00C3423C /* LivePhotoBoardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9F430697E7B00C3423C /* LivePhotoBoardRenderer.swift */; };
+		26FEB9F73069DBB200C3423C /* PuzzleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9F63069DBB200C3423C /* PuzzleImage.swift */; };
+		26FEB9F93069DBBE00C3423C /* PuzzleImageImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9F83069DBBE00C3423C /* PuzzleImageImport.swift */; };
+		26FEB9FB3069DBD100C3423C /* PuzzleImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9FA3069DBD100C3423C /* PuzzleImageStore.swift */; };
+		26FEB9FD3069E6F200C3423C /* LivePhotoBoardShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9FC3069E6F200C3423C /* LivePhotoBoardShaders.metal */; };
+		26FEBA00306AA53E00C3423C /* Favorite00.heic in Resources */ = {isa = PBXBuildFile; fileRef = 26FEB9FE306AA53E00C3423C /* Favorite00.heic */; };
+		26FEBA01306AA53E00C3423C /* Favorite00.mov in Resources */ = {isa = PBXBuildFile; fileRef = 26FEB9FF306AA53E00C3423C /* Favorite00.mov */; };
 		640BD057269E18C50001AAA2 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
 		640BD059269E18C50001AAA2 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
 		640BD05B269E18C50001AAA2 /* GameWin1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD051269E18C50001AAA2 /* GameWin1.caf */; };
@@ -51,11 +60,20 @@
 		2627DC362B79BE930079EF5B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		26347B3B2BB2390400AFC2FB /* GameSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelection.swift; sourceTree = "<group>"; };
 		26347B3D2BB239A600AFC2FB /* TilesGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesGame.swift; sourceTree = "<group>"; };
+		268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleTilePresentation.swift; sourceTree = "<group>"; };
+		268178D2306B6242003C8AB1 /* PuzzleImageBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImageBoard.swift; sourceTree = "<group>"; };
 		2687F23B2B793984005440C1 /* Tile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tile.swift; sourceTree = "<group>"; };
 		2687F23D2B79425B005440C1 /* GameType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameType.swift; sourceTree = "<group>"; };
 		2687F23F2B7942FD005440C1 /* GameDifficulty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDifficulty.swift; sourceTree = "<group>"; };
 		26C85AC92BAFA04500AC9691 /* GamePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePicker.swift; sourceTree = "<group>"; };
 		26EF2DC42B80233B000D90AC /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		26FEB9F430697E7B00C3423C /* LivePhotoBoardRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePhotoBoardRenderer.swift; sourceTree = "<group>"; };
+		26FEB9F63069DBB200C3423C /* PuzzleImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImage.swift; sourceTree = "<group>"; };
+		26FEB9F83069DBBE00C3423C /* PuzzleImageImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImageImport.swift; sourceTree = "<group>"; };
+		26FEB9FA3069DBD100C3423C /* PuzzleImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImageStore.swift; sourceTree = "<group>"; };
+		26FEB9FC3069E6F200C3423C /* LivePhotoBoardShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = LivePhotoBoardShaders.metal; sourceTree = "<group>"; };
+		26FEB9FE306AA53E00C3423C /* Favorite00.heic */ = {isa = PBXFileReference; lastKnownFileType = file; path = Favorite00.heic; sourceTree = "<group>"; };
+		26FEB9FF306AA53E00C3423C /* Favorite00.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = Favorite00.mov; sourceTree = "<group>"; };
 		640A9DA527820E8500095601 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		640A9DA727820EBF00095601 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		640BD04F269E18C50001AAA2 /* Click.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Click.caf; sourceTree = "<group>"; };
@@ -103,6 +121,8 @@
 		640BD06A269E279D0001AAA2 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				26FEB9FE306AA53E00C3423C /* Favorite00.heic */,
+				26FEB9FF306AA53E00C3423C /* Favorite00.mov */,
 				64CE7B432678298600988DA4 /* Assets.xcassets */,
 				640BD04F269E18C50001AAA2 /* Click.caf */,
 				640BD051269E18C50001AAA2 /* GameWin1.caf */,
@@ -142,7 +162,14 @@
 				26347B3B2BB2390400AFC2FB /* GameSelection.swift */,
 				2687F23D2B79425B005440C1 /* GameType.swift */,
 				64B95AC626964371003D22D1 /* GameView.swift */,
+				26FEB9F430697E7B00C3423C /* LivePhotoBoardRenderer.swift */,
+				26FEB9FC3069E6F200C3423C /* LivePhotoBoardShaders.metal */,
+				26FEB9F63069DBB200C3423C /* PuzzleImage.swift */,
+				268178D2306B6242003C8AB1 /* PuzzleImageBoard.swift */,
+				26FEB9F83069DBBE00C3423C /* PuzzleImageImport.swift */,
 				6477012226DAE7C2007D42D1 /* PuzzleImages.swift */,
+				26FEB9FA3069DBD100C3423C /* PuzzleImageStore.swift */,
+				268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */,
 				640BD06A269E279D0001AAA2 /* Resources */,
 				640BD067269E1B260001AAA2 /* SoundEffects.swift */,
 				2687F23B2B793984005440C1 /* Tile.swift */,
@@ -259,6 +286,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26FEBA00306AA53E00C3423C /* Favorite00.heic in Resources */,
+				26FEBA01306AA53E00C3423C /* Favorite00.mov in Resources */,
 				26EF2DC52B80233B000D90AC /* InfoPlist.xcstrings in Resources */,
 				64CE7B6B2678298600988DA4 /* Assets.xcassets in Resources */,
 				640BD063269E18C50001AAA2 /* NewGame1.caf in Resources */,
@@ -288,21 +317,28 @@
 			buildActionMask = 2147483647;
 			files = (
 				2687F2402B7942FD005440C1 /* GameDifficulty.swift in Sources */,
+				26FEB9FB3069DBD100C3423C /* PuzzleImageStore.swift in Sources */,
 				64B5205326A7313B0045A189 /* TileMovementGroup.swift in Sources */,
 				6477012326DAE7C2007D42D1 /* PuzzleImages.swift in Sources */,
 				64C218DC268E59A400A9C38B /* BoardView.swift in Sources */,
 				645D95C226911C700028AD02 /* BoardGeometry.swift in Sources */,
 				26347B3E2BB239A600AFC2FB /* TilesGame.swift in Sources */,
+				268178D1306B61FE003C8AB1 /* PuzzleTilePresentation.swift in Sources */,
 				64B95AC726964371003D22D1 /* GameView.swift in Sources */,
 				2687F23E2B79425B005440C1 /* GameType.swift in Sources */,
 				64CE7B652678298600988DA4 /* davestilesApp.swift in Sources */,
+				26FEB9F530697E7B00C3423C /* LivePhotoBoardRenderer.swift in Sources */,
 				26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */,
+				26FEB9F73069DBB200C3423C /* PuzzleImage.swift in Sources */,
+				268178D3306B6242003C8AB1 /* PuzzleImageBoard.swift in Sources */,
 				645D95BF26911BFE0028AD02 /* TileView.swift in Sources */,
 				64CE7B672678298600988DA4 /* ContentView.swift in Sources */,
 				640BD068269E1B260001AAA2 /* SoundEffects.swift in Sources */,
 				2687F23C2B793984005440C1 /* Tile.swift in Sources */,
 				645D95C526951AB30028AD02 /* Game.swift in Sources */,
+				26FEB9F93069DBBE00C3423C /* PuzzleImageImport.swift in Sources */,
 				26C85ACA2BAFA04500AC9691 /* GamePicker.swift in Sources */,
+				26FEB9FD3069E6F200C3423C /* LivePhotoBoardShaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,7 +422,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
-				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 3.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -454,7 +490,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
-				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 3.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
