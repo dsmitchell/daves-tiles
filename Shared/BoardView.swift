@@ -6,6 +6,7 @@
 //  Copyright © 2021 The App Studio LLC.
 //
 
+import Foundation
 import SwiftUI
 
 struct BoardView: View {
@@ -28,6 +29,8 @@ struct BoardView: View {
 	@State var game: Game
 	@State var movementGroup: TileMovementGroup?
 	@State var lingeringTileIdentifiers = [Int]()
+	@State private var tileAnimationOwners = [Int: UUID]()
+	@State private var activeMovementID: UUID?
 	@State private var randomMoveIsInProgress = false
 
 	struct SwapInfo: Equatable {
@@ -46,28 +49,57 @@ struct BoardView: View {
 	}
 	let swaps: SwapInfo?
 	let interfaceIsLandscape: Bool?
+	let showsTileNumbers: Bool
+	let randomMoveRequestID: UUID?
 
-	init(game: Game, swaps: SwapInfo?, interfaceIsLandscape: Bool? = nil) {
+	init(
+		game: Game,
+		swaps: SwapInfo?,
+		interfaceIsLandscape: Bool? = nil,
+		showsTileNumbers: Bool = true,
+		randomMoveRequestID: UUID? = nil
+	) {
 		_game = State(initialValue: game)
 		self.swaps = swaps
 		self.interfaceIsLandscape = interfaceIsLandscape
+		self.showsTileNumbers = showsTileNumbers
+		self.randomMoveRequestID = randomMoveRequestID
+	}
+
+	func beginTracking(_ movementGroup: TileMovementGroup) {
+		let movementID = UUID()
+		activeMovementID = movementID
+		for identifier in movementGroup.tileIdentifiers {
+			tileAnimationOwners[identifier] = movementID
+		}
+		lingeringTileIdentifiers.removeAll(where: movementGroup.tileIdentifiers.contains)
+	}
+
+	func registerLingeringTiles(_ identifiers: [Int], owner movementID: UUID) {
+		for identifier in identifiers {
+			tileAnimationOwners[identifier] = movementID
+			if !lingeringTileIdentifiers.contains(identifier) {
+				lingeringTileIdentifiers.append(identifier)
+			}
+		}
 	}
 
 	func completeMove(behavior: CompleteMoveBehavior) {
 		guard let movementGroup = movementGroup else { return }
 
 		let duration: Double
+		let tilesToDeselect: [Int]
 		switch behavior {
 		case .proceed(let swappingIdentifier):
 			if movementGroup.numberOfMidpointCrossings % 2 == 0 {
 				SoundEffects.default.play(.slide)
 			}
 			duration = movementGroup.direction == .drag ? surpriseDuration : slideDuration * (1 - movementGroup.lastPercentChange)
-			lingeringTileIdentifiers = [swappingIdentifier] + movementGroup.tileIdentifiers
+			tilesToDeselect = [swappingIdentifier] + movementGroup.tileIdentifiers
 			game.moves += 1
 			if duration > 0 {
 				if movementGroup.direction == .drag {
-					game.applyRenderState(.thrown, to: [swappingIdentifier] + movementGroup.tileIdentifiers)
+					game.applyRenderState(.thrown, to: tilesToDeselect)
 				} else {
 					game.applyRenderState(.released(percent: movementGroup.lastPercentChange), to: movementGroup.tileIdentifiers)
 				}
@@ -79,31 +111,43 @@ struct BoardView: View {
 			}
 		case .rollback: // Undo the current move, which means the percent change also needs to be reversed
 			duration = slideDuration * movementGroup.lastPercentChange
-			lingeringTileIdentifiers = movementGroup.tileIdentifiers
+			tilesToDeselect = movementGroup.tileIdentifiers
 			if duration > 0 {
 				game.applyRenderState(.released(percent: 1 - movementGroup.lastPercentChange), to: movementGroup.tileIdentifiers)
 			}
 		}
+		let movementID = activeMovementID ?? UUID()
+		registerLingeringTiles(tilesToDeselect, owner: movementID)
 		self.movementGroup = nil
-		Task { await deselectLingeringTiles(after: duration) }
+		activeMovementID = nil
+		Task {
+			await deselectLingeringTiles(tilesToDeselect, ownedBy: movementID, after: duration)
+		}
 	}
 
-	func deselectLingeringTiles(after duration: Double) async {
-		// TODO: explore if/where to support Task cancellation
-		let tilesToDeselect = lingeringTileIdentifiers
-		let deselectionCount = tilesToDeselect.filter { identifier in
-			game.tiles.first(where: { $0.id == identifier })!.isSelected
-		}.count
+	func deselectLingeringTiles(_ identifiers: [Int], ownedBy movementID: UUID, after duration: Double) async {
 		if duration > 0 {
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * duration))
 		}
+
+		let tilesToDeselect = identifiers.filter { tileAnimationOwners[$0] == movementID }
+		let deselectionCount = tilesToDeselect.filter { identifier in
+			game.tiles.first(where: { $0.id == identifier })?.isSelected == true
+		}.count
 		game.applyRenderState(.transitioning(toSelected: false), to: tilesToDeselect)
+
 		if deselectionCount > 0 {
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * popDuration))
 		}
-		game.applyRenderState(.none, to: tilesToDeselect)
-		lingeringTileIdentifiers.removeAll(where: tilesToDeselect.contains)
-		guard game.isFinished else { return }
+
+		let tilesToClear = identifiers.filter { tileAnimationOwners[$0] == movementID }
+		game.applyRenderState(.none, to: tilesToClear)
+		for identifier in tilesToClear {
+			tileAnimationOwners.removeValue(forKey: identifier)
+		}
+		lingeringTileIdentifiers.removeAll(where: tilesToClear.contains)
+
+		guard movementGroup == nil, lingeringTileIdentifiers.isEmpty, game.isFinished else { return }
 		game.state = .finished
 	}
 
@@ -345,8 +389,9 @@ struct BoardView: View {
 			let dragGesture = DragGesture(minimumDistance: 0).onChanged { value in
 				guard !randomMoveIsInProgress else { return }
 				switch movementGroup {
-				case .none where value.velocity == .zero:
+				case .none where game.mode == .classic || value.velocity == .zero:
 					guard let movementGroup = game.startDrag(value, with: boardGeometry) else { return }
+					beginTracking(movementGroup)
 					self.movementGroup = movementGroup
 					if movementGroup.direction == .drag {
 						SoundEffects.default.play(.popUp)
@@ -377,9 +422,13 @@ struct BoardView: View {
 							SoundEffects.default.play(.popDown)
 							fallthrough
 						case (.restarted, false):
-							lingeringTileIdentifiers = movementGroup.tileIdentifiers
+							let movementID = activeMovementID ?? UUID()
+							registerLingeringTiles(movementGroup.tileIdentifiers, owner: movementID)
 							self.movementGroup = nil
-							Task { await deselectLingeringTiles(after: 0) }
+							activeMovementID = nil
+							Task {
+								await deselectLingeringTiles(movementGroup.tileIdentifiers, ownedBy: movementID, after: 0)
+							}
 						case (_, false):
 							completeMove(behavior: .rollback)
 						default:
@@ -452,7 +501,7 @@ struct BoardView: View {
 						let presentationOffset = synchronizesPlacement ? CGSize.zero : tileOffset(tile)
 						let isMatched = game.isMatched(tile: tile, index: index)
 						let isOpen = tile.id == game.openTileId
-						let showNumber = ![.finished, .fading].contains(game.state)
+						let showNumber = showsTileNumbers && ![.finished, .fading].contains(game.state)
 							&& !tileNumberIsCovered(
 								tile,
 								boardGeometry: boardGeometry,
@@ -486,11 +535,16 @@ struct BoardView: View {
 								.offset(x: 0, y: tile.isFalling ? boardGeometry.boardSize.height * 3 : 0)
 #endif
 								.opacity(tile.isFalling ? 0 : 1) // Fade out while falling
+								.transition(showsTileNumbers ? .identity : .opacity.animation(.easeIn(duration: 1.0 / 3.0)))
 								.animation(tileFallingAnimation(tile), value: tile.renderState)
 						}
 					}
 				}
 			}
+		}
+		.task(id: randomMoveRequestID) {
+			guard randomMoveRequestID != nil else { return }
+			await randomMove()
 		}
 	}
 

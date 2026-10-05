@@ -13,11 +13,10 @@ struct GameSelection {
 extension GameSelection: Hashable {
 	
 	static func == (lhs: GameSelection, rhs: GameSelection) -> Bool {
-		lhs.game.id == rhs.game.id && lhs.game.tiles == rhs.game.tiles
+		lhs.game.id == rhs.game.id
 	}
 	
 	func hash(into hasher: inout Hasher) {
 		hasher.combine(game.id)
-		hasher.combine(game.tiles)
 	}
 }

@@ -12,18 +12,40 @@ struct ContentView: View {
 
 	private static let initialPuzzleImage = PuzzleImageLibrary.initialFavorite()
 
+	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.verticalSizeClass) private var verticalSizeClass
+	@Binding private var navigationPath: [GameSelection]
 	@State var gameSelections: [GameSelection]
 	@State var pickerVisible = false
 	@State var selectedGameId: Game.ID?
 	@State var gameType: GameType = .initial
 	@State private var puzzleImage = ContentView.initialPuzzleImage
+	@State private var showsTileNumbers = true
+	@State private var hasRestoredNavigation = false
+	private let restoresPresentedGame: Bool
 
-	init() {
-		let selections = ContentView.initialSelections(
-			imageIsLandscape: ContentView.initialPuzzleImage.isLandscape
-		)
+	@MainActor init(navigationPath: Binding<[GameSelection]>) {
+		_navigationPath = navigationPath
+		let savedSession = GameSessionStore.load()
+		let restoredImage = savedSession.flatMap {
+			PuzzleImageLibrary.image(id: $0.puzzleImageID)
+		} ?? ContentView.initialPuzzleImage
+		let restoredSelections = savedSession?.selections.compactMap {
+			$0.restoredSelection()
+		}
+		let selections = restoredSelections?.count == GameDifficulty.allCases.count
+			? restoredSelections!
+			: ContentView.initialSelections(imageIsLandscape: restoredImage.isLandscape)
+		let selectedDifficulty = savedSession?.selectedDifficulty ?? .easy
+
 		_gameSelections = State(initialValue: selections)
-		_selectedGameId = State(initialValue: selections[GameDifficulty.easy.tabIndex].game.id)
+		_selectedGameId = State(initialValue: selections[selectedDifficulty.tabIndex].game.id)
+		_gameType = State(initialValue: savedSession.map {
+			GameType(mode: $0.mode, randomJumps: $0.randomJumps)
+		} ?? .initial)
+		_puzzleImage = State(initialValue: restoredImage)
+		_showsTileNumbers = State(initialValue: savedSession?.showsTileNumbers ?? true)
+		restoresPresentedGame = savedSession?.presentsGame ?? false
 	}
 
 	var body: some View {
@@ -31,6 +53,7 @@ struct ContentView: View {
 		VStack {
 			GamePicker(
 				selectedGameId: $selectedGameId,
+				showsTileNumbers: $showsTileNumbers,
 				gameSelections: gameSelections,
 				gameType: gameType,
 				onPuzzleImageAdded: selectPuzzleImage,
@@ -39,14 +62,14 @@ struct ContentView: View {
 				gamePickerHeader(titleFont: .title.bold())
 			}
 			.environment(\.puzzleImage, puzzleImage)
-//			Spacer() // Consider removing this -- but keep in the code until I decide
 		}
 		.navigationDestination(for: GameSelection.self) { gameSelection in
 			GameView(
 				game: gameSelection.game,
 				presenterVisible: $pickerVisible,
 				puzzleImage: $puzzleImage,
-				randomJumps: gameType.randomJumps
+				randomJumps: gameType.randomJumps,
+				showsTileNumbers: $showsTileNumbers
 			)
 			.environment(\.puzzleImage, puzzleImage)
 		}
@@ -59,30 +82,40 @@ struct ContentView: View {
 			.glassBackgroundEffect()
 		}
 #endif
-		.toolbar {
-			let placement: ToolbarItemPlacement = .principal
-			ToolbarItemGroup(placement: placement) {
-				gamePickerHeader(titleFont: .system(.largeTitle, design: .rounded))
-			}
-		}
 		.onAppear {
+			let shouldRestorePresentedGame = !hasRestoredNavigation && restoresPresentedGame
 			pickerVisible = true // This can occur right after successful presentation of the NavigationLink
-			if selectedGameId == nil {
-				selectedGameId = gameSelections[GameDifficulty.medium.tabIndex].game.id
-			} else if let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId }), gameSelections[gameIndex].game.state == .finished {
-				puzzleImage = PuzzleImageLibrary.randomFavorite()
-				for difficulty in GameDifficulty.allCases {
-					gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
-						for: difficulty,
-						mode: gameType.mode,
-						imageIsLandscape: puzzleImage.isLandscape
-					)
+			if !hasRestoredNavigation {
+				hasRestoredNavigation = true
+				if restoresPresentedGame,
+				   navigationPath.isEmpty,
+				   let selected = gameSelections.first(where: { $0.game.id == selectedGameId }) {
+					navigationPath.append(selected)
 				}
-				selectedGameId = gameSelections[gameIndex].game.id
 			}
+			if selectedGameId == nil {
+				selectedGameId = gameSelections[GameDifficulty.easy.tabIndex].game.id
+			} else if !shouldRestorePresentedGame {
+				preparePickerAfterCompletedGame()
+			}
+			updateUnstartedGamesForCurrentOrientation()
 		}
 		.onDisappear {
 			pickerVisible = false
+		}
+		.onChange(of: scenePhase) { oldPhase, newPhase in
+			if newPhase == .background, oldPhase != newPhase {
+				persistSession()
+			}
+		}
+		.onChange(of: verticalSizeClass) {
+			updateUnstartedGamesForCurrentOrientation()
+		}
+		.onChange(of: navigationPath.map(\.game.id)) {
+			if navigationPath.isEmpty {
+				preparePickerAfterCompletedGame()
+				updateUnstartedGamesForCurrentOrientation()
+			}
 		}
 	}
 		
@@ -127,24 +160,82 @@ struct ContentView: View {
 
 	func selectPuzzleImage(_ image: PuzzleImage) {
 		puzzleImage = image
-		let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId }) ?? GameDifficulty.medium.tabIndex
+		let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId })
 		for difficulty in GameDifficulty.allCases {
-			gameSelections[difficulty.tabIndex] = ContentView.gameSelection(for: difficulty, mode: gameType.mode, imageIsLandscape: image.isLandscape)
+			gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
+				for: difficulty,
+				mode: gameType.mode,
+				imageIsLandscape: gameLayoutIsLandscape(for: image)
+			)
 		}
-		selectedGameId = gameSelections[gameIndex].game.id
+		if let gameIndex = gameIndex {
+			selectedGameId = gameSelections[gameIndex].game.id
+		}
 	}
 
 	func setMode(_ mode: Game.Mode, randomJumps: Bool) {
 		gameType = GameType(mode: mode, randomJumps: randomJumps)
-			let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId }) ?? GameDifficulty.medium.tabIndex
-			for difficulty in GameDifficulty.allCases {
-				gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
-					for: difficulty,
-					mode: mode,
-					imageIsLandscape: puzzleImage.isLandscape
-				)
-			}
+		let gameIndex = gameSelections.firstIndex(where: { $0.game.id == selectedGameId })
+		for difficulty in GameDifficulty.allCases {
+			gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
+				for: difficulty,
+				mode: mode,
+				imageIsLandscape: gameLayoutIsLandscape(for: puzzleImage)
+			)
+		}
+		if let gameIndex = gameIndex {
+			selectedGameId = gameSelections[gameIndex].game.id
+		}
+	}
+
+	func persistSession() {
+		let selectedDifficulty = gameSelections.first(where: {
+			$0.game.id == selectedGameId
+		})?.difficulty ?? .easy
+		GameSessionStore.save(
+			SavedGameSession(
+				puzzleImageID: puzzleImage.id,
+				gameType: gameType,
+				selectedDifficulty: selectedDifficulty,
+				showsTileNumbers: showsTileNumbers,
+				presentsGame: !navigationPath.isEmpty,
+				gameSelections: gameSelections
+			)
+		)
+	}
+
+	private func preparePickerAfterCompletedGame() {
+		guard let gameIndex = gameSelections.firstIndex(where: {
+			$0.game.id == selectedGameId
+		}), gameSelections[gameIndex].game.state == .finished else {
+			return
+		}
+
+		puzzleImage = PuzzleImageLibrary.randomFavorite()
+		for difficulty in GameDifficulty.allCases {
+			gameSelections[difficulty.tabIndex] = ContentView.gameSelection(
+				for: difficulty,
+				mode: gameType.mode,
+				imageIsLandscape: gameLayoutIsLandscape(for: puzzleImage)
+			)
+		}
 		selectedGameId = gameSelections[gameIndex].game.id
+	}
+
+	private func gameLayoutIsLandscape(for image: PuzzleImage) -> Bool {
+#if os(iOS)
+		verticalSizeClass == .compact
+#else
+		image.isLandscape
+#endif
+	}
+
+	private func updateUnstartedGamesForCurrentOrientation() {
+		guard navigationPath.isEmpty else { return }
+		let imageIsLandscape = gameLayoutIsLandscape(for: puzzleImage)
+		for selection in gameSelections {
+			selection.game.updateOpenTile(imageIsLandscape: imageIsLandscape)
+		}
 	}
 }
 
@@ -177,5 +268,8 @@ fileprivate extension ContentView {
 }
 
 #Preview {
-	return ContentView()
+	@Previewable @State var navigationPath: [GameSelection] = []
+	return NavigationStack(path: $navigationPath) {
+		ContentView(navigationPath: $navigationPath)
+	}
 }

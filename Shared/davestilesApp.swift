@@ -15,7 +15,7 @@ import SwiftUI
 	var body: some Scene {
 		WindowGroup {
 			NavigationStack(path: $path) {
-				ContentView()
+				ContentView(navigationPath: $path)
 					.background(.clear)
 			}
 	#if !os(macOS)

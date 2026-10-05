@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		260B6E6E3072FDB90055A801 /* PuzzleImageManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260B6E6D3072FDB90055A801 /* PuzzleImageManagerView.swift */; };
+		260B6E703073D8330055A801 /* GameSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260B6E6F3073D8330055A801 /* GameSessionStore.swift */; };
 		2627DC372B79BE930079EF5B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2627DC362B79BE930079EF5B /* Localizable.xcstrings */; };
 		26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3B2BB2390400AFC2FB /* GameSelection.swift */; };
 		26347B3E2BB239A600AFC2FB /* TilesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3D2BB239A600AFC2FB /* TilesGame.swift */; };
@@ -57,6 +59,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		260B6E6D3072FDB90055A801 /* PuzzleImageManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImageManagerView.swift; sourceTree = "<group>"; };
+		260B6E6F3073D8330055A801 /* GameSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSessionStore.swift; sourceTree = "<group>"; };
 		2627DC362B79BE930079EF5B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		26347B3B2BB2390400AFC2FB /* GameSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelection.swift; sourceTree = "<group>"; };
 		26347B3D2BB239A600AFC2FB /* TilesGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesGame.swift; sourceTree = "<group>"; };
@@ -160,6 +164,7 @@
 				2687F23F2B7942FD005440C1 /* GameDifficulty.swift */,
 				26C85AC92BAFA04500AC9691 /* GamePicker.swift */,
 				26347B3B2BB2390400AFC2FB /* GameSelection.swift */,
+				260B6E6F3073D8330055A801 /* GameSessionStore.swift */,
 				2687F23D2B79425B005440C1 /* GameType.swift */,
 				64B95AC626964371003D22D1 /* GameView.swift */,
 				26FEB9F430697E7B00C3423C /* LivePhotoBoardRenderer.swift */,
@@ -167,6 +172,7 @@
 				26FEB9F63069DBB200C3423C /* PuzzleImage.swift */,
 				268178D2306B6242003C8AB1 /* PuzzleImageBoard.swift */,
 				26FEB9F83069DBBE00C3423C /* PuzzleImageImport.swift */,
+				260B6E6D3072FDB90055A801 /* PuzzleImageManagerView.swift */,
 				6477012226DAE7C2007D42D1 /* PuzzleImages.swift */,
 				26FEB9FA3069DBD100C3423C /* PuzzleImageStore.swift */,
 				268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */,
@@ -326,6 +332,8 @@
 				268178D1306B61FE003C8AB1 /* PuzzleTilePresentation.swift in Sources */,
 				64B95AC726964371003D22D1 /* GameView.swift in Sources */,
 				2687F23E2B79425B005440C1 /* GameType.swift in Sources */,
+				260B6E703073D8330055A801 /* GameSessionStore.swift in Sources */,
+				260B6E6E3072FDB90055A801 /* PuzzleImageManagerView.swift in Sources */,
 				64CE7B652678298600988DA4 /* davestilesApp.swift in Sources */,
 				26FEB9F530697E7B00C3423C /* LivePhotoBoardRenderer.swift in Sources */,
 				26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */,

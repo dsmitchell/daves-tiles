@@ -10,6 +10,12 @@ import SwiftUI
 
 @MainActor enum PuzzleImageLibrary {
 
+    static let bundledImageIDs = (0...11).map {
+        String(format: "Favorite%02d", $0)
+    }
+
+    private static let disabledBundledImageIDsKey = "DisabledBundledPuzzleImageIDs"
+
     private enum Source: Equatable {
         case bundled(Int)
         case user(URL)
@@ -23,9 +29,9 @@ import SwiftUI
     }
 
     static func randomFavorite() -> PuzzleImage {
-        let sources = (0...12).map(Source.bundled)
+        let sources = (0...11).filter { isBundledImageEnabled(number: $0) }.map(Source.bundled)
             + PuzzleImageStore.imageDirectories.map(Source.user)
-        var source = sources.randomElement() ?? .bundled(1)
+        var source = sources.randomElement() ?? .bundled(0)
         if sources.count > 1 {
             while source == lastSource {
                 source = sources.randomElement()!
@@ -50,6 +56,76 @@ import SwiftUI
             lastSource = .user(directory)
         }
         return image
+    }
+
+    static func bundledImages() -> [PuzzleImage] {
+        bundledImageIDs.indices.map(bundledImage)
+    }
+
+    static func bundledImageName(id: String) -> LocalizedStringResource {
+        switch id {
+        case "Favorite00": "Moon Yawning"
+        case "Favorite01": "Cherry Hill"
+        case "Favorite02": "West Side Bench"
+        case "Favorite03": "Rockefeller Center"
+        case "Favorite04": "Bryant Park"
+        case "Favorite05": "Maine Monument"
+        case "Favorite06": "NYPL Tulips"
+        case "Favorite07": "Noguchi's Cube"
+        case "Favorite08": "Battery Park"
+        case "Favorite09": "Columbus Circle"
+        case "Favorite10": "Central Park"
+        case "Favorite11": "Financial District"
+        default: "Built-in Photo"
+        }
+    }
+
+    static func userImages() -> [PuzzleImage] {
+        PuzzleImageStore.imageDirectories.compactMap { try? PuzzleImageStore.puzzleImage(in: $0) }
+    }
+
+    static func image(id: String) -> PuzzleImage? {
+        if let index = bundledImageIDs.firstIndex(of: id) {
+            return bundledImage(index)
+        }
+        guard let directory = PuzzleImageStore.imageDirectories.first(where: {
+            $0.lastPathComponent == id
+        }) else { return nil }
+        return try? PuzzleImageStore.puzzleImage(in: directory)
+    }
+
+    static func isBundledImageEnabled(id: String) -> Bool {
+        !disabledBundledImageIDs.contains(id)
+    }
+
+    static func setBundledImage(_ id: String, enabled: Bool) {
+        var disabledIDs = disabledBundledImageIDs
+        if enabled {
+            disabledIDs.remove(id)
+        } else {
+            let enabledCount = bundledImageIDs.filter { !disabledIDs.contains($0) }.count
+            guard enabledCount > 1 else { return }
+            disabledIDs.insert(id)
+        }
+        UserDefaults.standard.set(Array(disabledIDs), forKey: disabledBundledImageIDsKey)
+    }
+
+    static func deleteUserImage(id: String) throws {
+        guard let directory = PuzzleImageStore.imageDirectories.first(where: {
+            $0.lastPathComponent == id
+        }) else { return }
+        try PuzzleImageStore.deleteImage(in: directory)
+        if lastSource == .user(directory) {
+            lastSource = nil
+        }
+    }
+
+    private static var disabledBundledImageIDs: Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: disabledBundledImageIDsKey) ?? [])
+    }
+
+    private static func isBundledImageEnabled(number: Int) -> Bool {
+        isBundledImageEnabled(id: bundledImageIDs[number])
     }
 
     private static func bundledImage(_ number: Int) -> PuzzleImage {

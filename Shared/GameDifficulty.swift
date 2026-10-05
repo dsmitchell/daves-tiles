@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-enum GameDifficulty: CaseIterable {
+enum GameDifficulty: String, Codable, CaseIterable {
 	case easy
 	case medium
 	case hard

@@ -12,6 +12,7 @@ struct GameView: View {
 
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.verticalSizeClass) private var verticalSizeClass
 
 	static let gameFadeDuration = BoardView.standardDuration * 4
 	static let oneSecond = UInt64(1_000_000_000)
@@ -26,10 +27,13 @@ struct GameView: View {
 	@State private var displayedGameSeconds = 0
 	@State private var finishGameTask: Task<Void,Never>?
 	@State private var showingWinGameDialog = false
+	@State private var lastProcessedGameSecond = -1
+	@State private var randomMoveRequestID: UUID?
 	@State private var stopTimer = false
 	@State private var warningFlashOpacity = 0.0
 	
 	let randomJumps: Bool
+	@Binding var showsTileNumbers: Bool
 	let playAgain = String(localized: "Play again", comment: "Prompts the player to play again after winning")
 	let cancel = String(localized: "Cancel", comment: "Dismisses the congratulations without starting a new game")
 	let restart = String(localized: "New Game", comment: "Allows the player to cancel the current game and start a new game")
@@ -112,6 +116,14 @@ struct GameView: View {
 	private var warningColor: Color {
 		game.mode == .classic ? .red : .purple
 	}
+
+	private var gameLayoutIsLandscape: Bool {
+#if os(iOS)
+		verticalSizeClass == .compact
+#else
+		puzzleImage.isLandscape
+#endif
+	}
 	
 	func presenterVisibleChanged(_: Bool, _ newValue: Bool) {
 		// This is the equivalent of viewDidAppear (because the presenter is now onDisappear)
@@ -146,6 +158,7 @@ struct GameView: View {
 	func scenePhaseChanged(_: ScenePhase, _ newValue: ScenePhase) {
 		if newValue == .background, game.state == .playing, let runningStartDate = initialDate {
 			game.accumulatedTime += Date().timeIntervalSince(runningStartDate)
+			displayedGameSeconds = Int(game.accumulatedTime)
 			initialDate = nil
 		} else if newValue == .active, game.state == .playing, initialDate == nil, !presenterVisible {
 			initialDate = Date()
@@ -153,8 +166,12 @@ struct GameView: View {
 	}
 
 	func boardView() -> some View {
-		let board = BoardView(game: game, swaps: nil)
-		return board
+		BoardView(
+			game: game,
+			swaps: nil,
+			showsTileNumbers: showsTileNumbers,
+			randomMoveRequestID: randomMoveRequestID
+		)
 			.environment(\.puzzleImageIsPlaying, ![.new, .fading].contains(game.state))
 			.task(id: initialDate) { @MainActor in
 				guard let initialDate, game.state == .playing else { return }
@@ -165,13 +182,11 @@ struct GameView: View {
 				let currentGameSecond = Int(elapsedGameTime(at: Date(), since: initialDate))
 				displayedGameSeconds = currentGameSecond
 
-				let randomJumpDelay = game.openTileId == nil ? game.tiles.count - min(game.columns, game.rows) : game.tiles.count * 2
-				var nextWarningSecond = randomJumps
-					? ((currentGameSecond / randomJumpDelay) + 1) * randomJumpDelay
-					: nil
-				var warningsPlayed = 0
-				var randomMoveSecond: Int?
+				let randomMoveInterval = (game.openTileId == nil
+					? game.tiles.count - min(game.columns, game.rows)
+					: game.tiles.count * 2) + 3
 				print("Starting game clock at game time \(currentGameSecond)s...")
+				processRandomMoveEvent(at: currentGameSecond, interval: randomMoveInterval)
 
 				while !stopTimer && self.game.state == .playing && !Task.isCancelled {
 					let nextGameSecond = Int(elapsedGameTime(at: Date(), since: initialDate)) + 1
@@ -181,24 +196,10 @@ struct GameView: View {
 					let elapsedSecond = Int(elapsedGameTime(at: Date(), since: initialDate))
 					displayedGameSeconds = elapsedSecond
 
-					if let scheduledMoveSecond = randomMoveSecond, elapsedSecond >= scheduledMoveSecond {
-						Task { await board.randomMove() }
-						warningsPlayed = 0
-						nextWarningSecond = elapsedSecond + randomJumpDelay
-						randomMoveSecond = nil
-					} else if let scheduledWarningSecond = nextWarningSecond, elapsedSecond >= scheduledWarningSecond {
-						playWarning()
-						warningsPlayed += 1
-						if warningsPlayed == 3 {
-							randomMoveSecond = elapsedSecond + 1
-							nextWarningSecond = nil
-						} else {
-							nextWarningSecond = elapsedSecond + 1
-						}
-					}
+					processRandomMoveEvent(at: elapsedSecond, interval: randomMoveInterval)
 				}
 			}
-	}
+		}
 
 	@MainActor private func sleep(untilGameTime target: TimeInterval, since initialDate: Date) async {
 		let remainingTime = target - elapsedGameTime(at: Date(), since: initialDate)
@@ -211,6 +212,17 @@ struct GameView: View {
 		warningFlashOpacity = 1
 		withAnimation(.linear(duration: 1)) {
 			warningFlashOpacity = 0
+		}
+	}
+
+	@MainActor private func processRandomMoveEvent(at gameSecond: Int, interval: Int) {
+		guard randomJumps, gameSecond > lastProcessedGameSecond else { return }
+		lastProcessedGameSecond = gameSecond
+		let phase = gameSecond % interval
+		if gameSecond > 0, phase == 0 {
+			randomMoveRequestID = UUID()
+		} else if phase >= interval - 3 {
+			playWarning()
 		}
 	}
 
@@ -249,6 +261,7 @@ struct GameView: View {
 	}
 	
 	@MainActor func animateTileEntry() async {
+		lastProcessedGameSecond = -1
 		SoundEffects.default.play(.newGame)
 #if os(visionOS)
 		let interval = 3.0 * Double(GameView.oneSecond) / Double(game.tiles.count)
@@ -268,7 +281,7 @@ struct GameView: View {
 
 	@MainActor func newGame(firstAppearance: Bool) async {
 		if game.state == .new, firstAppearance {
-			game.startNewGame(imageIsLandscape: puzzleImage.isLandscape)
+			game.startNewGame(imageIsLandscape: gameLayoutIsLandscape)
 			await animateTileEntry()
 		} else if !firstAppearance {
 			stopTimer = true
@@ -276,12 +289,14 @@ struct GameView: View {
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
 			displayedGameSeconds = 0
 			puzzleImage = PuzzleImageLibrary.randomFavorite()
-			game.startNewGame(imageIsLandscape: puzzleImage.isLandscape)
+			game.startNewGame(imageIsLandscape: gameLayoutIsLandscape)
 			// A second wait seems to correct an issue animating new tiles after a completed game
 			try? await Task.sleep(nanoseconds: UInt64(Double(GameView.oneSecond) * GameView.gameFadeDuration))
 			await animateTileEntry()
-		} else {
+		} else if game.state == .playing {
 			initialDate = Date()
+		} else {
+			displayedGameSeconds = Int(game.accumulatedTime)
 		}
 	}
 
@@ -327,12 +342,14 @@ fileprivate extension View {
 #Preview {
 	@Previewable @State var presenterVisible = false
 	@Previewable @State var puzzleImage = PuzzleImageLibrary.randomFavorite()
+	@Previewable @State var showsTileNumbers = true
 	let game = Game(rows: 6, columns: 4, mode: .swap, imageIsLandscape: puzzleImage.isLandscape)
 
 	return GameView(
 		game: game,
 		presenterVisible: $presenterVisible,
 		puzzleImage: $puzzleImage,
-		randomJumps: false
+		randomJumps: false,
+		showsTileNumbers: $showsTileNumbers
 	)
 }

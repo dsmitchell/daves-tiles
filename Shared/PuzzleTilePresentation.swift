@@ -85,11 +85,17 @@ final class PuzzleTilePresentationAnimator {
                 return (layout.id, previous)
             }
             let current = previous?.value(at: time) ?? layout
-            return (layout.id, PlacementAnimation(from: current, to: layout, startTime: time))
+            let hasValidOrigin = current.destinationRect.width > 0
+                && current.destinationRect.height > 0
+            let origin = hasValidOrigin ? current : layout
+            return (layout.id, PlacementAnimation(from: origin, to: layout, startTime: time))
         })
-        let duration = layouts
-            .filter(\.requiresSynchronizedPlacement)
-            .map(\.animationDuration)
+        let duration = animations.values
+            .filter { animation in
+                animation.to.requiresSynchronizedPlacement
+                    && animation.from.destinationRect != animation.to.destinationRect
+            }
+            .map(\.to.animationDuration)
             .max() ?? 0
         animationTask?.cancel()
         isAnimating = duration > 0

@@ -19,6 +19,8 @@ private typealias PlatformMetalViewRepresentable = NSViewRepresentable
 
 struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 
+	@Environment(\.scenePhase) private var scenePhase
+
 	private enum ContentCropStrategy {
 		case fullFrame
 		case darkPixelEdges
@@ -66,6 +68,10 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 	}
 #endif
 
+	private var shouldRender: Bool {
+		isPlaying && scenePhase == .active
+	}
+
 	private func makeMetalView(coordinator: Coordinator) -> MTKView {
 		let view = MTKView(frame: .zero, device: MTLCreateSystemDefaultDevice())
 		view.colorPixelFormat = .bgra8Unorm
@@ -75,18 +81,18 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 		view.isUserInteractionEnabled = false
 #endif
 		view.enableSetNeedsDisplay = false
-		view.isPaused = !isPlaying
+		view.isPaused = !shouldRender
 		view.preferredFramesPerSecond = 60
 		coordinator.attach(to: view)
 		return view
 	}
 
 	private func update(_ view: MTKView, coordinator: Coordinator) {
-		view.isPaused = !isPlaying
+		view.isPaused = !shouldRender
 		coordinator.update(
 			id: id,
 			movieURL: movieURL,
-			isPlaying: isPlaying,
+			isPlaying: shouldRender,
 			contentSize: contentSize,
 			placements: placements,
 			didRenderFirstFrame: didRenderFirstFrame

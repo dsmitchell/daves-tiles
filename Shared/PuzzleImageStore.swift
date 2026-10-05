@@ -33,6 +33,10 @@ import UniformTypeIdentifiers
         return try puzzleImage(in: directory)
     }
 
+    static func deleteImage(in directory: URL) throws {
+        try FileManager.default.removeItem(at: directory)
+    }
+
     nonisolated private static func store(_ imported: ImportedPuzzleMedia) throws -> URL {
         guard let isLandscape = decodedImageIsLandscape(in: imported.url) else {
             throw CocoaError(.fileReadCorruptFile)

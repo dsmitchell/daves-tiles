@@ -9,11 +9,11 @@
 import Foundation
 @preconcurrency import AVFoundation
 
-public class SoundEffects {
+public final class SoundEffects: @unchecked Sendable {
 
 	@MainActor static let `default` = SoundEffects()
 
-	public enum Effect: CaseIterable {
+	public enum Effect: CaseIterable, Sendable {
 		case click
 		case gameWin
 		case jump
@@ -24,12 +24,17 @@ public class SoundEffects {
 		case warning
 	}
 
-	struct PlayerCollection {
-		let players: [AVAudioPlayer]
-		var nextPlayer = 0
+	private struct VoiceCollection {
+		let buffer: AVAudioPCMBuffer
+		let voices: [AVAudioPlayerNode]
+		var nextVoice = 0
 	}
 
-	var sounds = [Effect : PlayerCollection]()
+	private let audioEngine = AVAudioEngine()
+	private let loadingQueue = DispatchQueue(label: "com.theappstudio.davestiles.audio-loading", qos: .userInitiated)
+	private let stateLock = NSLock()
+	private var isPreloading = false
+	private var sounds = [Effect: VoiceCollection]()
 
 	public init() {
 		#if !os(macOS)
@@ -45,45 +50,82 @@ public class SoundEffects {
 			}
 		}
 		#endif
+
+		preloadSounds()
 	}
 
 	public func preloadSounds() {
-		sounds.reserveCapacity(Effect.allCases.count)
-		for effect in Effect.allCases {
-			switch effect {
-			case .click:
-				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 4))
-			case .slide:
-				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 4))
-			case .warning:
-				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName, count: 2))
-			default:
-				sounds[effect] = PlayerCollection(players: loadSound(named: effect.resourceName))
+		stateLock.lock()
+		guard sounds.isEmpty, !isPreloading else {
+			stateLock.unlock()
+			return
+		}
+		isPreloading = true
+		stateLock.unlock()
+
+		loadingQueue.async { [self] in
+			var loadedSounds = [Effect: VoiceCollection]()
+			loadedSounds.reserveCapacity(Effect.allCases.count)
+
+			for effect in Effect.allCases {
+				let voiceCount = switch effect {
+				case .click, .slide: 12
+				case .warning: 4
+				default: 2
+				}
+				loadedSounds[effect] = loadSound(named: effect.resourceName, voiceCount: voiceCount)
 			}
+
+			audioEngine.prepare()
+			try! audioEngine.start()
+
+			stateLock.lock()
+			sounds = loadedSounds
+			isPreloading = false
+			stateLock.unlock()
 		}
 	}
 
-	private func loadSound(named name: String, count: Int = 1) -> [AVAudioPlayer] {
+	private func loadSound(named name: String, voiceCount: Int) -> VoiceCollection {
 		guard let soundFileURL = Bundle.main.url(forResource: name, withExtension: "caf") else {
 			fatalError("\(name).caf not found")
 		}
-		return (0..<count).map { _ in
-			let player = try! AVAudioPlayer(contentsOf: soundFileURL)
-			DispatchQueue.global(qos: .userInitiated).async {
-				player.prepareToPlay()
-			}
-			return player
+
+		let audioFile = try! AVAudioFile(forReading: soundFileURL)
+		guard let buffer = AVAudioPCMBuffer(
+			pcmFormat: audioFile.processingFormat,
+			frameCapacity: AVAudioFrameCount(audioFile.length)
+		) else {
+			fatalError("Unable to allocate an audio buffer for \(name).caf")
 		}
+		try! audioFile.read(into: buffer)
+
+		let voices = (0..<voiceCount).map { _ in
+			let voice = AVAudioPlayerNode()
+			audioEngine.attach(voice)
+			audioEngine.connect(voice, to: audioEngine.mainMixerNode, format: audioFile.processingFormat)
+			voice.prepare(withFrameCount: buffer.frameLength)
+			return voice
+		}
+		return VoiceCollection(buffer: buffer, voices: voices)
 	}
 
 	public func play(_ effect: Effect) {
-		guard var playerCollection = sounds[effect] else { fatalError() }
-		let nextPlayer = playerCollection.players[playerCollection.nextPlayer]
-		playerCollection.nextPlayer = (playerCollection.nextPlayer + 1) % playerCollection.players.count
-		sounds[effect] = playerCollection
-		DispatchQueue.global().async {
-			nextPlayer.play()
+		stateLock.lock()
+		guard var voiceCollection = sounds[effect] else {
+			stateLock.unlock()
+			return
 		}
+
+		let voice = voiceCollection.voices[voiceCollection.nextVoice]
+		voiceCollection.nextVoice = (voiceCollection.nextVoice + 1) % voiceCollection.voices.count
+		sounds[effect] = voiceCollection
+
+		voice.scheduleBuffer(voiceCollection.buffer, at: nil, options: .interrupts)
+		if !voice.isPlaying {
+			voice.play()
+		}
+		stateLock.unlock()
 	}
 }
 
