@@ -32,6 +32,7 @@ struct TileView<Background: View>: View {
 	let drawsBorder: Bool
 	let showNumber: Bool
 	let text: String?
+	let labelUsesSpatialDepth: Bool
 	let background: Background
 
 	init(
@@ -42,6 +43,7 @@ struct TileView<Background: View>: View {
 		drawsBorder: Bool,
 		showNumber: Bool,
 		text: String?,
+		labelUsesSpatialDepth: Bool = true,
 		@ViewBuilder background: () -> Background
 	) {
 		self.id = id
@@ -51,6 +53,7 @@ struct TileView<Background: View>: View {
 		self.drawsBorder = drawsBorder
 		self.showNumber = showNumber
 		self.text = text
+		self.labelUsesSpatialDepth = labelUsesSpatialDepth
 		self.background = background()
 	}
 
@@ -67,8 +70,17 @@ struct TileView<Background: View>: View {
 				)
 				.overlay(roundedRectangle.stroke(Color.primary, lineWidth: drawsBorder && isSelected ? 4 : 0))
 				.clipShape(roundedBorder ? ImageClipShape.rounded(radius: roundedRadius) : ImageClipShape.rectangle)
+#if os(visionOS)
+				// Keep the image in a stable render layer without flattening the
+				// independently positioned number label into that layer.
+				.compositingGroup()
+#endif
 			if showNumber {
 				TileLabel(text: text, id: id, tileSize: tileSize)
+#if os(visionOS)
+					.offset(z: labelUsesSpatialDepth ? 6 : 0)
+					.zIndex(labelUsesSpatialDepth ? 0 : 1)
+#endif
 			}
 		}
 #if os(visionOS)
@@ -101,9 +113,6 @@ struct TileLabel: View {
 		.shadow(color: .black, radius: 2)
 		.drawingGroup()
 		.id("Label.\(id)")
-#if os(visionOS)
-		.offset(z: 6)
-#endif
 	}
 }
 

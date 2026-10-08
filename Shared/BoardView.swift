@@ -501,15 +501,11 @@ struct BoardView: View {
 						let presentationOffset = synchronizesPlacement ? CGSize.zero : tileOffset(tile)
 						let isMatched = game.isMatched(tile: tile, index: index)
 						let isOpen = tile.id == game.openTileId
-						let showNumber = showsTileNumbers && ![.finished, .fading].contains(game.state)
-							&& !tileNumberIsCovered(
-								tile,
-								boardGeometry: boardGeometry,
-									geometry: geometry
-								)
 						let frame = boardGeometry.frame(for: tile.id)
 						let imageRenderedByBoard = surfaceRenderedTileIDs.contains(tile.id)
-						TileView(id: tile.id, isSelected: tile.isSelected, isMatched: isMatched, tileSize: boardGeometry.tileSize, drawsBorder: !imageRenderedByBoard, showNumber: showNumber, text: boardGeometry.text(for: tile.id)) {
+						let showNumber = showsTileNumbers && ![.finished, .fading].contains(game.state)
+							&& (!imageRenderedByBoard || !tileNumberIsCovered(tile, boardGeometry: boardGeometry, geometry: geometry))
+						TileView(id: tile.id, isSelected: tile.isSelected, isMatched: isMatched, tileSize: boardGeometry.tileSize, drawsBorder: !imageRenderedByBoard, showNumber: showNumber, text: boardGeometry.text(for: tile.id), labelUsesSpatialDepth: game.state != .new) {
 							PuzzleTileImage(id: tile.id, puzzleImage: puzzleImage, usesSharedSurface: imageRenderedByBoard, containerSize: boardGeometry.boardSize, tileRect: frame)
 						}
 						.id("tile.\(tile.id)")
