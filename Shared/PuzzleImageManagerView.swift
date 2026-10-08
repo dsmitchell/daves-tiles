@@ -216,6 +216,9 @@ private struct BuiltInPuzzleImageCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
+#if os(visionOS)
+        .buttonBorderShape(.roundedRectangle(radius: 12))
+#endif
         .accessibilityLabel(isEnabled ? "\(name), included" : "\(name), skipped")
         .accessibilityHint("Double-tap to change whether this photo appears in random rotation")
     }
