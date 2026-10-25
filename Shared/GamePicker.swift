@@ -91,7 +91,7 @@ struct GamePicker<Header: View>: View {
 #else
 			.overlay(alignment: .bottomTrailing) {
 				HStack {
-#if DEBUG
+#if DEBUG && !DAVE_TILES_LITE
 					if let resourceURLs = puzzleImage?.livePhotoResourceURLs {
 						ShareLink(items: resourceURLs) {
 							Image(systemName: "square.and.arrow.up")
@@ -136,6 +136,9 @@ struct GamePicker<Header: View>: View {
 #endif
 			.sheet(isPresented: $isImageManagerPresented, onDismiss: {
 				startRotation = Date.timeIntervalSinceReferenceDate
+				if let puzzleImage, !PuzzleImageLibrary.isImageInRandomRotation(id: puzzleImage.id) {
+					onSelectRandomPuzzleImage()
+				}
 			}) {
 				NavigationStack {
 					PuzzleImageManagerView(

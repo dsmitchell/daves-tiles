@@ -15,7 +15,11 @@ struct GameType: Equatable {
 
 extension GameType {
 
+#if DAVE_TILES_LITE
+	static let initial = GameType(mode: .swap, randomJumps: false)
+#else
 	static let initial = GameType(mode: .classic, randomJumps: false)
+#endif
 
 	var localizedText: String {
 		switch (mode, randomJumps) {

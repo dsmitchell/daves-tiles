@@ -29,8 +29,10 @@ import SwiftUI
     }
 
     static func randomFavorite() -> PuzzleImage {
-        let sources = (0...11).filter { isBundledImageEnabled(number: $0) }.map(Source.bundled)
-            + PuzzleImageStore.imageDirectories.map(Source.user)
+        var sources = (0...11).filter { isBundledImageEnabled(number: $0) }.map(Source.bundled)
+#if !DAVE_TILES_LITE
+        sources += PuzzleImageStore.imageDirectories.map(Source.user)
+#endif
         var source = sources.randomElement() ?? .bundled(0)
         if sources.count > 1 {
             while source == lastSource {
@@ -96,6 +98,15 @@ import SwiftUI
 
     static func isBundledImageEnabled(id: String) -> Bool {
         !disabledBundledImageIDs.contains(id)
+    }
+
+    static func isImageInRandomRotation(id: String) -> Bool {
+        if bundledImageIDs.contains(id) {
+            return isBundledImageEnabled(id: id)
+        }
+        return PuzzleImageStore.imageDirectories.contains {
+            $0.lastPathComponent == id
+        }
     }
 
     static func setBundledImage(_ id: String, enabled: Bool) {

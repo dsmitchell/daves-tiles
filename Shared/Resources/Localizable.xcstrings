@@ -1533,6 +1533,59 @@
         }
       }
     },
+    "Download the [full version](https://apps.apple.com/app/id337492007) to add your own photos!" : {
+      "comment" : "Promotes the full version of Dave’s Tiles; the linked phrase opens its App Store page.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Lade die [Vollversion](https://apps.apple.com/app/id337492007) herunter, um eigene Fotos hinzuzufügen!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Descarga la [versión completa](https://apps.apple.com/app/id337492007) para añadir tus propias fotos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Téléchargez la [version complète](https://apps.apple.com/app/id337492007) pour ajouter vos propres photos !"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Scarica la [versione completa](https://apps.apple.com/app/id337492007) per aggiungere le tue foto!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "自分の写真を追加するには、[フルバージョン](https://apps.apple.com/app/id337492007)をダウンロードしてください!"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "내 사진을 추가하려면 [정식 버전](https://apps.apple.com/app/id337492007)을 다운로드하세요!"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Загрузите [полную версию](https://apps.apple.com/app/id337492007), чтобы добавлять свои фотографии!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "下载[完整版](https://apps.apple.com/app/id337492007)即可添加自己的照片！"
+          }
+        }
+      }
+    },
     "Easy" : {
       "comment" : "The Easy game board",
       "localizations" : {
@@ -1850,6 +1903,59 @@
           "stringUnit" : {
             "state" : "machine_translated",
             "value" : "已加入轮换"
+          }
+        }
+      }
+    },
+    "lite" : {
+      "comment" : "The lite version of the application",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Lite"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "lite"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "allégée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Lite"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "ライト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "라이트"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Lite"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "精简版"
           }
         }
       }

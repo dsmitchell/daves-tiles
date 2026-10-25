@@ -30,7 +30,7 @@ struct TileView<Background: View>: View {
 	let isMatched: Bool
 	let tileSize: CGSize
 	let drawsBorder: Bool
-	let showNumber: Bool
+	let rendersNumberLabel: Bool
 	let text: String?
 	let labelUsesSpatialDepth: Bool
 	let background: Background
@@ -41,7 +41,7 @@ struct TileView<Background: View>: View {
 		isMatched: Bool,
 		tileSize: CGSize,
 		drawsBorder: Bool,
-		showNumber: Bool,
+		rendersNumberLabel: Bool,
 		text: String?,
 		labelUsesSpatialDepth: Bool = true,
 		@ViewBuilder background: () -> Background
@@ -51,7 +51,7 @@ struct TileView<Background: View>: View {
 		self.isMatched = isMatched
 		self.tileSize = tileSize
 		self.drawsBorder = drawsBorder
-		self.showNumber = showNumber
+		self.rendersNumberLabel = rendersNumberLabel
 		self.text = text
 		self.labelUsesSpatialDepth = labelUsesSpatialDepth
 		self.background = background()
@@ -75,11 +75,11 @@ struct TileView<Background: View>: View {
 				// independently positioned number label into that layer.
 				.compositingGroup()
 #endif
-			if showNumber {
-				TileLabel(text: text, id: id, tileSize: tileSize)
+			if rendersNumberLabel {
+				TileLabel(text: text, tileSize: tileSize)
 #if os(visionOS)
-					.offset(z: labelUsesSpatialDepth ? 6 : 0)
-					.zIndex(labelUsesSpatialDepth ? 0 : 1)
+					.offset(z: labelUsesSpatialDepth ? PuzzleBoardDepth.tileLabel : PuzzleBoardDepth.baseTile)
+					.zIndex(1)
 #endif
 			}
 		}
@@ -96,7 +96,6 @@ struct TileView<Background: View>: View {
 struct TileLabel: View {
 
 	let text: String?
-	let id: Int
 	let tileSize: CGSize?
 
 	var body: some View {
@@ -111,13 +110,13 @@ struct TileLabel: View {
 		.foregroundColor(.white)
 		.padding(2)
 		.shadow(color: .black, radius: 2)
+		// A drawing group is necessary to ensure the shadowing is drawn correctly
 		.drawingGroup()
-		.id("Label.\(id)")
 	}
 }
 
 #Preview {
-	TileView(id: 5, isSelected: false, isMatched: false, tileSize: CGSize(width: 100, height: 100), drawsBorder: true, showNumber: true, text: "5") {
+	TileView(id: 5, isSelected: false, isMatched: false, tileSize: CGSize(width: 100, height: 100), drawsBorder: true, rendersNumberLabel: true, text: "5") {
 		Image("Favorite07")
 			.resizable()
 	}

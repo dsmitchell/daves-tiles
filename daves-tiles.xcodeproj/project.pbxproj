@@ -9,7 +9,45 @@
 /* Begin PBXBuildFile section */
 		260B6E6E3072FDB90055A801 /* PuzzleImageManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260B6E6D3072FDB90055A801 /* PuzzleImageManagerView.swift */; };
 		260B6E703073D8330055A801 /* GameSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260B6E6F3073D8330055A801 /* GameSessionStore.swift */; };
+		2627000030825A500001E054 /* Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23B2B793984005440C1 /* Tile.swift */; };
+		2627000130825A500001E054 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95BE26911BFE0028AD02 /* TileView.swift */; };
 		2627DC372B79BE930079EF5B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2627DC362B79BE930079EF5B /* Localizable.xcstrings */; };
+		2627FFDC30825A260001E054 /* Favorite00.heic in Resources */ = {isa = PBXBuildFile; fileRef = 26FEB9FE306AA53E00C3423C /* Favorite00.heic */; };
+		2627FFDD30825A260001E054 /* Slide1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD054269E18C50001AAA2 /* Slide1.caf */; };
+		2627FFDE30825A260001E054 /* Warning1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD052269E18C50001AAA2 /* Warning1.caf */; };
+		2627FFDF30825A260001E054 /* Jump1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD056269E18C50001AAA2 /* Jump1.caf */; };
+		2627FFE030825A260001E054 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26EF2DC42B80233B000D90AC /* InfoPlist.xcstrings */; };
+		2627FFE130825A260001E054 /* Popdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD050269E18C50001AAA2 /* Popdown.caf */; };
+		2627FFE230825A260001E054 /* Favorite00.mov in Resources */ = {isa = PBXBuildFile; fileRef = 26FEB9FF306AA53E00C3423C /* Favorite00.mov */; };
+		2627FFE330825A260001E054 /* Popup.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD053269E18C50001AAA2 /* Popup.caf */; };
+		2627FFE430825A260001E054 /* NewGame1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD055269E18C50001AAA2 /* NewGame1.caf */; };
+		2627FFE530825A260001E054 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 64CE7B432678298600988DA4 /* Assets.xcassets */; };
+		2627FFE630825A260001E054 /* Click.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD04F269E18C50001AAA2 /* Click.caf */; };
+		2627FFE730825A260001E054 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2627DC362B79BE930079EF5B /* Localizable.xcstrings */; };
+		2627FFE830825A260001E054 /* GameWin1.caf in Resources */ = {isa = PBXBuildFile; fileRef = 640BD051269E18C50001AAA2 /* GameWin1.caf */; };
+		2627FFE930825A460001E054 /* PuzzleImageBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268178D2306B6242003C8AB1 /* PuzzleImageBoard.swift */; };
+		2627FFEA30825A460001E054 /* GameType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23D2B79425B005440C1 /* GameType.swift */; };
+		2627FFEB30825A460001E054 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B95AC626964371003D22D1 /* GameView.swift */; };
+		2627FFEC30825A460001E054 /* PuzzleImageManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260B6E6D3072FDB90055A801 /* PuzzleImageManagerView.swift */; };
+		2627FFED30825A460001E054 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B412678298500988DA4 /* ContentView.swift */; };
+		2627FFEE30825A460001E054 /* GameSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 260B6E6F3073D8330055A801 /* GameSessionStore.swift */; };
+		2627FFEF30825A460001E054 /* GameSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3B2BB2390400AFC2FB /* GameSelection.swift */; };
+		2627FFF030825A460001E054 /* BoardGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C126911C700028AD02 /* BoardGeometry.swift */; };
+		2627FFF130825A460001E054 /* PuzzleImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9FA3069DBD100C3423C /* PuzzleImageStore.swift */; };
+		2627FFF230825A460001E054 /* PuzzleImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6477012226DAE7C2007D42D1 /* PuzzleImages.swift */; };
+		2627FFF330825A460001E054 /* GamePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26C85AC92BAFA04500AC9691 /* GamePicker.swift */; };
+		2627FFF430825A460001E054 /* PuzzleImageImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9F83069DBBE00C3423C /* PuzzleImageImport.swift */; };
+		2627FFF530825A460001E054 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645D95C426951AB30028AD02 /* Game.swift */; };
+		2627FFF630825A460001E054 /* PuzzleTilePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */; };
+		2627FFF730825A460001E054 /* LivePhotoBoardRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9F430697E7B00C3423C /* LivePhotoBoardRenderer.swift */; };
+		2627FFF830825A460001E054 /* LivePhotoBoardShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9FC3069E6F200C3423C /* LivePhotoBoardShaders.metal */; };
+		2627FFF930825A460001E054 /* davestilesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CE7B402678298500988DA4 /* davestilesApp.swift */; };
+		2627FFFA30825A460001E054 /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C218DB268E59A400A9C38B /* BoardView.swift */; };
+		2627FFFB30825A460001E054 /* GameDifficulty.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2687F23F2B7942FD005440C1 /* GameDifficulty.swift */; };
+		2627FFFC30825A460001E054 /* PuzzleImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FEB9F63069DBB200C3423C /* PuzzleImage.swift */; };
+		2627FFFD30825A500001E054 /* SoundEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640BD067269E1B260001AAA2 /* SoundEffects.swift */; };
+		2627FFFE30825A500001E054 /* TileMovementGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B5205226A7313B0045A189 /* TileMovementGroup.swift */; };
+		2627FFFF30825A500001E054 /* TilesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3D2BB239A600AFC2FB /* TilesGame.swift */; };
 		26347B3C2BB2390400AFC2FB /* GameSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3B2BB2390400AFC2FB /* GameSelection.swift */; };
 		26347B3E2BB239A600AFC2FB /* TilesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26347B3D2BB239A600AFC2FB /* TilesGame.swift */; };
 		268178D1306B61FE003C8AB1 /* PuzzleTilePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */; };
@@ -62,6 +100,7 @@
 		260B6E6D3072FDB90055A801 /* PuzzleImageManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleImageManagerView.swift; sourceTree = "<group>"; };
 		260B6E6F3073D8330055A801 /* GameSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSessionStore.swift; sourceTree = "<group>"; };
 		2627DC362B79BE930079EF5B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		2627FFD1308254CE0001E054 /* Dave's Tiles Lite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dave's Tiles Lite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		26347B3B2BB2390400AFC2FB /* GameSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelection.swift; sourceTree = "<group>"; };
 		26347B3D2BB239A600AFC2FB /* TilesGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilesGame.swift; sourceTree = "<group>"; };
 		268178D0306B61FE003C8AB1 /* PuzzleTilePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleTilePresentation.swift; sourceTree = "<group>"; };
@@ -105,6 +144,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2627FFCE308254CE0001E054 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		64CE7B452678298600988DA4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -191,6 +237,7 @@
 			children = (
 				64CE7B482678298600988DA4 /* Dave's Tiles.app */,
 				64CE7B532678298600988DA4 /* daves-tiles-tests.xctest */,
+				2627FFD1308254CE0001E054 /* Dave's Tiles Lite.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -206,6 +253,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2627FFD0308254CE0001E054 /* daves-tiles-lite */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2627FFDB308254CF0001E054 /* Build configuration list for PBXNativeTarget "daves-tiles-lite" */;
+			buildPhases = (
+				2627FFCD308254CE0001E054 /* Sources */,
+				2627FFCE308254CE0001E054 /* Frameworks */,
+				2627FFCF308254CE0001E054 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "daves-tiles-lite";
+			packageProductDependencies = (
+			);
+			productName = "daves-tiles-lite";
+			productReference = 2627FFD1308254CE0001E054 /* Dave's Tiles Lite.app */;
+			productType = "com.apple.product-type.application";
+		};
 		64CE7B472678298600988DA4 /* daves-tiles */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 64CE7B6F2678298600988DA4 /* Build configuration list for PBXNativeTarget "daves-tiles" */;
@@ -248,9 +314,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 2700;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2710;
 				TargetAttributes = {
+					2627FFD0308254CE0001E054 = {
+						CreatedOnToolsVersion = 27.0;
+					};
 					64CE7B472678298600988DA4 = {
 						CreatedOnToolsVersion = 13.0;
 					};
@@ -282,12 +351,33 @@
 			projectRoot = "";
 			targets = (
 				64CE7B472678298600988DA4 /* daves-tiles */,
+				2627FFD0308254CE0001E054 /* daves-tiles-lite */,
 				64CE7B522678298600988DA4 /* daves-tiles-tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2627FFCF308254CE0001E054 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2627FFDC30825A260001E054 /* Favorite00.heic in Resources */,
+				2627FFDD30825A260001E054 /* Slide1.caf in Resources */,
+				2627FFDE30825A260001E054 /* Warning1.caf in Resources */,
+				2627FFDF30825A260001E054 /* Jump1.caf in Resources */,
+				2627FFE030825A260001E054 /* InfoPlist.xcstrings in Resources */,
+				2627FFE130825A260001E054 /* Popdown.caf in Resources */,
+				2627FFE230825A260001E054 /* Favorite00.mov in Resources */,
+				2627FFE330825A260001E054 /* Popup.caf in Resources */,
+				2627FFE430825A260001E054 /* NewGame1.caf in Resources */,
+				2627FFE530825A260001E054 /* Assets.xcassets in Resources */,
+				2627FFE630825A260001E054 /* Click.caf in Resources */,
+				2627FFE730825A260001E054 /* Localizable.xcstrings in Resources */,
+				2627FFE830825A260001E054 /* GameWin1.caf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		64CE7B462678298600988DA4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -318,6 +408,38 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2627FFCD308254CE0001E054 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2627FFE930825A460001E054 /* PuzzleImageBoard.swift in Sources */,
+				2627FFFD30825A500001E054 /* SoundEffects.swift in Sources */,
+				2627FFFE30825A500001E054 /* TileMovementGroup.swift in Sources */,
+				2627FFFF30825A500001E054 /* TilesGame.swift in Sources */,
+				2627000030825A500001E054 /* Tile.swift in Sources */,
+				2627000130825A500001E054 /* TileView.swift in Sources */,
+				2627FFEA30825A460001E054 /* GameType.swift in Sources */,
+				2627FFEB30825A460001E054 /* GameView.swift in Sources */,
+				2627FFEC30825A460001E054 /* PuzzleImageManagerView.swift in Sources */,
+				2627FFED30825A460001E054 /* ContentView.swift in Sources */,
+				2627FFEE30825A460001E054 /* GameSessionStore.swift in Sources */,
+				2627FFEF30825A460001E054 /* GameSelection.swift in Sources */,
+				2627FFF030825A460001E054 /* BoardGeometry.swift in Sources */,
+				2627FFF130825A460001E054 /* PuzzleImageStore.swift in Sources */,
+				2627FFF230825A460001E054 /* PuzzleImages.swift in Sources */,
+				2627FFF330825A460001E054 /* GamePicker.swift in Sources */,
+				2627FFF430825A460001E054 /* PuzzleImageImport.swift in Sources */,
+				2627FFF530825A460001E054 /* Game.swift in Sources */,
+				2627FFF630825A460001E054 /* PuzzleTilePresentation.swift in Sources */,
+				2627FFF730825A460001E054 /* LivePhotoBoardRenderer.swift in Sources */,
+				2627FFF830825A460001E054 /* LivePhotoBoardShaders.metal in Sources */,
+				2627FFF930825A460001E054 /* davestilesApp.swift in Sources */,
+				2627FFFA30825A460001E054 /* BoardView.swift in Sources */,
+				2627FFFB30825A460001E054 /* GameDifficulty.swift in Sources */,
+				2627FFFC30825A460001E054 /* PuzzleImage.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		64CE7B442678298600988DA4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -369,11 +491,72 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2627FFD9308254CF0001E054 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconLite;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestileslite;
+				PRODUCT_NAME = "Dave's Tiles Lite";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DAVE_TILES_LITE";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2627FFDA308254CF0001E054 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconLite;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.puzzle-games";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestileslite;
+				PRODUCT_NAME = "Dave's Tiles Lite";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DAVE_TILES_LITE";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		64CE7B6D2678298600988DA4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -407,10 +590,11 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10007;
+				CURRENT_PROJECT_VERSION = 10009;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 45GCQB624U;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -431,13 +615,14 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
-				MARKETING_VERSION = 3.4;
+				MARKETING_VERSION = 3.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				XROS_DEPLOYMENT_TARGET = 2.6;
 			};
@@ -448,6 +633,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -481,10 +667,11 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10007;
+				CURRENT_PROJECT_VERSION = 10009;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 45GCQB624U;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -499,12 +686,13 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
-				MARKETING_VERSION = 3.4;
+				MARKETING_VERSION = 3.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				XROS_DEPLOYMENT_TARGET = 2.6;
 			};
@@ -526,6 +714,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestiles;
 				PRODUCT_NAME = "Dave's Tiles";
 				SDKROOT = iphoneos;
@@ -554,6 +743,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = info.dsmitchell.davestiles;
 				PRODUCT_NAME = "Dave's Tiles";
 				SDKROOT = iphoneos;
@@ -613,6 +803,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2627FFDB308254CF0001E054 /* Build configuration list for PBXNativeTarget "daves-tiles-lite" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2627FFD9308254CF0001E054 /* Debug */,
+				2627FFDA308254CF0001E054 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		64CE7B3C2678298500988DA4 /* Build configuration list for PBXProject "daves-tiles" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

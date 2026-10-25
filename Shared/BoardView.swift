@@ -131,9 +131,10 @@ struct BoardView: View {
 		}
 
 		let tilesToDeselect = identifiers.filter { tileAnimationOwners[$0] == movementID }
-		let deselectionCount = tilesToDeselect.filter { identifier in
-			game.tiles.first(where: { $0.id == identifier })?.isSelected == true
-		}.count
+		let identifiersToDeselect = Set(tilesToDeselect)
+		let deselectionCount = game.tiles.count { tile in
+			identifiersToDeselect.contains(tile.id) && tile.isSelected
+		}
 		game.applyRenderState(.transitioning(toSelected: false), to: tilesToDeselect)
 
 		if deselectionCount > 0 {
@@ -177,34 +178,33 @@ struct BoardView: View {
 		SoundEffects.default.play(.jump)
 		let interval = Double(GameView.oneSecond) * surpriseDuration
 		try? await Task.sleep(nanoseconds: UInt64(interval))
-		movedTileIds.compactMap({ id in game.tiles.firstIndex(where: { $0.id == id }) }).forEach { index in
+		let movedTileIDSet = Set(movedTileIds)
+		game.tiles.indices.filter { movedTileIDSet.contains(game.tiles[$0].id) }.forEach { index in
 			game.tiles[index].renderState = .none
 		}
 		guard game.isFinished else { return }
 		game.state = .finished
 	}
 
-	func swapAnimation(_ tile: Tile) -> Animation? {
+	func swapAnimation(_ tile: Tile, index: Int) -> Animation? {
 		guard let swaps = swaps else { return nil }
-		guard let index = game.tiles.firstIndex(where: { $0.id == tile.id }), swaps.indices.contains(index) else { return nil }
+		guard swaps.indices.contains(index) else { return nil }
 		return .linear(duration: surpriseDuration * 2)
 	}
 
-	func tileMovementAnimation(_ tile: Tile) -> Animation? {
+	func tileMovementAnimation(_ tile: Tile, index: Int) -> Animation? {
 		guard swaps == nil else { return nil }
 		switch tile.renderState {
 		case .none: return game.state == .new ? .spring(dampingFraction: 0.75, blendDuration: 1.0) : nil
-		case .released(let percent) where percent < 1.0: return .linear(duration: tileImageAnimationDuration(tile))
-		case .thrown: return .linear(duration: tileImageAnimationDuration(tile))
-		case .transitioning: return .linear(duration: tileImageAnimationDuration(tile))
+		case .released(let percent) where percent < 1.0: return .linear(duration: tileImageAnimationDuration(tile, index: index))
+		case .thrown: return .linear(duration: tileImageAnimationDuration(tile, index: index))
+		case .transitioning: return .linear(duration: tileImageAnimationDuration(tile, index: index))
 		default: return nil
 		}
 	}
 
-	func tileImageAnimationDuration(_ tile: Tile) -> Double {
-		if let swaps,
-			let index = game.tiles.firstIndex(where: { $0.id == tile.id }),
-			swaps.indices.contains(index) {
+	func tileImageAnimationDuration(_ tile: Tile, index: Int) -> Double {
+		if let swaps, swaps.indices.contains(index) {
 			return surpriseDuration * 2
 		}
 		switch tile.renderState {
@@ -221,15 +221,46 @@ struct BoardView: View {
 		}
 	}
 
-	func requiresSynchronizedPlacement(_ tile: Tile) -> Bool {
+	func requiresSynchronizedPlacement(_ tile: Tile, index: Int) -> Bool {
 		if tile.renderState == .thrown {
 			return true
 		}
-		guard let swaps,
-			let index = game.tiles.firstIndex(where: { $0.id == tile.id }) else {
+		guard let swaps else {
 			return false
 		}
 		return swaps.indices.contains(index)
+	}
+
+	func rendersInElevatedLayer(_ tile: Tile, index: Int) -> Bool {
+		if let swaps,
+			(swaps.enabled || swaps.isTransitioning),
+			swaps.indices.contains(index)
+		{
+			return true
+		}
+		switch tile.renderState {
+		case .none, .falling:
+			return false
+		case .dragged, .released, .thrown, .transitioning:
+			return true
+		case .unset:
+			// Intro tiles keep using their existing per-tile animation. Moving them
+			// into the elevated shared surface would put that surface above their
+			// labels and breaks the game picker as well as the intro animation.
+			return false
+		}
+	}
+
+	func rendersInBaseLayer(_ tile: Tile, index: Int) -> Bool {
+		let isElevated = rendersInElevatedLayer(tile, index: index)
+		guard isElevated else { return true }
+		if case .transitioning = tile.renderState {
+			return true
+		}
+		if let swaps, swaps.isTransitioning, swaps.indices.contains(index) {
+			return true
+		}
+		return false
 	}
 
 	func tileFallingAnimation(_ tile: Tile) -> Animation? {
@@ -246,17 +277,17 @@ struct BoardView: View {
 		return CGSize(width: movementGroup.positionOffset.dx, height: movementGroup.positionOffset.dy)
 	}
 
-	func tileOffsetZ(_ tile: Tile) -> Double {
+	func tileOffsetZ(_ tile: Tile, index: Int) -> Double {
 		guard let swaps = swaps else {
 			guard tile.renderState == .unset else {
-				return tile.isSelected ? 8 : 0
+				return tile.isSelected ? PuzzleBoardDepth.elevatedTile : PuzzleBoardDepth.baseTile
 			}
 			return 640
 		}
-		if swaps.enabled, let index = game.tiles.firstIndex(where: { $0.id == tile.id }), swaps.indices.contains(index) {
-			return 8
+		if (swaps.enabled || swaps.isTransitioning), swaps.indices.contains(index) {
+			return PuzzleBoardDepth.elevatedTile
 		}
-		return tile.isSelected ? 8 : 0
+		return tile.isSelected ? PuzzleBoardDepth.elevatedTile : PuzzleBoardDepth.baseTile
 	}
 
 	func tileOpacity(_ tile: Tile, isOpen: Bool) -> Double {
@@ -283,6 +314,39 @@ struct BoardView: View {
 		return lingeringTileIdentifiers.firstIndex(of: tile.id) ?? movementGroup?.tileIdentifiers.firstIndex(of: tile.id)
 	}
 
+	func renderOrderedTiles() -> [Tile] {
+		if let swaps {
+			let swappingIndices = Set(swaps.indices)
+			let stationaryTiles = game.tiles.enumerated().compactMap { index, tile in
+				swappingIndices.contains(index) ? nil : tile
+			}
+			let swappingTiles = swaps.indices.compactMap { index in
+				game.tiles.indices.contains(index) ? game.tiles[index] : nil
+			}
+			return stationaryTiles + swappingTiles
+		}
+
+		var stationaryTiles = [Tile]()
+		var trackedTiles = [(position: Int, tile: Tile)]()
+		var thrownTiles = [(position: Int, tile: Tile)]()
+		stationaryTiles.reserveCapacity(game.tiles.count)
+
+		for tile in game.tiles {
+			let trackedPosition = trackingPosition(for: tile)
+			if tile.renderState == .thrown {
+				thrownTiles.append((trackedPosition ?? .max, tile))
+			} else if let trackedPosition {
+				trackedTiles.append((trackedPosition, tile))
+			} else {
+				stationaryTiles.append(tile)
+			}
+		}
+
+		trackedTiles.sort { $0.position < $1.position }
+		thrownTiles.sort { $0.position < $1.position }
+		return stationaryTiles + trackedTiles.map(\.tile) + thrownTiles.map(\.tile)
+	}
+
 	func useTileGesture(_ tile: Tile) -> Bool {
 		guard swaps == nil, game.state == .playing, !randomMoveIsInProgress else { return false }
 #if os(visionOS) // Temporary workaround for gestures continuing on visionOS
@@ -294,14 +358,17 @@ struct BoardView: View {
 
 	func puzzleImageLayouts(
 		for tiles: [Tile],
+		tileIndices: [Int: Int],
 		boardGeometry: BoardGeometry,
 		geometry: GeometryProxy
 	) -> [PuzzleTilePresentation] {
-		let borderColor: SIMD4<Float> = colorScheme == .dark
+		let borderColor: SIMD4<Float> =
+			colorScheme == .dark
 			? SIMD4(1, 1, 1, 1)
 			: SIMD4(0, 0, 0, 1)
 		return tiles.map { tile in
-			let index = index(for: tile)
+			let sourceIndex = sourceIndex(for: tile, in: tileIndices)
+			let index = displayIndex(forTileAt: sourceIndex)
 			let sourceFrame = boardGeometry.frame(for: tile.id)
 			let position = tilePosition(tile, with: boardGeometry.positions[index], in: geometry)
 			let offset = tileOffset(tile)
@@ -335,46 +402,12 @@ struct BoardView: View {
 				// clipping leaves its inner half visible. Metal draws inward.
 				borderWidth: tile.isSelected ? 2 : 0,
 				borderColor: borderColor,
-				animationDuration: tileImageAnimationDuration(tile),
-				requiresSynchronizedPlacement: requiresSynchronizedPlacement(tile)
+				animationDuration: tileImageAnimationDuration(tile, index: sourceIndex),
+				requiresSynchronizedPlacement: requiresSynchronizedPlacement(tile, index: sourceIndex),
+				rendersInBaseLayer: rendersInBaseLayer(tile, index: sourceIndex),
+				rendersInElevatedLayer: rendersInElevatedLayer(tile, index: sourceIndex),
+				depth: tileOffsetZ(tile, index: sourceIndex)
 			)
-		}
-	}
-
-	func tileNumberIsCovered(
-		_ tile: Tile,
-		boardGeometry: BoardGeometry,
-		geometry: GeometryProxy
-	) -> Bool {
-		guard let movementGroup,
-			movementGroup.direction == .drag,
-			!movementGroup.tileIdentifiers.contains(tile.id) else { return false }
-		let labelPosition = boardGeometry.positions[index(for: tile)]
-		return movementGroup.tileIdentifiers.contains { movingTileID in
-			guard let movingTile = game.tiles.first(where: { $0.id == movingTileID }) else { return false }
-			let movingIndex = index(for: movingTile)
-			let position = tilePosition(
-				movingTile,
-				with: boardGeometry.positions[movingIndex],
-				in: geometry
-			)
-			let offset = tileOffset(movingTile)
-#if os(visionOS)
-			let scale = 1.0
-#else
-			let scale = movingTile.isSelected ? 1.15 : 1.0
-#endif
-			let size = CGSize(
-				width: boardGeometry.tileSize.width * scale,
-				height: boardGeometry.tileSize.height * scale
-			)
-			let movingFrame = CGRect(
-				x: position.x + offset.width - size.width / 2,
-				y: position.y + offset.height - size.height / 2,
-				width: size.width,
-				height: size.height
-			)
-			return movingFrame.contains(labelPosition)
 		}
 	}
 
@@ -444,55 +477,35 @@ struct BoardView: View {
 				}
 			}
 			ZStack {
-				let sortedTiles = game.tiles.sorted { leftTile, rightTile in
-					// First check if this is a SwapInfo tile
-					if let swaps = swaps, let leftIndex = game.tiles.firstIndex(where: { $0.id == leftTile.id }), let rightIndex = game.tiles.firstIndex(where: { $0.id == rightTile.id }) {
-						switch (swaps.indices.firstIndex(of: leftIndex), swaps.indices.firstIndex(of: rightIndex)) {
-						case (.none, .some): return true
-						case (.some(let leftPosition), .some(let rightPosition)): return leftPosition < rightPosition
-						case (.some, _): return false
-						default: return leftIndex < rightIndex
+				let tileIndices = Dictionary(uniqueKeysWithValues: game.tiles.enumerated().map { ($0.element.id, $0.offset) })
+				let sortedTiles = renderOrderedTiles()
+				let compositedStillTileIDs: Set<Int> = Set(
+					sortedTiles.compactMap { tile -> Int? in
+						guard let tileIndex = tileIndices[tile.id] else { return nil }
+						let index = displayIndex(forTileAt: tileIndex)
+						let imageIsTransitioning: Bool
+						if let swaps {
+							imageIsTransitioning = swaps.isTransitioning && swaps.indices.contains(tileIndex)
+						} else {
+							imageIsTransitioning = false
 						}
-					}
-					// A random throw is _always_ at the end of the sorted list (i.e. on top)
-					switch (leftTile.renderState, rightTile.renderState) {
-					case (.thrown, .thrown): break // let trackingPosition decide
-					case (.thrown, _): return false
-					case (_, .thrown): return true
-					default: break // let trackingPosition decide
-					}
-					// Otherwise any tile with a tracking position is sorted towards the end
-					switch (trackingPosition(for: leftTile), trackingPosition(for: rightTile)) {
-					case (.none, .some): return true
-					case (.some(let leftPosition), .some(let rightPosition)): return leftPosition < rightPosition
-					default: return false
-					}
-				}
-				let compositedStillTileIDs = Set(sortedTiles.compactMap { tile in
-					let index = index(for: tile)
-					let tileIndex = game.tiles.firstIndex(where: { $0.id == tile.id })
-					let imageIsTransitioning: Bool
-					if let swaps, let tileIndex {
-						imageIsTransitioning = swaps.isTransitioning && swaps.indices.contains(tileIndex)
-					} else {
-						imageIsTransitioning = false
-					}
-					let imageIsSettled = !imageIsTransitioning && (swaps != nil || tile.renderState == .none || tile.renderState == .falling)
-					let imageIsVisible = tileOpacity(tile, isOpen: tile.id == game.openTileId) > 0
-					return imageIsSettled && imageIsVisible && game.isMatched(tile: tile, index: index)
-						? tile.id
-						: nil
-				})
+						let imageIsSettled = !imageIsTransitioning && (swaps != nil || tile.renderState == .none || tile.renderState == .falling)
+						let imageIsVisible = tileOpacity(tile, isOpen: tile.id == game.openTileId) > 0
+						return imageIsSettled && imageIsVisible && game.isMatched(tile: tile, index: index)
+							? tile.id
+							: nil
+					})
 				PuzzleImageBoardComposition(
 					puzzleImage: puzzleImage,
 					isPlaying: puzzleImageIsPlaying,
 					contentSize: boardGeometry.boardSize,
-					layouts: puzzleImageLayouts(for: sortedTiles, boardGeometry: boardGeometry, geometry: geometry),
+					layouts: puzzleImageLayouts(for: sortedTiles, tileIndices: tileIndices, boardGeometry: boardGeometry, geometry: geometry),
 					compositedStillTileIDs: compositedStillTileIDs
-				) { surfaceRenderedTileIDs, presentationLayouts in
+					) { surfaceRenderedTileIDs, presentationLayouts in
 					ForEach(sortedTiles) { tile in
-						let index = index(for: tile)
-						let synchronizesPlacement = requiresSynchronizedPlacement(tile)
+						let sourceIndex = sourceIndex(for: tile, in: tileIndices)
+						let index = displayIndex(forTileAt: sourceIndex)
+						let synchronizesPlacement = requiresSynchronizedPlacement(tile, index: sourceIndex)
 						let presentationPosition = synchronizesPlacement
 							? presentationLayouts[tile.id].map { layout in
 								CGPoint(x: layout.destinationRect.midX, y: layout.destinationRect.midY)
@@ -503,39 +516,50 @@ struct BoardView: View {
 						let isOpen = tile.id == game.openTileId
 						let frame = boardGeometry.frame(for: tile.id)
 						let imageRenderedByBoard = surfaceRenderedTileIDs.contains(tile.id)
-						let showNumber = showsTileNumbers && ![.finished, .fading].contains(game.state)
-							&& (!imageRenderedByBoard || !tileNumberIsCovered(tile, boardGeometry: boardGeometry, geometry: geometry))
-						TileView(id: tile.id, isSelected: tile.isSelected, isMatched: isMatched, tileSize: boardGeometry.tileSize, drawsBorder: !imageRenderedByBoard, showNumber: showNumber, text: boardGeometry.text(for: tile.id), labelUsesSpatialDepth: game.state != .new) {
-							PuzzleTileImage(id: tile.id, puzzleImage: puzzleImage, usesSharedSurface: imageRenderedByBoard, containerSize: boardGeometry.boardSize, tileRect: frame)
+						let numberLabelsAreEnabled = showsTileNumbers && game.state != .finished && tile.renderState != .falling
+						let tileIsInElevatedLayer = rendersInElevatedLayer(tile, index: sourceIndex)
+						TileView(
+							id: tile.id, isSelected: tile.isSelected, isMatched: isMatched, tileSize: boardGeometry.tileSize,
+							drawsBorder: !imageRenderedByBoard, rendersNumberLabel: numberLabelsAreEnabled,
+							text: boardGeometry.text(for: tile.id),
+							// In the picker, an elevated Live Photo tile is a separate Metal sibling.
+							// Keep its label slightly forward so the elevated surface cannot occlude it.
+							labelUsesSpatialDepth: game.state != .new || tileIsInElevatedLayer
+						) {
+							PuzzleTileImage(
+								id: tile.id, puzzleImage: puzzleImage, usesSharedSurface: imageRenderedByBoard,
+								containerSize: boardGeometry.boardSize, tileRect: frame)
 						}
-						.id("tile.\(tile.id)")
 						.frame(width: boardGeometry.tileSize.width, height: boardGeometry.tileSize.height)
 						.position(presentationPosition)
 						.offset(presentationOffset)
 #if os(visionOS)
-						.offset(z: tileOffsetZ(tile))
+						.offset(z: tileIsInElevatedLayer
+								? max(tileOffsetZ(tile, index: sourceIndex), PuzzleBoardDepth.elevatedTile)
+								: tileOffsetZ(tile, index: sourceIndex)
+						)
 						.hoverEffect(isEnabled: useTileGesture(tile))
 #endif
 						.opacity(tileOpacity(tile, isOpen: isOpen))
-						.animation(swapAnimation(tile), value: swaps?.animationIdentity)
-						.animation(tileMovementAnimation(tile), value: tile.renderState)
+						.zIndex(tileIsInElevatedLayer ? 2 : 0)
+						.animation(swapAnimation(tile, index: sourceIndex), value: swaps?.animationIdentity)
+						.animation(tileMovementAnimation(tile, index: sourceIndex), value: tile.renderState)
 						.gesture(!isOpen && useTileGesture(tile) ? dragGesture : nil)
 					}
 					if swaps == nil, game.state == .finished {
 						ForEach(game.tiles) { tile in
-							TileLabel(text: boardGeometry.text(for: tile.id), id: tile.id, tileSize: boardGeometry.tileSize)
-								.position(boardGeometry.positions[tile.id-1])
-#if os(visionOS)
-								.offset(z: tile.isFalling ? 384 : 0)
-#else
-								.offset(x: 0, y: tile.isFalling ? boardGeometry.boardSize.height * 3 : 0)
-#endif
-								.opacity(tile.isFalling ? 0 : 1) // Fade out while falling
-								.transition(showsTileNumbers ? .identity : .opacity.animation(.easeIn(duration: 1.0 / 3.0)))
-								.animation(tileFallingAnimation(tile), value: tile.renderState)
+							FinishedTileNumberLabel(
+								text: boardGeometry.text(for: tile.id),
+								tileSize: boardGeometry.tileSize,
+								position: boardGeometry.positions[tile.id - 1],
+								fallDistance: boardGeometry.boardSize.height * 3,
+								isFalling: tile.isFalling,
+								showsTileNumbers: showsTileNumbers,
+								animation: tileFallingAnimation(tile)
+							)
 						}
 					}
-				}
+					}
 			}
 		}
 		.task(id: randomMoveRequestID) {
@@ -544,16 +568,45 @@ struct BoardView: View {
 		}
 	}
 
-	func index(for tile: Tile) -> Int {
-		guard let index = game.tiles.firstIndex(of: tile) else { fatalError("Tile with no index: \(tile.id)") }
+	func displayIndex(forTileAt index: Int) -> Int {
 		guard let swaps = swaps, swaps.enabled, let position = swaps.indices.firstIndex(of: index) else { return index }
 		return swaps.indices[(position + 1) % swaps.indices.count]
 	}
+
+	func sourceIndex(for tile: Tile, in tileIndices: [Int: Int]) -> Int {
+		guard let index = tileIndices[tile.id] else {
+			fatalError("Tile with no index: \(tile.id)")
+		}
+		return index
+	}
 }
 
-fileprivate extension Game {
+private struct FinishedTileNumberLabel: View {
+	let text: String?
+	let tileSize: CGSize
+	let position: CGPoint
+	let fallDistance: CGFloat
+	let isFalling: Bool
+	let showsTileNumbers: Bool
+	let animation: Animation?
 
-	func startDrag(_ dragGesture: DragGesture.Value, with boardGeometry: BoardGeometry) -> TileMovementGroup? {
+	var body: some View {
+		TileLabel(text: text, tileSize: tileSize)
+			.position(position)
+#if os(visionOS)
+			.offset(z: isFalling ? 384 : 0)
+#else
+			.offset(x: 0, y: isFalling ? fallDistance : 0)
+#endif
+			.opacity(isFalling ? 0 : 1)
+			.transition(showsTileNumbers ? .identity : .opacity.animation(.easeIn(duration: 1.0 / 3.0)))
+			.animation(animation, value: isFalling)
+	}
+}
+
+extension Game {
+
+	fileprivate func startDrag(_ dragGesture: DragGesture.Value, with boardGeometry: BoardGeometry) -> TileMovementGroup? {
 		guard let touchedTileIndex = boardGeometry.tileIndex(from: dragGesture.startLocation) else { return nil }
 		guard tiles[touchedTileIndex].id != openTileId else { return nil } // Sometimes the boardGeometry returns the Open Tile
 		var movementGroup = TileMovementGroup(startingWith: touchedTileIndex, in: self)
@@ -564,9 +617,9 @@ fileprivate extension Game {
 	}
 }
 
-fileprivate extension Tile {
+extension Tile {
 
-	var isFalling: Bool {
+	fileprivate var isFalling: Bool {
 		switch renderState {
 		case .unset, .falling: return true // Unset ensures detatched numbers are not prematurely drawn on the playing field
 		default: return false

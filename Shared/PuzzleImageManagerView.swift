@@ -23,6 +23,15 @@ struct PuzzleImageManagerView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 28) {
+#if DAVE_TILES_LITE
+				Text(
+					"Download the [full version](https://apps.apple.com/app/id337492007) to add your own photos!",
+					comment: "Promotes the full version of Dave’s Tiles; the linked phrase opens its App Store page."
+				)
+					.font(.footnote)
+					.foregroundStyle(.secondary)
+					.tint(.accentColor)
+#else
                 PuzzleImageManagerIntro(
                     selectedPhoto: $selectedPhoto,
                     isAddingImage: isAddingImage
@@ -33,7 +42,7 @@ struct PuzzleImageManagerView: View {
                         pendingDeletion = image
                     }
                 }
-
+#endif
                 BuiltInPuzzleImageSection(
                     images: builtInImages,
                     disabledImageIDs: disabledBuiltInImageIDs,

@@ -126,7 +126,9 @@ struct ContentView: View {
 				.allowsTightening(true)
 				.minimumScaleFactor(0.5)
 				.lineLimit(1)
-#if os(visionOS)
+#if DAVE_TILES_LITE
+			Text("lite", comment: "The lite version of the application")
+#elseif os(visionOS)
 			Text(gameType.localizedText)
 #else
 			Menu {

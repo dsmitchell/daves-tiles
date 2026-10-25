@@ -12,6 +12,7 @@ struct PuzzleImageSurface: View {
 	let contentSize: CGSize
 	let layouts: [PuzzleTilePresentation]
 	let compositedStillTileIDs: Set<Int>
+	let livePhotoPlayback: LivePhotoPlayback
 	let livePhotoIsReady: Bool
 	let didRenderFirstFrame: () -> Void
 
@@ -36,6 +37,7 @@ struct PuzzleImageSurface: View {
 					isPlaying: isPlaying,
 					contentSize: contentSize,
 					placements: layouts,
+					playback: livePhotoPlayback,
 					didRenderFirstFrame: didRenderFirstFrame
 				)
 				.opacity(livePhotoIsReady ? 1 : 0)
@@ -95,10 +97,17 @@ private struct StillPuzzleImageSurface: View {
 	}
 }
 
+private enum PuzzleImageRenderLayer: Hashable {
+	case base
+	case elevated
+}
+
 struct PuzzleImageBoardComposition<Content: View>: View {
 
-	@State private var readyLivePhotoID: String?
+	@State private var preparingLivePhotoID: String?
+	@State private var readyLivePhotoLayers = Set<PuzzleImageRenderLayer>()
 	@State private var presentationAnimator = PuzzleTilePresentationAnimator()
+	@State private var livePhotoPlayback = LivePhotoPlayback()
 
 	let puzzleImage: PuzzleImage?
 	let isPlaying: Bool
@@ -109,31 +118,53 @@ struct PuzzleImageBoardComposition<Content: View>: View {
 
 	var body: some View {
 		let usesLivePhotoSurface = PuzzleImageSurface.rendersLivePhoto(puzzleImage)
-		let sharedSurfaceIsReady = readyLivePhotoID == puzzleImage?.id
-		let surfaceRenderedTileIDs = usesLivePhotoSurface && isPlaying
-			? (sharedSurfaceIsReady ? Set(layouts.map(\.id)) : compositedStillTileIDs)
-			: compositedStillTileIDs
+		let latestLayoutsByID = Dictionary(uniqueKeysWithValues: layouts.map { ($0.id, $0) })
 		TimelineView(.animation(paused: !presentationAnimator.isAnimating)) { context in
-			let presentationLayouts = presentationAnimator.layouts(
+			let presentationFrame = presentationAnimator.frame(
 				at: context.date.timeIntervalSinceReferenceDate,
-				fallback: layouts
+				fallback: layouts,
+				latestLayoutsByID: latestLayoutsByID
 			)
-			let presentationLayoutsByID = Dictionary(
-				uniqueKeysWithValues: presentationLayouts.map { ($0.id, $0) }
-			)
+			let sharedSurfaceIsReady =
+				preparingLivePhotoID == puzzleImage?.id
+				&& (presentationFrame.baseLayouts.isEmpty || readyLivePhotoLayers.contains(.base))
+				&& (presentationFrame.elevatedLayouts.isEmpty || readyLivePhotoLayers.contains(.elevated))
+			let surfaceRenderedTileIDs =
+				usesLivePhotoSurface && isPlaying
+				? (sharedSurfaceIsReady ? presentationFrame.renderedTileIDs : compositedStillTileIDs)
+				: compositedStillTileIDs
 			ZStack {
 				PuzzleImageSurface(
 					puzzleImage: puzzleImage,
 					isPlaying: isPlaying,
 					contentSize: contentSize,
-					layouts: presentationLayouts.map { $0.disablingDuplicateAnimation() },
+					layouts: presentationFrame.baseLayouts,
 					compositedStillTileIDs: compositedStillTileIDs,
+					livePhotoPlayback: livePhotoPlayback,
 					livePhotoIsReady: sharedSurfaceIsReady,
 					didRenderFirstFrame: {
-						readyLivePhotoID = puzzleImage?.id
+					markLivePhotoLayerReady(.base)
 					}
 				)
-				content(surfaceRenderedTileIDs, presentationLayoutsByID)
+				.zIndex(-1)
+				content(surfaceRenderedTileIDs, presentationFrame.layoutsByID)
+				PuzzleImageSurface(
+					puzzleImage: puzzleImage,
+					isPlaying: isPlaying,
+					contentSize: contentSize,
+						layouts: presentationFrame.elevatedLayouts,
+					compositedStillTileIDs: compositedStillTileIDs,
+					livePhotoPlayback: livePhotoPlayback,
+					livePhotoIsReady: sharedSurfaceIsReady,
+					didRenderFirstFrame: {
+						markLivePhotoLayerReady(.elevated)
+					}
+				)
+#if os(visionOS)
+				.offset(z: presentationFrame.elevatedDepth)
+				.animation(.linear(duration: BoardView.standardDuration), value: presentationFrame.elevatedDepth)
+#endif
+				.zIndex(1)
 			}
 		}
 		.onAppear {
@@ -150,9 +181,23 @@ struct PuzzleImageBoardComposition<Content: View>: View {
 		}
 		.onChange(of: isPlaying) { _, isPlaying in
 			if !isPlaying {
-				readyLivePhotoID = nil
+				livePhotoPlayback.stop()
+				preparingLivePhotoID = nil
+				readyLivePhotoLayers.removeAll()
 			}
 		}
+		.onDisappear {
+			livePhotoPlayback.stop()
+		}
+	}
+
+	private func markLivePhotoLayerReady(_ layer: PuzzleImageRenderLayer) {
+		let imageID = puzzleImage?.id
+		if preparingLivePhotoID != imageID {
+			preparingLivePhotoID = imageID
+			readyLivePhotoLayers.removeAll()
+		}
+		readyLivePhotoLayers.insert(layer)
 	}
 }
 

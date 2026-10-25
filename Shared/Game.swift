@@ -97,8 +97,8 @@ fileprivate struct GameTemplate: TilesGame {
 	}
 
 	func applyRenderState(_ renderState: Tile.RenderState, to tileIdentifiers: [Int]) {
-		for id in tileIdentifiers {
-			guard let index = tiles.firstIndex(where: { $0.id == id }) else { continue }
+		let identifiers = Set(tileIdentifiers)
+		for index in tiles.indices where identifiers.contains(tiles[index].id) {
 			tiles[index].renderState = renderState
 		}
 	}

@@ -17,6 +17,179 @@ import AppKit
 private typealias PlatformMetalViewRepresentable = NSViewRepresentable
 #endif
 
+@MainActor
+final class LivePhotoPlayback {
+
+	struct Frame {
+		let pixelBuffer: CVPixelBuffer
+		let visibleTextureRect: CGRect
+		let isPrerolled: Bool
+	}
+
+	private final class PendingConfiguration: @unchecked Sendable {
+		let id: String
+		let item: AVPlayerItem
+		let output: AVPlayerItemVideoOutput
+
+		init(id: String, item: AVPlayerItem, output: AVPlayerItemVideoOutput) {
+			self.id = id
+			self.item = item
+			self.output = output
+		}
+	}
+
+	private var player: AVPlayer?
+	private var playerItem: AVPlayerItem?
+	private var videoOutput: AVPlayerItemVideoOutput?
+	private var endObserver: NSObjectProtocol?
+	private var statusObservation: NSKeyValueObservation?
+	private var currentID: String?
+	private var isPlaying = false
+	private var isPrerolled = false
+	private var lastPixelBuffer: CVPixelBuffer?
+	private var visibleTextureRect: CGRect?
+
+	func update(id: String, movieURL: URL, isPlaying: Bool) {
+		if currentID != id {
+			configurePlayer(id: id, movieURL: movieURL)
+		}
+		guard self.isPlaying != isPlaying else { return }
+		self.isPlaying = isPlaying
+		if isPlaying {
+			if isPrerolled {
+				player?.play()
+			}
+		} else {
+			player?.pause()
+		}
+	}
+
+	func frame(at hostTime: CFTimeInterval) -> Frame? {
+		if let videoOutput, let playerItem {
+			let itemTime = videoOutput.itemTime(forHostTime: hostTime)
+			if videoOutput.hasNewPixelBuffer(forItemTime: itemTime),
+			   let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: itemTime, itemTimeForDisplay: nil) {
+				lastPixelBuffer = pixelBuffer
+				if visibleTextureRect == nil {
+					visibleTextureRect = LivePhotoBoardRenderer.Coordinator.detectVisibleContentRect(in: pixelBuffer)
+				}
+			}
+			if playerItem.status == .failed {
+				player?.pause()
+			}
+		}
+		guard let lastPixelBuffer else { return nil }
+		return Frame(
+			pixelBuffer: lastPixelBuffer,
+			visibleTextureRect: visibleTextureRect ?? CGRect(x: 0, y: 0, width: 1, height: 1),
+			isPrerolled: isPrerolled
+		)
+	}
+
+	func stop() {
+		statusObservation = nil
+		player?.cancelPendingPrerolls()
+		player?.pause()
+		if let endObserver {
+			NotificationCenter.default.removeObserver(endObserver)
+		}
+		endObserver = nil
+		player = nil
+		playerItem = nil
+		videoOutput = nil
+		lastPixelBuffer = nil
+		visibleTextureRect = nil
+		isPrerolled = false
+		isPlaying = false
+		currentID = nil
+	}
+
+	private func configurePlayer(id: String, movieURL: URL) {
+		stop()
+		currentID = id
+		let asset = AVURLAsset(url: movieURL)
+		let item = AVPlayerItem(asset: asset)
+		let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
+			kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+		])
+		item.add(output)
+		let pending = PendingConfiguration(id: id, item: item, output: output)
+		AVVideoComposition.videoComposition(withPropertiesOf: asset) { [weak self] composition, _ in
+			Task { @MainActor in
+				guard let self, self.currentID == pending.id else { return }
+				pending.item.videoComposition = composition
+				self.finishConfiguringPlayer(item: pending.item, output: pending.output)
+			}
+		}
+	}
+
+	private func finishConfiguringPlayer(item: AVPlayerItem, output: AVPlayerItemVideoOutput) {
+		statusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self, weak item] _, _ in
+			Task { @MainActor in
+				guard let self, let item, self.playerItem === item else { return }
+				switch item.status {
+				case .readyToPlay:
+					self.preroll(item: item)
+				case .failed:
+					self.player?.pause()
+				case .unknown:
+					break
+				@unknown default:
+					break
+				}
+			}
+		}
+		let player = AVPlayer(playerItem: item)
+		player.isMuted = true
+		player.actionAtItemEnd = .none
+		endObserver = NotificationCenter.default.addObserver(
+			forName: .AVPlayerItemDidPlayToEndTime,
+			object: item,
+			queue: .main
+		) { [weak self, weak player] _ in
+			Task { @MainActor in
+				guard let self, self.isPlaying else { return }
+				player?.seek(to: .zero)
+				player?.play()
+			}
+		}
+		playerItem = item
+		videoOutput = output
+		self.player = player
+		if item.status == .readyToPlay {
+			preroll(item: item)
+		}
+	}
+
+	private func preroll(item: AVPlayerItem) {
+		guard !isPrerolled, playerItem === item, let player else { return }
+		player.pause()
+		player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self, weak player] finished in
+			Task { @MainActor in
+				guard finished,
+					  let self,
+					  let player,
+					  self.player === player,
+					  self.playerItem === item else { return }
+				player.preroll(atRate: 1) { [weak self, weak player] finished in
+					Task { @MainActor in
+						guard finished,
+							  let self,
+							  let player,
+							  self.player === player,
+							  self.playerItem === item else { return }
+						self.isPrerolled = true
+						self.lastPixelBuffer = nil
+						if self.isPlaying {
+							player.play()
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 
 	@Environment(\.scenePhase) private var scenePhase
@@ -36,10 +209,11 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 	let isPlaying: Bool
 	let contentSize: CGSize
 	let placements: [PuzzleTilePresentation]
+	let playback: LivePhotoPlayback
 	let didRenderFirstFrame: () -> Void
 
 	func makeCoordinator() -> Coordinator {
-		Coordinator()
+		Coordinator(playback: playback)
 	}
 
 #if canImport(UIKit)
@@ -93,23 +267,24 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 			id: id,
 			movieURL: movieURL,
 			isPlaying: shouldRender,
-			contentSize: contentSize,
-			placements: placements,
-			didRenderFirstFrame: didRenderFirstFrame
+				contentSize: contentSize,
+				placements: placements,
+				didRenderFirstFrame: didRenderFirstFrame
 		)
 	}
 
-	@MainActor final class Coordinator: NSObject, MTKViewDelegate {
+		@MainActor final class Coordinator: NSObject, MTKViewDelegate {
+			private let playback: LivePhotoPlayback
 
 		private struct TileInstance {
 			var destinationRect: SIMD4<Float>
 			var sourceRect: SIMD4<Float>
 			var borderColor: SIMD4<Float>
 			var cornerRadius: Float
-			var opacity: Float
-			var contentInset: Float
-			var borderWidth: Float
-		}
+				var opacity: Float
+				var contentInset: Float
+				var borderWidth: Float
+			}
 
 		private struct FrameUniforms {
 			var viewAndContentSize: SIMD4<Float>
@@ -131,40 +306,24 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 			}
 		}
 
-		private final class PendingPlayerConfiguration: @unchecked Sendable {
-			let id: String
-			let item: AVPlayerItem
-			let output: AVPlayerItemVideoOutput
-
-			init(id: String, item: AVPlayerItem, output: AVPlayerItemVideoOutput) {
-				self.id = id
-				self.item = item
-				self.output = output
-			}
-		}
-
 		private weak var view: MTKView?
 		private var commandQueue: MTLCommandQueue?
 		private var pipelineState: MTLRenderPipelineState?
-		private var samplerState: MTLSamplerState?
-		private var textureCache: CVMetalTextureCache?
+			private var samplerState: MTLSamplerState?
+			private var textureCache: CVMetalTextureCache?
 		private var instanceBuffers = [MTLBuffer]()
 		private var instanceBufferIndex = 0
-		private var player: AVPlayer?
-		private var playerItem: AVPlayerItem?
-		private var videoOutput: AVPlayerItemVideoOutput?
-		private var endObserver: NSObjectProtocol?
-		private var statusObservation: NSKeyValueObservation?
-		private var currentID: String?
 		private var isPlaying = false
-		private var isPrerolled = false
+		private var currentPlaybackID: String?
 		private var placementAnimations = [Int: PlacementAnimation]()
 		private var placementOrder = [Int]()
 		private var contentSize = CGSize.zero
-		private var lastPixelBuffer: CVPixelBuffer?
-		private var visibleTextureRect: CGRect?
 		private var didRenderFirstFrame: (() -> Void)?
 		private var reportedFirstFrame = false
+
+		init(playback: LivePhotoPlayback) {
+			self.playback = playback
+		}
 
 		func attach(to view: MTKView) {
 			self.view = view
@@ -192,10 +351,10 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 		func update(
 			id: String,
 			movieURL: URL,
-			isPlaying: Bool,
-			contentSize: CGSize,
-			placements: [PuzzleTilePresentation],
-			didRenderFirstFrame: @escaping () -> Void
+				isPlaying: Bool,
+				contentSize: CGSize,
+				placements: [PuzzleTilePresentation],
+				didRenderFirstFrame: @escaping () -> Void
 		) {
 			self.didRenderFirstFrame = didRenderFirstFrame
 			let now = CACurrentMediaTime()
@@ -211,138 +370,19 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 					placement.id,
 					PlacementAnimation(from: current, to: placement, startTime: now)
 				)
-			})
-			self.contentSize = contentSize
+				})
+				self.contentSize = contentSize
 
-			if currentID != id {
-				configurePlayer(id: id, movieURL: movieURL)
-			}
-
-			guard self.isPlaying != isPlaying else { return }
-			self.isPlaying = isPlaying
-			if isPlaying {
+			playback.update(id: id, movieURL: movieURL, isPlaying: isPlaying)
+			if currentPlaybackID != id || self.isPlaying != isPlaying {
+				currentPlaybackID = id
+				self.isPlaying = isPlaying
 				reportedFirstFrame = false
-				lastPixelBuffer = nil
-				if isPrerolled {
-					player?.play()
-				}
-			} else {
-				player?.pause()
-			}
-		}
-
-		private func configurePlayer(id: String, movieURL: URL) {
-			stopPlayer()
-			currentID = id
-			reportedFirstFrame = false
-			isPrerolled = false
-			visibleTextureRect = nil
-			let asset = AVURLAsset(url: movieURL)
-			let item = AVPlayerItem(asset: asset)
-			let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
-				kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-			])
-			item.add(output)
-			let pending = PendingPlayerConfiguration(id: id, item: item, output: output)
-			AVVideoComposition.videoComposition(withPropertiesOf: asset) { [weak self] composition, _ in
-				Task { @MainActor in
-					guard let self, self.currentID == pending.id else { return }
-					pending.item.videoComposition = composition
-					self.finishConfiguringPlayer(item: pending.item, output: pending.output)
-				}
-			}
-		}
-
-		private func finishConfiguringPlayer(
-			item: AVPlayerItem,
-			output: AVPlayerItemVideoOutput
-		) {
-			statusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self, weak item] _, _ in
-				Task { @MainActor in
-					guard let self, let item, self.playerItem === item else { return }
-					switch item.status {
-					case .readyToPlay:
-						self.preroll(item: item)
-					case .failed:
-						self.player?.pause()
-					case .unknown:
-						break
-					@unknown default:
-						break
-					}
-				}
-			}
-			let player = AVPlayer(playerItem: item)
-			player.isMuted = true
-			player.actionAtItemEnd = .none
-			endObserver = NotificationCenter.default.addObserver(
-				forName: .AVPlayerItemDidPlayToEndTime,
-				object: item,
-				queue: .main
-			) { [weak self, weak player] _ in
-				Task { @MainActor in
-					guard let self, self.isPlaying else { return }
-					player?.seek(to: .zero)
-					player?.play()
-				}
-			}
-			playerItem = item
-			videoOutput = output
-			self.player = player
-			if item.status == .readyToPlay {
-				preroll(item: item)
-			}
-		}
-
-		private func preroll(item: AVPlayerItem) {
-			guard !isPrerolled, playerItem === item, let player else { return }
-			player.pause()
-			player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self, weak player] finished in
-				Task { @MainActor in
-					guard finished,
-						  let self,
-						  let player,
-						  self.player === player,
-						  self.playerItem === item else { return }
-					player.preroll(atRate: 1) { [weak self, weak player] finished in
-						Task { @MainActor in
-							guard finished,
-								  let self,
-								  let player,
-								  self.player === player,
-								  self.playerItem === item else { return }
-							self.isPrerolled = true
-							self.lastPixelBuffer = nil
-							self.reportedFirstFrame = false
-							if self.isPlaying {
-								player.play()
-							}
-						}
-					}
-				}
 			}
 		}
 
 		func stop() {
-			stopPlayer()
 			view?.delegate = nil
-		}
-
-		private func stopPlayer() {
-			statusObservation = nil
-			player?.cancelPendingPrerolls()
-			player?.pause()
-			if let endObserver {
-				NotificationCenter.default.removeObserver(endObserver)
-			}
-			endObserver = nil
-			player = nil
-			playerItem = nil
-			videoOutput = nil
-			lastPixelBuffer = nil
-			visibleTextureRect = nil
-			isPrerolled = false
-			currentID = nil
 		}
 
 		func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
@@ -358,24 +398,18 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 				  let renderPassDescriptor = view.currentRenderPassDescriptor,
 				  let commandQueue,
 				  let pipelineState,
-				  let textureCache,
-				  viewSize.width > 0,
-				  viewSize.height > 0 else { return }
+					  let textureCache,
+					  viewSize.width > 0,
+					  viewSize.height > 0 else { return }
 
-			if let videoOutput, let playerItem {
-				let itemTime = videoOutput.itemTime(forHostTime: CACurrentMediaTime())
-				if videoOutput.hasNewPixelBuffer(forItemTime: itemTime),
-				   let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: itemTime, itemTimeForDisplay: nil) {
-					lastPixelBuffer = pixelBuffer
-					if visibleTextureRect == nil {
-						visibleTextureRect = Self.detectVisibleContentRect(in: pixelBuffer)
-					}
+				let instances = makeTileInstances()
+				guard !instances.isEmpty else {
+					clear(drawable: drawable, using: renderPassDescriptor, commandQueue: commandQueue)
+					return
 				}
-				if playerItem.status == .failed {
-					player?.pause()
-				}
-			}
-			guard let pixelBuffer = lastPixelBuffer else { return }
+
+				guard let frame = playback.frame(at: CACurrentMediaTime()) else { return }
+			let pixelBuffer = frame.pixelBuffer
 
 			let textureWidth = CVPixelBufferGetWidth(pixelBuffer)
 			let textureHeight = CVPixelBufferGetHeight(pixelBuffer)
@@ -393,12 +427,14 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 			) == kCVReturnSuccess,
 				  let cvTexture,
 				  let texture = CVMetalTextureGetTexture(cvTexture) else { return }
+			if frame.isPrerolled, !reportedFirstFrame {
+				reportedFirstFrame = true
+				didRenderFirstFrame?()
+			}
 
-			let instances = makeTileInstances()
-			let instanceDataLength = MemoryLayout<TileInstance>.stride * instances.count
-			guard !instances.isEmpty,
-				  let device = view.device,
-				  let instanceBuffer = instanceBuffer(
+				let instanceDataLength = MemoryLayout<TileInstance>.stride * instances.count
+				guard let device = view.device,
+					  let instanceBuffer = instanceBuffer(
 					  for: instances,
 					  byteCount: instanceDataLength,
 					  device: device
@@ -408,7 +444,7 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 
 			encoder.setRenderPipelineState(pipelineState)
 			encoder.setVertexBuffer(instanceBuffer, offset: 0, index: 0)
-			let visibleRect = visibleTextureRect ?? CGRect(x: 0, y: 0, width: 1, height: 1)
+			let visibleRect = frame.visibleTextureRect
 			var frameUniforms = FrameUniforms(
 				viewAndContentSize: SIMD4(
 					Float(viewSize.width),
@@ -434,7 +470,7 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 				length: MemoryLayout<FrameUniforms>.stride,
 				index: 1
 			)
-			encoder.setFragmentTexture(texture, index: 0)
+				encoder.setFragmentTexture(texture, index: 0)
 			if let samplerState {
 				encoder.setFragmentSamplerState(samplerState, index: 0)
 			}
@@ -445,15 +481,23 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 				instanceCount: instances.count
 			)
 			encoder.endEncoding()
-			commandBuffer.present(drawable)
-			commandBuffer.commit()
-			if isPrerolled, !reportedFirstFrame {
-				reportedFirstFrame = true
-				didRenderFirstFrame?()
+				commandBuffer.present(drawable)
+				commandBuffer.commit()
 			}
-		}
 
-		private func instanceBuffer(
+			private func clear(
+				drawable: CAMetalDrawable,
+				using renderPassDescriptor: MTLRenderPassDescriptor,
+				commandQueue: MTLCommandQueue
+			) {
+				guard let commandBuffer = commandQueue.makeCommandBuffer(),
+					  let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else { return }
+				encoder.endEncoding()
+				commandBuffer.present(drawable)
+				commandBuffer.commit()
+			}
+
+			private func instanceBuffer(
 			for instances: [TileInstance],
 			byteCount: Int,
 			device: MTLDevice
@@ -472,10 +516,10 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 				guard let baseAddress = bytes.baseAddress else { return }
 				buffer.contents().copyMemory(from: baseAddress, byteCount: byteCount)
 			}
-			return buffer
-		}
+				return buffer
+			}
 
-		private static func detectVisibleContentRect(in pixelBuffer: CVPixelBuffer) -> CGRect {
+		fileprivate static func detectVisibleContentRect(in pixelBuffer: CVPixelBuffer) -> CGRect {
 			switch LivePhotoBoardRenderer.contentCropStrategy {
 			case .fullFrame:
 				return CGRect(x: 0, y: 0, width: 1, height: 1)
@@ -554,19 +598,19 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 			)
 		}
 
-		private func makeTileInstances() -> [TileInstance] {
-			let now = CACurrentMediaTime()
-			let placements = placementOrder.compactMap { placementAnimations[$0]?.value(at: now) }
-			guard contentSize.width > 0, contentSize.height > 0 else { return [] }
-			return placements.compactMap { placement in
-				// The open tile is logically part of the board but must not submit a
-				// drawable quad. Skipping it also avoids transparent RGB content being
-				// exposed by platform compositor differences.
-				guard placement.opacity > 0.001 else { return nil }
-				let rect = placement.destinationRect
-				let source = placement.sourceRect
-				return TileInstance(
-					destinationRect: SIMD4(
+			private func makeTileInstances() -> [TileInstance] {
+				let now = CACurrentMediaTime()
+				let placements = placementOrder.compactMap { placementAnimations[$0]?.value(at: now) }
+				guard contentSize.width > 0, contentSize.height > 0 else { return [] }
+				return placements.compactMap { placement in
+					// The open tile is logically part of the board but must not submit a
+					// drawable quad. Skipping it also avoids transparent RGB content being
+					// exposed by platform compositor differences.
+					guard placement.opacity > 0.001 else { return nil }
+					let rect = placement.destinationRect
+					let source = placement.sourceRect
+					return TileInstance(
+						destinationRect: SIMD4(
 						Float(rect.minX),
 						Float(rect.minY),
 						Float(rect.width),
@@ -578,13 +622,13 @@ struct LivePhotoBoardRenderer: PlatformMetalViewRepresentable {
 						Float(source.maxX),
 						Float(source.maxY)
 					),
-					borderColor: placement.borderColor,
-					cornerRadius: placement.cornerRadius,
-					opacity: placement.opacity,
-					contentInset: placement.contentInset,
-					borderWidth: placement.borderWidth
-				)
+						borderColor: placement.borderColor,
+						cornerRadius: placement.cornerRadius,
+						opacity: placement.opacity,
+						contentInset: placement.contentInset,
+						borderWidth: placement.borderWidth
+					)
+					}
 			}
-		}
 	}
 }
